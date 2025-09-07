@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en" data-theme="clothesline" data-mode="light">
+<head>
+  <meta charset="utf-8" />
+  <link rel="icon" href="%sveltekit.assets%/favicon.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  
+  <!-- Critical CSS - ensures key tokens before theme CSS -->
+  <style>
+    [data-theme='clothesline'][data-mode='light'] {
+      --divider-color: oklch(45% 0.03 270);
+      --divider-thickness: 1px;
+      --divider-style: solid;
+    }
+    [data-theme='timberline'][data-mode='light'] {
+      --divider-color: oklch(45% 0.01 60);
+      --divider-thickness: 1px;
+      --divider-style: solid;
+    }
+  </style>
+
+  %sveltekit.head%
+</head>
+<body data-sveltekit-preload-data="hover">
+  <div style="display: contents">%sveltekit.body%</div>
+</body>
+</html>
+

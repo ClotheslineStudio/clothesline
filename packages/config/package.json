@@ -1,0 +1,17 @@
+{
+  "name": "@clothesline/config",
+  "version": "0.0.1",
+  "type": "module",
+  "main": "tailwind.config.js",
+  "exports": {
+    "./tailwind": "./tailwind.config.js",
+    "./postcss": "./postcss.config.js",
+    "./vitest": "./vitest.config.ts"
+  },
+  "files": [
+    "tailwind.config.js",
+    "postcss.config.js",
+    "vitest.config.ts"
+  ],
+  "license": "MIT"
+}

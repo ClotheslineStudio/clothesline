@@ -1,0 +1,34 @@
+{
+  "compilerOptions": {
+    // Output options
+    "target": "ESNext",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "outDir": "dist",
+
+    // Type system
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "allowSyntheticDefaultImports": true,
+    "verbatimModuleSyntax": true,
+    "allowImportingTsExtensions": true,
+
+    // Monorepo alias support
+    "baseUrl": ".",
+    "paths": {
+      "@clothesline/tokens": ["packages/tokens/src/index.ts"],
+      "@clothesline/tokens/*": ["packages/tokens/src/*"],
+      "@clothesline/themes": ["packages/themes/src/index.ts"],
+      "@clothesline/themes/*": ["packages/themes/src/*"],
+      "@clothesline/ui": ["packages/ui/src/index.ts"],
+      "@clothesline/ui/*": ["packages/ui/src/*"]
+    }
+  },
+  "include": ["packages/**/*"],
+  "exclude": ["node_modules", "dist", "**/*.test.ts"]
+}
+

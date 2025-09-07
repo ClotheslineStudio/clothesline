@@ -1,0 +1,17 @@
+@layer base {
+  :root {
+    --bg-surface: var(--color-neutral-50);
+    --text-body: var(--color-neutral-900);
+    --radius-sm: var(--radius-base);
+    --radius-md: calc(var(--radius-base) * 2);
+    --focus-ring-color: var(--color-neutral-900);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg-surface: var(--color-neutral-900);
+      --text-body: var(--color-neutral-50);
+      --focus-ring-color: var(--color-neutral-50);
+    }
+  }
+}

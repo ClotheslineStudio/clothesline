@@ -1,0 +1,30 @@
+/* === Theme Imports === */
+@import '@clothesline/themes/dist/clothesline.css';
+@import '@clothesline/themes/dist/timberline.css';
+@import '@clothesline/themes/dist/retrograde.css';
+@import '@clothesline/themes/dist/milkyway.css';
+@import '@clothesline/themes/dist/copper-sun.css';
+@import '@clothesline/themes/dist/tidal-glass.css';
+@import '@clothesline/themes/dist/night-market.css';
+@import '@clothesline/themes/dist/modes.css';
+
+/* === Tailwind === */
+@import 'tailwindcss';
+
+/* === App-Specific Root Tokens === */
+:root {
+  --divider-color: #cbd5e1;
+  --divider-thickness: 5px;
+  --divider-style: solid;
+}
+
+@layer base {
+  h1, h2, h3, h4, h5, h6 {
+    color: var(--heading-font-color, var(--base-font-color));
+  }
+
+  p, span, li, dt, dd, th, td {
+    color: var(--body-font-color, var(--base-font-color));
+  }
+}
+
