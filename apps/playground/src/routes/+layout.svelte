@@ -72,7 +72,8 @@
     { title: 'Header', path: '/layout/header' },
     { title: 'Footer', path: '/layout/footer' },
     { title: 'Dropdown', path: '/overlays/dropdown' },
-    { title: 'Popover', path: '/overlays/popover' }
+    { title: 'Popover', path: '/overlays/popover' },
+    { title: 'ToggleButton', path: '/core/toggle' }
   ];
 </script>
 

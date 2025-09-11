@@ -1,18 +1,19 @@
 <script lang="ts">
   export let on = false;
   export let label = 'Toggle';
-  export let onChange = (value: boolean) => {};
+  export let onChange: (value: boolean) => void = () => {};
 
   function toggle() {
-    const newValue = !on;
-    onChange(newValue);
+    on = !on;          // ✅ update local state
+    onChange(on);      // ✅ notify parent
   }
 </script>
 
 <button
   type="button"
   class="toggle-btn"
-  aria-pressed={on}
+  role="switch"
+  aria-checked={on}
   on:click={toggle}
 >
   {label}: {on ? 'On' : 'Off'}
@@ -27,9 +28,10 @@
     background-color: var(--color-primary-50, #eef);
     color: var(--color-primary-900, #113);
     transition: background-color 0.2s ease;
+    cursor: pointer;
   }
 
-  .toggle-btn[aria-pressed='true'] {
+  .toggle-btn[aria-checked='true'] {
     background-color: var(--color-primary-200, #cce);
   }
 
@@ -38,3 +40,4 @@
     outline-offset: 2px;
   }
 </style>
+
