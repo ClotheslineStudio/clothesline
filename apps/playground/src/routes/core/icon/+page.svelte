@@ -4,7 +4,7 @@
   import ComponentPreview from '$lib/components/dev/ComponentPreview/ComponentPreview.svelte';
 
   const githubUrl =
-    'https://github.com/clotheslinestudio/ui/blob/main/src/components/core/Icon/Icon.svelte';
+    'https://github.com/ClotheslineStudio/clothesline/blob/main/packages/ui/src/components/core/Icon/Icon.svelte';
 
   // Minimal registry so name="…" samples render even without an app-level provider
   const registry = new Map<string, IconPathsDef>();

@@ -1,17 +1,13 @@
 <script lang="ts">
-  import Icon from '$lib/components/core/Icon/Icon.svelte';
   import Tooltip from '$lib/components/feedback/Tooltip/Tooltip.svelte';
-  import { Text } from '@clothesline/ui';
-  import { setTheme } from '@clothesline/themes';
-
   import {
     Github, Laptop, Tablet, Smartphone,
     AlignLeft, AlignCenter, AlignRight,
     Sun, Moon, Clipboard
   } from 'lucide-svelte';
 
+  // props
   export let code = '';
-  export const language: 'svelte' | 'ts' | 'html' | 'css' = 'svelte';
   export let githubUrl = '';
   export let showCode = true;
 
@@ -19,37 +15,54 @@
   let viewport: 'desktop' | 'tablet' | 'mobile' = 'desktop';
   let alignment: 'left' | 'center' | 'right' = 'center';
 
-  // use global theme toggle so tokens update
-  let mode: 'light' | 'dark' = (document.documentElement.getAttribute('data-mode') as any) || 'light';
+  // LOCAL theme state (scoped to this preview only)
+  let mode: 'light' | 'dark' =
+    ((document?.documentElement?.getAttribute('data-mode') as 'light' | 'dark') || 'light');
+
+  let scopeEl: HTMLElement; // the element we’ll attach data-theme/mode to
+
+  function applyScopeAttrs() {
+    if (!scopeEl) return;
+    // mirror current site theme name + vision, but keep it LOCAL
+    const theme = document.documentElement.getAttribute('data-theme') || 'clothesline';
+    const vision = document.documentElement.getAttribute('data-vision') || '';
+    scopeEl.setAttribute('data-theme', theme);
+    scopeEl.setAttribute('data-mode', mode);
+    vision ? scopeEl.setAttribute('data-vision', vision) : scopeEl.removeAttribute('data-vision');
+  }
+
   function toggleMode() {
     mode = mode === 'light' ? 'dark' : 'light';
-    const theme = document.documentElement.getAttribute('data-theme') || 'clothesline';
-    const visionAttr = document.documentElement.getAttribute('data-vision');
-    const allowedVisions = ['protanopia', 'deuteranopia', 'tritanopia', 'monochromacy'];
-    const vision = allowedVisions.includes(visionAttr as string) ? (visionAttr as 'protanopia' | 'deuteranopia' | 'tritanopia' | 'monochromacy') : undefined;
-    setTheme(theme, mode, vision);
+    applyScopeAttrs();
   }
+
+  // initialize on mount
+  import { onMount } from 'svelte';
+  onMount(() => {
+    applyScopeAttrs();
+  });
 
   function copyCode() {
-    navigator.clipboard.writeText(code);
+    if (code) navigator.clipboard.writeText(code);
   }
 
-  const viewportClasses = {
-    desktop: 'w-full',
-    tablet: 'w-[640px]',
-    mobile: 'w-[360px]'
-  } as const;
+  // layout values
+  $: pvWidth =
+    viewport === 'desktop' ? '960px' :
+    viewport === 'tablet'  ? '640px' :
+                             '360px';
 
-  const alignmentClasses = {
-    left: 'justify-start',
-    center: 'justify-center',
-    right: 'justify-end'
-  } as const;
+  $: justify =
+    alignment === 'left'  ? 'start'  :
+    alignment === 'right' ? 'end'    :
+                            'center';
 </script>
 
-<div class="component-preview rounded-xl border bg-preview-bg shadow-sm">
-  <!-- Header toolbar (no title) -->
-  <div class="toolbar flex items-center justify-between gap-2 px-4 py-2 border-b bg-preview-header">
+<!-- Root is a THEME SCOPE -->
+<div class="component-preview rounded-xl border shadow-sm" bind:this={scopeEl}>
+  <!-- Toolbar -->
+  <div class="toolbar flex items-center justify-between gap-2 px-4 py-2 border-b"
+       style="background:var(--preview-header-bg); border-color:var(--border-default-color)">
     <div class="flex items-center gap-3">
       {#if githubUrl}
         <Tooltip text="Edit on GitHub" position="bottom">
@@ -78,16 +91,14 @@
         </button>
       </Tooltip>
 
-      <!-- Mode -->
+      <!-- Mode (scoped) -->
       <Tooltip text={`Switch to ${mode === 'light' ? 'dark' : 'light'} mode`} position="bottom">
         <button on:click={toggleMode} aria-label="Toggle light/dark" class="ml-2">
-          {#if mode === 'light'}
-            <Moon size={18} />
-          {:else}
-            <Sun size={18} />
-          {/if}
+          {#if mode === 'light'} <Moon size={18} /> {:else} <Sun size={18} /> {/if}
         </button>
       </Tooltip>
+
+      <!-- Alignment -->
       <Tooltip text="Left align" position="bottom">
         <button class:active={alignment==='left'} on:click={() => (alignment = 'left')} aria-label="Left align">
           <AlignLeft size={18} />
@@ -106,97 +117,75 @@
     </div>
   </div>
 
-  <!-- Preview area (let tooltips escape) -->
-  <div class={`preview-body px-4 py-8 flex ${alignmentClasses[alignment]}`}>
-    <div class={`${viewportClasses[viewport]} max-w-full`}>
+  <!-- Preview body: compact grid; justify the item, not the container -->
+  <div class="preview-body grid px-4 py-8"
+       style="
+        background:var(--preview-bg);
+        min-height:var(--preview-body-min-h, 8rem);
+        justify-items:{justify};
+      ">
+    <div class="pv-inner"
+         style="width:min(100%, {pvWidth});">
       <slot />
     </div>
   </div>
 
   {#if showCode && code}
-    <!-- Code header -->
-    <Tooltip text="Copy code" position="bottom">
-      <button on:click={copyCode} aria-label="Copy code" class="icon-btn">
-        <Clipboard size={18} />
-      </button>
-    </Tooltip>
+    <div class="code-tools px-4 py-2 border-t"
+         style="background:var(--preview-header-bg); border-color:var(--border-subtle)">
+      <div class="ml-auto">
+        <Tooltip text="Copy code" position="bottom">
+          <button on:click={copyCode} aria-label="Copy code" class="icon-btn">
+            <Clipboard size={18} />
+          </button>
+        </Tooltip>
+      </div>
+    </div>
 
-    <!-- Code block -->
-    <div class="code-block px-4 py-3 border-t">
-      <pre><code class="cl-text cl-text-code">{code}</code></pre>
+    <div class="code-block px-4 py-3"
+         style="background:var(--preview-code-bg); color:var(--base-font-color)">
+      <pre><code style="
+        display:block;
+        border:1px solid var(--border-subtle);
+        border-radius:var(--radius-md);
+        padding:.75rem;
+        font-family:var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+        font-size:var(--preview-code-font-size, .875rem);
+        line-height:1.5;
+      ">{code}</code></pre>
     </div>
   {/if}
 </div>
 
 <style>
-  /* ===== tokens used (override in your tokens/theme files) ===== */
   .component-preview {
+    /* Preview surface tokens (read from theme, with safe fallbacks) */
     --preview-bg: var(--color-surface-100);
     --preview-header-bg: var(--color-surface-200);
-    --preview-border: var(--border-default-color, #c9c9c9);
-    --preview-radius: var(--radius-lg, 0.75rem);
-    --preview-shadow: var(--shadow-md, 0 1px 2px rgba(0,0,0,.06));
-
-    --code-bg: var(--color-surface-900, #111);         /* dark-safe fallback */
-    --code-text: var(--color-surface-50, #f5f5f5);     /* dark-safe fallback */
-    --code-border: var(--color-surface-700, #333);
-
-    border-color: var(--preview-border);
-    background: var(--preview-bg);
-    border-radius: var(--preview-radius);
-    box-shadow: var(--preview-shadow);
-    /* Allow tooltips to render outside */
-    overflow: clip;
+    border-color: var(--border-default-color, #c9c9c9);
+    border-radius: var(--radius-lg, .75rem);
+    box-shadow: var(--shadow-md, 0 1px 2px rgba(0,0,0,.06));
+    overflow: visible; /* let tooltips escape */
   }
 
-  .toolbar {
-  background: var(--preview-header-bg);
-  border-top-left-radius: var(--preview-radius);
-  border-top-right-radius: var(--preview-radius);
-}
-
-  .preview-body {
-    background: var(--preview-bg);
-    /* Only hide overflow for slotted component area, so tooltips aren’t clipped */
-    overflow: hidden;
-  }
+  .preview-body { overflow: hidden; }
 
   /* Buttons */
   button {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: .375rem;
-    border-radius: var(--radius-md, .5rem);
-    transition: background .15s ease, opacity .15s ease;
+    display:inline-flex; align-items:center; justify-content:center;
+    padding:.375rem; border-radius:var(--radius-md,.5rem);
+    transition:background .15s ease, color .15s ease, opacity .15s ease;
+    color: var(--text-muted, #777);
   }
-  button:hover { background: var(--color-surface-300, #e8e8e8); }
-  button.active { background: var(--color-surface-400, #ddd); }
-  .icon-link { color: var(--color-text-muted, #666); }
-  .icon-link:hover { color: var(--color-text-strong, #111); }
-  .icon-btn { color: var(--color-text-muted, #777); }
-  .icon-btn:hover { color: var(--color-text-strong, #111); }
+  button:hover { background: var(--color-surface-300,#e8e8e8); color: var(--base-font-color,#111); }
+  button.active { background: var(--color-surface-400,#ddd); color: var(--base-font-color,#111); }
 
-  /* Code area: dark-mode friendly by default */
-  .code-header { background: var(--preview-header-bg); }
-  .code-block {
-    background: var(--code-bg);
-    color: var(--code-text);
-    font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
-    font-size: .875rem;
-    line-height: 1.5;
-  }
-  .code-block pre { white-space: pre-wrap; }
-  .code-block code {
-    display: block;
-    border: 1px solid var(--code-border);
-    border-radius: var(--radius-md, .5rem);
-    padding: .75rem;
-  }
-
-  /* Tooltip should be above borders */
-  :global(.cl-tooltip) { z-index: 60; }
+  .icon-link { color: var(--text-muted, #777); }
+  .icon-link:hover { color: var(--base-font-color, #111); }
+  .icon-btn { color: var(--text-muted, #777); }
+  .icon-btn:hover { color: var(--base-font-color, #111); }
 </style>
+
 
 
 

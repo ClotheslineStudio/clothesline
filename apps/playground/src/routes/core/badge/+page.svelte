@@ -20,7 +20,9 @@
   const sizes = ['sm', 'md', 'lg'] as const;
   const appearances = ['solid', 'outline', 'soft'] as const;
 
-  const rowWrap = 'flex flex-wrap gap-4 items-center';
+  // Utility classes (match Button page vibe)
+  const previewCenter = 'flex items-center justify-center min-h-24';
+  const rowWrapCenter = 'flex flex-wrap items-center justify-center gap-3';
 </script>
 
 <h1 class="text-2xl font-bold mb-4">Badge Component</h1>
@@ -29,8 +31,13 @@
   <!-- Basic -->
   <div class="space-y-2">
     <h2 class="text-lg font-semibold">Basic</h2>
-    <ComponentPreview {githubUrl}>
-      <div class={rowWrap}>
+    <ComponentPreview
+      {githubUrl}
+      code={`<Badge>Default</Badge>
+<Badge variant="success">Success</Badge>
+<Badge variant="error">Error</Badge>`}
+    >
+      <div class={`${previewCenter} ${rowWrapCenter}`}>
         <Badge>Default</Badge>
         <Badge variant="success">Success</Badge>
         <Badge variant="error">Error</Badge>
@@ -41,8 +48,11 @@
   <!-- Variants -->
   <div class="space-y-2">
     <h2 class="text-lg font-semibold">Variants</h2>
-    <ComponentPreview {githubUrl}>
-      <div class={rowWrap}>
+    <ComponentPreview
+      {githubUrl}
+      code={variants.map(v => `<Badge variant="${v}">${v}</Badge>`).join('\n')}
+    >
+      <div class={`${previewCenter} ${rowWrapCenter}`}>
         {#each variants as variant}
           <Badge {variant}>{variant}</Badge>
         {/each}
@@ -53,8 +63,11 @@
   <!-- Sizes -->
   <div class="space-y-2">
     <h2 class="text-lg font-semibold">Sizes</h2>
-    <ComponentPreview {githubUrl}>
-      <div class={rowWrap}>
+    <ComponentPreview
+      {githubUrl}
+      code={sizes.map(s => `<Badge size="${s}">Size ${s}</Badge>`).join('\n')}
+    >
+      <div class={`${previewCenter} ${rowWrapCenter}`}>
         {#each sizes as size}
           <Badge size={size}>Size {size}</Badge>
         {/each}
@@ -65,8 +78,11 @@
   <!-- Appearances -->
   <div class="space-y-2">
     <h2 class="text-lg font-semibold">Appearances</h2>
-    <ComponentPreview {githubUrl}>
-      <div class={rowWrap}>
+    <ComponentPreview
+      {githubUrl}
+      code={appearances.map(a => `<Badge appearance="${a}">${a}</Badge>`).join('\n')}
+    >
+      <div class={`${previewCenter} ${rowWrapCenter}`}>
         {#each appearances as appearance}
           <Badge appearance={appearance}>{appearance}</Badge>
         {/each}
@@ -77,8 +93,11 @@
   <!-- Pill -->
   <div class="space-y-2">
     <h2 class="text-lg font-semibold">Pill</h2>
-    <ComponentPreview {githubUrl}>
-      <div class={rowWrap}>
+    <ComponentPreview
+      {githubUrl}
+      code={variants.map(v => `<Badge variant="${v}" pill>${v}</Badge>`).join('\n')}
+    >
+      <div class={`${previewCenter} ${rowWrapCenter}`}>
         {#each variants as variant}
           <Badge variant={variant} pill>{variant}</Badge>
         {/each}
@@ -89,11 +108,16 @@
   <!-- Removable -->
   <div class="space-y-2">
     <h2 class="text-lg font-semibold">Removable</h2>
-    <ComponentPreview {githubUrl}>
-      <div class={rowWrap}>
+    <ComponentPreview
+      {githubUrl}
+      code={`<Badge removable onRemove={() => alert('Removed!')}>Tag 1</Badge>
+<Badge removable onRemove={() => alert('Removed!')}>Tag 2</Badge>`}
+    >
+      <div class={`${previewCenter} ${rowWrapCenter}`}>
         <Badge removable onRemove={() => alert('Removed!')}>Tag 1</Badge>
         <Badge removable onRemove={() => alert('Removed!')}>Tag 2</Badge>
       </div>
     </ComponentPreview>
   </div>
 </section>
+

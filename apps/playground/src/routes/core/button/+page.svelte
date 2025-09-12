@@ -12,8 +12,8 @@
   const sampleLabel = 'Click me';
 
   // Utility classes
-  const previewCenter = 'flex items-center justify-center min-h-24';
-  const rowWrapCenter = 'flex flex-wrap items-center justify-center gap-3';
+  const previewArea = 'min-h-24'; // height only; alignment handled by ComponentPreview
+  const rowWrap = 'flex flex-wrap items-center gap-3'; // no justify-*
 </script>
 
 <h1 class="text-2xl font-bold mb-4">Button Component</h1>
@@ -23,7 +23,7 @@
   <div class="space-y-2">
     <h2 class="text-lg font-semibold">Basic</h2>
     <ComponentPreview {githubUrl} code={`<Button>${sampleLabel}</Button>`}>
-      <div class={previewCenter}>
+      <div class={previewArea}>
         <Button>{sampleLabel}</Button>
       </div>
     </ComponentPreview>
@@ -38,7 +38,7 @@
 <Button size="md">Medium</Button>
 <Button size="lg">Large</Button>`}
     >
-      <div class={`${previewCenter} ${rowWrapCenter}`}>
+      <div class={`${previewArea} ${rowWrap}`}>
         <Button size="sm">Small</Button>
         <Button size="md">Medium</Button>
         <Button size="lg">Large</Button>
@@ -53,7 +53,7 @@
       {githubUrl}
       code={colors.map(c => `<Button color="${c}">${c}</Button>`).join('\n')}
     >
-      <div class={`${previewCenter} ${rowWrapCenter}`}>
+      <div class={`${previewArea} ${rowWrap}`}>
         {#each colors as c}
           <Button color={c}>{c}</Button>
         {/each}
@@ -66,13 +66,13 @@
     <h2 class="text-lg font-semibold">States</h2>
     <div class="grid gap-6 md:grid-cols-2">
       <ComponentPreview {githubUrl} code={`<Button disabled>Disabled</Button>`}>
-        <div class={previewCenter}>
+        <div class={previewArea}>
           <Button disabled>Disabled</Button>
         </div>
       </ComponentPreview>
 
       <ComponentPreview {githubUrl} code={`<Button loading>Loading</Button>`}>
-        <div class={previewCenter}>
+        <div class={previewArea}>
           <Button loading>Loading</Button>
         </div>
       </ComponentPreview>
@@ -93,7 +93,7 @@
   <span slot="icon-right">➡️</span>
 </Button>`}
     >
-      <div class={`${previewCenter} ${rowWrapCenter}`}>
+      <div class={`${previewArea} ${rowWrap}`}>
         <Button>
           <span slot="icon-left">⬅️</span>
           With left icon
@@ -115,7 +115,7 @@
   Visit Clothesline UI
 </Button>`}
     >
-      <div class={previewCenter}>
+      <div class={previewArea}>
         <Button href="https://clotheslineui.com" target="_blank" rel="noreferrer">
           Visit Clothesline UI
         </Button>
@@ -133,7 +133,7 @@
           .map(v => `<Button color="${c}" variant="${v}" size="sm">${c} • ${v}</Button>`)
           .join('\n')}
       >
-        <div class={`${previewCenter} ${rowWrapCenter}`}>
+        <div class={`${previewArea} ${rowWrap}`}>
           {#each variants as v}
             <Button color={c} variant={v} size="sm">
               {c} • {v}
