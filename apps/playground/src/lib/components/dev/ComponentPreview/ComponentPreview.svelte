@@ -1,7 +1,7 @@
 <script lang="ts">
   import Icon from '$lib/components/core/Icon/Icon.svelte';
   import Tooltip from '$lib/components/feedback/Tooltip/Tooltip.svelte';
-  import Text from '$lib/components/core/Text/Text.svelte';
+  import { Text } from '@clothesline/ui';
   import { setTheme } from '@clothesline/themes';
 
   import {
@@ -24,7 +24,9 @@
   function toggleMode() {
     mode = mode === 'light' ? 'dark' : 'light';
     const theme = document.documentElement.getAttribute('data-theme') || 'clothesline';
-    const vision = document.documentElement.getAttribute('data-vision') || '';
+    const visionAttr = document.documentElement.getAttribute('data-vision');
+    const allowedVisions = ['protanopia', 'deuteranopia', 'tritanopia', 'monochromacy'];
+    const vision = allowedVisions.includes(visionAttr as string) ? (visionAttr as 'protanopia' | 'deuteranopia' | 'tritanopia' | 'monochromacy') : undefined;
     setTheme(theme, mode, vision);
   }
 
