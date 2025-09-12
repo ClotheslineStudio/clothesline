@@ -1,5 +1,5 @@
 <script lang="ts">
-  import Text from '$lib/components/core/Text/Text.svelte';
+  import {Text } from '@clothesline/ui'; 
 </script>
 
 <h1 class="text-2xl font-bold mb-4">Text Component</h1>

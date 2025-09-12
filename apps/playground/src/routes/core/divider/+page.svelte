@@ -4,60 +4,68 @@
 
   const githubUrl =
     'https://github.com/clotheslinestudio/ui/blob/main/src/components/core/Divider/Divider.svelte';
+
+  const variants = ['solid', 'dashed', 'dotted', 'soft'] as const;
+  const aligns = ['start', 'center', 'end'] as const;
+  const thicknesses = ['hairline', 'sm', 'md', 'lg', 'xl'] as const;
+  const spaces = ['none', 'sm', 'md', 'lg'] as const;
+
+  const previewCenter = 'flex items-center justify-center min-h-24';
+  const rowWrapCenter = 'flex flex-wrap items-center justify-center gap-4';
 </script>
 
 <h1 class="text-2xl font-bold mb-4">Divider Component</h1>
 
 <section class="space-y-10">
-  <!-- Plain horizontal -->
+  <!-- Basic -->
   <div class="space-y-2">
-    <h2 class="text-lg font-semibold">Plain — Horizontal</h2>
+    <h2 class="text-lg font-semibold">Basic</h2>
     <ComponentPreview {githubUrl} code={`<Divider />`}>
-      <Divider />
-    </ComponentPreview>
-    <ComponentPreview {githubUrl} code={`<Divider variant="dashed" />`}>
-      <Divider variant="dashed" />
-    </ComponentPreview>
-    <ComponentPreview {githubUrl} code={`<Divider variant="dotted" thickness="lg" />`}>
-      <Divider variant="dotted" thickness="lg" />
-    </ComponentPreview>
-    <ComponentPreview {githubUrl} code={`<Divider variant="soft" />`}>
-      <Divider variant="soft" />
+      <div class="space-y-4 w-full">
+        <p>Above</p>
+        <Divider />
+        <p>Below</p>
+      </div>
     </ComponentPreview>
   </div>
 
-  <!-- Labeled -->
-  <div class="space-y-4">
-    <h2 class="text-lg font-semibold">Labeled</h2>
+  <!-- Variants -->
+  <div class="space-y-2">
+    <h2 class="text-lg font-semibold">Variants</h2>
     <ComponentPreview
       {githubUrl}
-      code={`<Divider label="Section Title" />`}
+      code={variants.map(v => `<Divider variant="${v}" />`).join('\n')}
     >
-      <Divider label="Section Title" />
+      <div class="space-y-4 w-full">
+        {#each variants as v}
+          <div>
+            <p class="mb-2">variant="{v}"</p>
+            <Divider variant={v} />
+          </div>
+        {/each}
+      </div>
     </ComponentPreview>
-
-    <ComponentPreview
-      {githubUrl}
-      code={`<Divider><strong>With Slot</strong></Divider>`}
-    >
-      <Divider><strong>With Slot</strong></Divider>
-    </ComponentPreview>
-
-    <div class="grid gap-6 grid-cols-1 sm:grid-cols-3">
-      <ComponentPreview {githubUrl} code={`<Divider label="Start" align="start" />`}>
-        <Divider label="Start" align="start" />
-      </ComponentPreview>
-      <ComponentPreview {githubUrl} code={`<Divider label="Center" align="center" />`}>
-        <Divider label="Center" align="center" />
-      </ComponentPreview>
-      <ComponentPreview {githubUrl} code={`<Divider label="End" align="end" />`}>
-        <Divider label="End" align="end" />
-      </ComponentPreview>
-    </div>
   </div>
 
-  <!-- Vertical examples -->
-  <div class="space-y-4">
+  <!-- With label & alignment -->
+  <div class="space-y-2">
+    <h2 class="text-lg font-semibold">With Label & Alignment</h2>
+    <ComponentPreview
+      {githubUrl}
+      code={aligns
+        .map(a => `<Divider label="Section" align="${a}" />`)
+        .join('\n')}
+    >
+      <div class="space-y-4 w-full">
+        {#each aligns as a}
+          <Divider label="Section" align={a} />
+        {/each}
+      </div>
+    </ComponentPreview>
+  </div>
+
+  <!-- Vertical -->
+  <div class="space-y-2">
     <h2 class="text-lg font-semibold">Vertical</h2>
     <ComponentPreview
       {githubUrl}
@@ -67,43 +75,52 @@
   <span>Right</span>
 </div>`}
     >
-      <div class="flex items-center gap-4">
+      <div class="flex items-center gap-4 h-16">
         <span>Left</span>
         <Divider orientation="vertical" />
         <span>Right</span>
       </div>
     </ComponentPreview>
+  </div>
 
+  <!-- Thickness & Space -->
+  <div class="space-y-2">
+    <h2 class="text-lg font-semibold">Thickness & Space</h2>
     <ComponentPreview
       {githubUrl}
-      code={`<div class="h-24 flex gap-4">
-  <Divider orientation="vertical" variant="soft" length="100%" />
-  <Divider orientation="vertical" variant="dashed" thickness="lg" length="100%" />
-</div>`}
+      code={thicknesses
+        .map(t => `<Divider thickness="${t}" space="sm" />`)
+        .join('\n')}
     >
-      <div class="h-24 flex gap-4">
-        <Divider orientation="vertical" variant="soft" length="100%" />
-        <Divider orientation="vertical" variant="dashed" thickness="lg" length="100%" />
+      <div class="space-y-6 w-full">
+        {#each thicknesses as t}
+          <Divider thickness={t} space="sm" />
+        {/each}
       </div>
     </ComponentPreview>
   </div>
 
-  <!-- Tokens & overrides -->
-  <div class="space-y-4">
-    <h2 class="text-lg font-semibold">Token Overrides</h2>
+  <!-- Decorative -->
+  <div class="space-y-2">
+    <h2 class="text-lg font-semibold">Decorative</h2>
     <ComponentPreview
       {githubUrl}
-      code={`<Divider color="var(--color-primary-400-vis)" variant="solid" />
-<Divider color="var(--color-error-400-vis)"   variant="dashed" />
-<Divider color="var(--color-success-400-vis)" variant="soft" />`}
+      code={`<Divider decorative />`}
     >
-      <Divider color="var(--color-primary-400-vis)" variant="solid" />
-      <Divider color="var(--color-error-400-vis)"   variant="dashed" />
-      <Divider color="var(--color-success-400-vis)" variant="soft" />
+      <div class="space-y-4 w-full">
+        <p>Above</p>
+        <Divider decorative />
+        <p>Below</p>
+      </div>
     </ComponentPreview>
   </div>
 </section>
 
+<Divider color="var(--color-neutral-700)" />
 
+<div style="outline:1px solid red">
+  <Divider />
+</div>
 
-<div style="height:1px;background:red;width:100%"></div>
+<Divider variant="solid" color="oklch(40% 0.03 270)" />
+
