@@ -20,6 +20,7 @@ import { componentPreviewTokens } from './components/componentpreview.ts';
 import { tooltipTokens } from './components/tooltip.ts';
 import { dropdownTokens } from './components/dropdown.ts';
 import { popoverTokens } from './components/popover.ts';
+import { datepickerTokens } from './components/datepicker.ts';
 
 
 // ✅ Named exports for others to import individually
@@ -38,6 +39,7 @@ export { componentPreviewTokens } from './components/componentpreview.ts';
 export { tooltipTokens } from './components/tooltip.ts';
 export { dropdownTokens } from './components/dropdown.ts';
 export { popoverTokens } from './components/popover.ts';
+export { datepickerTokens } from './components/datepicker.ts';
 
 // ✅ Grouped export for convenience
 export const baseTokens = {
@@ -55,7 +57,8 @@ export const baseTokens = {
   ...componentPreviewTokens,
   ...tooltipTokens,
   ...dropdownTokens,
-  ...popoverTokens
+  ...popoverTokens,
+  ...datepickerTokens
 };
 
 

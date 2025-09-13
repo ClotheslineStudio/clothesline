@@ -11,5 +11,8 @@ export * from './components/core/Badge/index.js';
 export * from './components/core/Label/index.js';
 
 
+export * from './components/form/DatePicker/index.js';
+
+
 
 
