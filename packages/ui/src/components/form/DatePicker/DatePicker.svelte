@@ -1,60 +1,72 @@
 <script context="module" lang="ts">
-  // Public event type
-  export type DateChangeDetail = { value: Date };
+  export type DateChangeDetail = { value: Date | null };
 </script>
-
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte';
+  import { createEventDispatcher, onMount } from 'svelte';
 
-  // Types
-  type WeekStart = 0 | 1; // 0=Sunday, 1=Monday
+  // ===== Types =====
+  type WeekStart = 0 | 1;            // 0=Sunday, 1=Monday
   type DateLike = Date | string | number | null;
 
-  // Props
+  // ===== Props =====
   export let value: DateLike = null;
   export let minDate: DateLike = null;
   export let maxDate: DateLike = null;
-  export let locale: string = 'en-US';
-  export let inline = false;
+  export let locale = 'en-US';
+  export let inline = false;         // if false => trigger + panel
   export let disabled = false;
+  export let readonly = false;
   export let weekStartsOn: WeekStart = 0;
   export let fixedWeeks = true;
   export let id: string | undefined;
   export let name: string | undefined;
   export let required = false;
-  export let readonly = false;
 
-  const dispatch = createEventDispatcher<{ change: DateChangeDetail }>();
+  // UI niceties
+  export let withActions = true;                 // show Clear / Done
+  export let clearable = true;
+  export let labels = { clear: 'Clear', done: 'Done' };
+
+  // optional controlled open for dropdown mode
+  export let open: boolean | undefined;
+  let _open = false;
+  const isControlled = () => typeof open === 'boolean';
+  $: currentOpen = isControlled() ? (open as boolean) : _open;
+
+  const dispatch = createEventDispatcher<{ change: DateChangeDetail; open: void; close: void }>();
 
   // ===== Utils =====
-  const MIN_BOUND = new Date(-8640000000000000);
-  const MAX_BOUND = new Date( 8640000000000000);
+  const minBound = new Date(-8640000000000000);
+  const maxBound = new Date( 8640000000000000);
 
   function toDate(d: DateLike): Date | null {
-    if (d == null) return null;
+    if (d === null || d === undefined) return null;
     const t = new Date(d as any);
     return isNaN(t.getTime()) ? null : t;
   }
-  const isSameDay = (a: Date, b: Date) =>
-    a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
-
+  function isSameDay(a: Date, b: Date) {
+    return a.getFullYear() === b.getFullYear() &&
+           a.getMonth() === b.getMonth() &&
+           a.getDate() === b.getDate();
+  }
   function inRange(d: Date, min: Date | null, max: Date | null) {
     if (min && d < min) return false;
     if (max && d > max) return false;
     return true;
   }
-  function clampDate(d: Date, min: Date | null, max: Date | null) {
+  function clamp(d: Date, min: Date | null, max: Date | null) {
     if (min && d < min) return min;
     if (max && d > max) return max;
     return d;
   }
-  const addMonths = (d: Date, n: number) => { const x = new Date(d); x.setMonth(x.getMonth() + n); return x; };
-  const addYears  = (d: Date, n: number) => { const x = new Date(d); x.setFullYear(x.getFullYear() + n); return x; };
+  function addMonths(d: Date, n: number) { const x = new Date(d); x.setMonth(x.getMonth() + n); return x; }
+  function addYears(d: Date, n: number)  { const x = new Date(d); x.setFullYear(x.getFullYear() + n); return x; }
 
   function monthMatrix(view: Date, startsOn: WeekStart, fixed = true): Date[][] {
     const first = new Date(view.getFullYear(), view.getMonth(), 1);
     const startOffset = (first.getDay() - startsOn + 7) % 7;
-    const gridStart = new Date(first); gridStart.setDate(first.getDate() - startOffset);
+    const gridStart = new Date(first);
+    gridStart.setDate(first.getDate() - startOffset);
 
     const weeks: Date[][] = [];
     let cursor = new Date(gridStart);
@@ -64,17 +76,17 @@
       weeks.push(row);
     }
     if (!fixed) {
-      while (weeks.length && weeks[0].every(day => day.getMonth() !== view.getMonth())) weeks.shift();
-      while (weeks.length && weeks[weeks.length - 1].every(day => day.getMonth() !== view.getMonth())) weeks.pop();
+      while (weeks.length && weeks[0].every(d => d.getMonth() !== view.getMonth())) weeks.shift();
+      while (weeks.length && weeks[weeks.length-1].every(d => d.getMonth() !== view.getMonth())) weeks.pop();
     }
     return weeks;
   }
-
-  const formatMonthYear = (d: Date, loc = 'en-US') =>
-    new Intl.DateTimeFormat(loc, { month: 'long', year: 'numeric' }).format(d);
-  function formatWeekdayShort(index: number, loc = 'en-US', startsOn: WeekStart = 0) {
-    const day = (index + startsOn) % 7;
-    const ref = new Date(Date.UTC(2025, 0, 5 + day)); // Sunday-based reference week
+  function formatMonthYear(d: Date, loc = 'en-US') {
+    return new Intl.DateTimeFormat(loc, { month: 'long', year: 'numeric' }).format(d);
+  }
+  function formatWeekdayShort(i: number, loc = 'en-US', startsOn: WeekStart = 0) {
+    const day = (i + startsOn) % 7;
+    const ref = new Date(Date.UTC(2025, 0, 5 + day)); // Sunday anchor week
     return new Intl.DateTimeFormat(loc, { weekday: 'short' }).format(ref);
   }
 
@@ -85,240 +97,253 @@
   let view: Date = selected ?? (min ?? new Date());
   let grid: Date[][] = monthMatrix(view, weekStartsOn, fixedWeeks);
 
-  // Uncontrolled dropdown open state (simple + reliable)
-  let openPanel = false;
-
-  // Reactivity
   $: selected = toDate(value);
   $: min = toDate(minDate);
   $: max = toDate(maxDate);
-  $: view = clampDate(view, min ?? MIN_BOUND, max ?? MAX_BOUND);
+  $: view = clamp(view, min ?? minBound, max ?? maxBound);
   $: grid = monthMatrix(view, weekStartsOn, fixedWeeks);
 
-  // Actions
+  // ===== Actions =====
   function selectDate(d: Date) {
     if (!inRange(d, min, max) || disabled || readonly) return;
     selected = d;
-    value = d; // enable bind:value
+    value = d;
     dispatch('change', { value: d });
-    if (!inline) openPanel = false;
+    if (!inline) closePanel();
   }
-  const goMonth = (n: number) => (view = addMonths(view, n));
-  const goYear  = (n: number) => (view = addYears(view,  n));
-  const isOutsideMonth = (d: Date) => d.getMonth() !== view.getMonth();
+  function goMonth(d: number) { view = addMonths(view, d); }
+  function goYear(d: number)  { view = addYears(view,  d); }
+  function isOutsideMonth(d: Date) { return d.getMonth() !== view.getMonth(); }
 
-  function onDayKeyDown(e: KeyboardEvent, day: Date) {
+  function clear() {
     if (disabled || readonly) return;
-    const key = e.key;
-    let next: Date | null = null;
-
-    if (key === 'ArrowLeft') next = new Date(day.getFullYear(), day.getMonth(), day.getDate() - 1);
-    else if (key === 'ArrowRight') next = new Date(day.getFullYear(), day.getMonth(), day.getDate() + 1);
-    else if (key === 'ArrowUp') next = new Date(day.getFullYear(), day.getMonth(), day.getDate() - 7);
-    else if (key === 'ArrowDown') next = new Date(day.getFullYear(), day.getMonth(), day.getDate() + 7);
-    else if (key === 'Home') { const o = (day.getDay() - weekStartsOn + 7) % 7; next = new Date(day.getFullYear(), day.getMonth(), day.getDate() - o); }
-    else if (key === 'End')  { const o = (day.getDay() - weekStartsOn + 7) % 7; next = new Date(day.getFullYear(), day.getMonth(), day.getDate() + (6 - o)); }
-    else if (key === 'PageUp')   next = addMonths(day, e.shiftKey ? -12 : -1);
-    else if (key === 'PageDown') next = addMonths(day, e.shiftKey ?  12 :  1);
-    else if (key === 'Enter' || key === ' ') { e.preventDefault(); selectDate(day); return; }
-    else if (key === 'Escape' && !inline) { openPanel = false; return; }
-
-    if (next) {
-      e.preventDefault();
-      if (next.getMonth() !== view.getMonth() || next.getFullYear() !== view.getFullYear()) {
-        view = new Date(next.getFullYear(), next.getMonth(), 1);
-      }
-    }
+    selected = null;
+    value = null;
+    dispatch('change', { value: null });
   }
 
-  const headingId = `${id ?? 'cl-datepicker'}-label`;
-  $: hiddenValue = selected
-    ? new Intl.DateTimeFormat('en-CA', { year: 'numeric', month: '2-digit', day: '2-digit' }).format(selected)
-    : '';
-
+  function openPanel()  { if (!isControlled()) _open = true;  dispatch('open'); }
+  function closePanel() { if (!isControlled()) _open = false; dispatch('close'); }
   function toggleOpen() {
     if (disabled || readonly) return;
-    openPanel = !openPanel;
+    if (isControlled()) (currentOpen ? dispatch('close') : dispatch('open'));
+    else _open = !currentOpen;
   }
+
+  // close on ESC in dropdown mode
+  function onKeydown(e: KeyboardEvent) {
+    if (!inline && (open ?? _open) && e.key === 'Escape') {
+      e.stopPropagation();
+      closePanel();
+    }
+  }
+  onMount(() => {
+    if (!inline) window.addEventListener('keydown', onKeydown);
+    return () => { if (!inline) window.removeEventListener('keydown', onKeydown); };
+  });
+
+  // ARIA / hidden input
+  const headingId = `${id ?? 'cl-datepicker'}-label`;
+  $: hiddenValue = selected ? new Intl.DateTimeFormat('en-CA', { year:'numeric', month:'2-digit', day:'2-digit' }).format(selected) : '';
 </script>
 
-{#if inline}
-  <!-- Inline calendar -->
-  <div class="cl-datepicker" data-disabled={disabled ? '' : undefined} aria-disabled={disabled}>
-    <div class="cl-cal-header">
-      <button class="cl-nav-btn" type="button" on:click={() => goYear(-1)} aria-label="Previous year" disabled={disabled || readonly}>«</button>
-      <button class="cl-nav-btn" type="button" on:click={() => goMonth(-1)} aria-label="Previous month" disabled={disabled || readonly}>‹</button>
-      <h2 id={headingId} class="cl-cal-title">{formatMonthYear(view, locale)}</h2>
-      <button class="cl-nav-btn" type="button" on:click={() => goMonth(1)} aria-label="Next month" disabled={disabled || readonly}>›</button>
-      <button class="cl-nav-btn" type="button" on:click={() => goYear(1)} aria-label="Next year" disabled={disabled || readonly}>»</button>
-    </div>
-
-    <div class="cl-cal-weekdays" aria-hidden="true">
-      {#each Array(7) as _, i}
-        <div class="cl-wk">{formatWeekdayShort(i, locale, weekStartsOn)}</div>
-      {/each}
-    </div>
-
-    <div class="cl-cal-grid" role="grid" aria-labelledby={headingId}>
-      {#each grid as week}
-        <div role="row" class="cl-cal-row">
-          {#each week as day}
-            {#if inRange(day, min, max)}
-              <button
-                class="cl-day"
-                class:outside={isOutsideMonth(day)}
-                class:selected={selected && isSameDay(day, selected)}
-                type="button"
-                role="gridcell"
-                aria-selected={selected && isSameDay(day, selected)}
-                aria-current={isSameDay(day, new Date()) ? 'date' : undefined}
-                on:click={() => selectDate(day)}
-                on:keydown={(e) => onDayKeyDown(e, day)}
-                disabled={disabled}
-              >
-                <slot name="day" {day}>{day.getDate()}</slot>
-              </button>
-            {:else}
-              <div class="cl-day disabled" role="gridcell" aria-disabled="true">
-                <slot name="day" {day}>{day.getDate()}</slot>
-              </div>
-            {/if}
-          {/each}
-        </div>
-      {/each}
-    </div>
-  </div>
-{:else}
-  <!-- Simple trigger + panel -->
-  <div class="cl-datepicker-pop">
+<!-- ===== Root ===== -->
+<div class="cl-root" data-mode={inline ? 'inline' : 'popover'}>
+  {#if !inline}
+    <!-- Trigger -->
     <button
-      class="cl-date-trigger"
+      class="cl-trigger"
       type="button"
       aria-haspopup="dialog"
-      aria-expanded={openPanel}
+      aria-expanded={currentOpen}
       aria-controls={headingId + '-panel'}
       on:click={toggleOpen}
       disabled={disabled}
     >
-      {selected ? new Intl.DateTimeFormat(locale, { dateStyle: 'medium' }).format(selected) : 'Select date'}
+      {#if selected}
+        {new Intl.DateTimeFormat(locale, { dateStyle: 'medium' }).format(selected)}
+      {:else}
+        Select date
+      {/if}
     </button>
+  {/if}
 
-    {#if openPanel}
-      <div
-        id={headingId + '-panel'}
-        class="cl-pop-panel"
-        role="dialog"
-        aria-modal="false"
-        aria-labelledby={headingId}
-      >
-        <div class="cl-datepicker" data-disabled={disabled ? '' : undefined} aria-disabled={disabled}>
-          <div class="cl-cal-header">
-            <button class="cl-nav-btn" type="button" on:click={() => goYear(-1)} aria-label="Previous year" disabled={disabled || readonly}>«</button>
-            <button class="cl-nav-btn" type="button" on:click={() => goMonth(-1)} aria-label="Previous month" disabled={disabled || readonly}>‹</button>
-            <h2 id={headingId} class="cl-cal-title">{formatMonthYear(view, locale)}</h2>
-            <button class="cl-nav-btn" type="button" on:click={() => goMonth(1)} aria-label="Next month" disabled={disabled || readonly}>›</button>
-            <button class="cl-nav-btn" type="button" on:click={() => goYear(1)} aria-label="Next year" disabled={disabled || readonly}>»</button>
-          </div>
+  <!-- Scrim (only when open on mobile) -->
+  {#if !inline && currentOpen}
+    <button
+      type="button"
+      class="cl-scrim"
+      aria-label="Close date picker"
+      on:click={closePanel}
+      on:keydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); closePanel(); } }}
+      tabindex="0"
+      style="all:unset; display:block; position:fixed; inset:0; z-index:39; background: color-mix(in oklab, black 40%, transparent);"
+    ></button>
+  {/if}
 
-          <div class="cl-cal-weekdays" aria-hidden="true">
-            {#each Array(7) as _, i}
-              <div class="cl-wk">{formatWeekdayShort(i, locale, weekStartsOn)}</div>
-            {/each}
-          </div>
-
-          <div class="cl-cal-grid" role="grid" aria-labelledby={headingId}>
-            {#each grid as week}
-              <div role="row" class="cl-cal-row">
-                {#each week as day}
-                  {#if inRange(day, min, max)}
-                    <button
-                      class="cl-day"
-                      class:outside={isOutsideMonth(day)}
-                      class:selected={selected && isSameDay(day, selected)}
-                      type="button"
-                      role="gridcell"
-                      aria-selected={selected && isSameDay(day, selected)}
-                      aria-current={isSameDay(day, new Date()) ? 'date' : undefined}
-                      on:click={() => selectDate(day)}
-                      on:keydown={(e) => onDayKeyDown(e, day)}
-                      disabled={disabled}
-                    >
-                      <slot name="day" {day}>{day.getDate()}</slot>
-                    </button>
-                  {:else}
-                    <div class="cl-day disabled" role="gridcell" aria-disabled="true">
-                      <slot name="day" {day}>{day.getDate()}</slot>
-                    </div>
-                  {/if}
-                {/each}
-              </div>
-            {/each}
-          </div>
+  <!-- Panel: inline OR popover when open -->
+  {#if inline || currentOpen}
+    <div
+      id={headingId + '-panel'}
+      class="cl-panel"
+      role={inline ? undefined : 'dialog'}
+      aria-modal={inline ? undefined : 'false'}
+      aria-labelledby={headingId}
+    >
+      <div class="cl-datepicker" data-disabled={disabled ? '' : undefined} aria-disabled={disabled}>
+        <div class="cl-cal-header">
+          <button class="cl-nav" type="button" on:click={() => goYear(-1)} aria-label="Previous year" disabled={disabled || readonly}>«</button>
+          <button class="cl-nav" type="button" on:click={() => goMonth(-1)} aria-label="Previous month" disabled={disabled || readonly}>‹</button>
+          <h2 id={headingId} class="cl-title">{formatMonthYear(view, locale)}</h2>
+          <button class="cl-nav" type="button" on:click={() => goMonth(1)} aria-label="Next month" disabled={disabled || readonly}>›</button>
+          <button class="cl-nav" type="button" on:click={() => goYear(1)} aria-label="Next year" disabled={disabled || readonly}>»</button>
         </div>
+
+        <div class="cl-weekdays" aria-hidden="true">
+          {#each Array(7) as _, i}
+            <div class="cl-wk">{formatWeekdayShort(i, locale, weekStartsOn)}</div>
+          {/each}
+        </div>
+
+        <div class="cl-grid" role="grid" aria-labelledby={headingId}>
+          {#each grid as week}
+            <div role="row" class="cl-row">
+              {#each week as day}
+                {#if inRange(day, min, max)}
+                  <button
+                    class="cl-day"
+                    class:outside={isOutsideMonth(day)}
+                    class:selected={selected && isSameDay(day, selected)}
+                    type="button"
+                    role="gridcell"
+                    aria-selected={selected && isSameDay(day, selected)}
+                    aria-current={isSameDay(day, new Date()) ? 'date' : undefined}
+                    on:click={() => selectDate(day)}
+                    disabled={disabled}
+                  >
+                    {day.getDate()}
+                  </button>
+                {:else}
+                  <div class="cl-day disabled" role="gridcell" aria-disabled="true">{day.getDate()}</div>
+                {/if}
+              {/each}
+            </div>
+          {/each}
+        </div>
+
+        {#if withActions}
+          <div class="cl-actions">
+            {#if clearable}
+              <button type="button" class="cl-btn clear" on:click={clear}>{labels.clear}</button>
+            {/if}
+            <button type="button" class="cl-btn done" on:click={closePanel}>{labels.done}</button>
+          </div>
+        {/if}
       </div>
-    {/if}
-  </div>
-{/if}
+    </div>
+  {/if}
+</div>
 
 {#if name}
-  <input type="hidden" {name} value={hiddenValue} {required} {readonly} />
+  <input type="hidden" {name} value={hiddenValue} {required} />
 {/if}
 
 <style>
-  /* Container */
-  .cl-datepicker {
-    background: var(--datepicker-bg, var(--color-surface-100-vis));
-    color: var(--datepicker-text, var(--on-surface-strong));
-    border: var(--datepicker-border, 1px solid var(--color-surface-300));
-    border-radius: var(--datepicker-radius, var(--radius-surface));
-    padding: var(--datepicker-padding-y, .5rem) var(--datepicker-padding-x, .75rem);
-    display: grid;
-    gap: var(--datepicker-gap, .25rem);
-    max-inline-size: 22rem;
-    user-select: none;
+  /* Root + trigger */
+  .cl-root{ position:relative; display:inline-block; }
+  .cl-trigger{
+    background: var(--datepicker-trigger-bg);
+    color: var(--datepicker-trigger-text);
+    border: var(--datepicker-trigger-border);
+    border-radius: var(--datepicker-trigger-radius);
+    padding: var(--spacing-2) var(--spacing-3);
+    line-height: 1;
+  }
+  .cl-trigger:focus-visible{ outline: var(--datepicker-focus-ring); outline-offset: var(--datepicker-focus-ring-offset); }
+
+  /* Scrim (mobile) */
+  .cl-scrim{ display:none; position:fixed; inset:0; background: color-mix(in oklab, black 40%, transparent); z-index:39; }
+  @media (max-width: 640px){ .cl-scrim{ display:block; } }
+
+  /* Panel positioning */
+  .cl-panel{
+    position:absolute; z-index:40; margin-top:.25rem;
+    background: var(--datepicker-bg);
+    border: var(--datepicker-border);
+    border-radius: var(--datepicker-radius);
+    box-shadow: var(--datepicker-panel-shadow);
+  }
+  .cl-root[data-mode="inline"] .cl-panel{
+    position: static; margin: 0; box-shadow: none;
+  }
+  /* Mobile bottom sheet */
+  @media (max-width: 640px){
+    .cl-root[data-mode="popover"] .cl-panel{
+      position: fixed; inset: auto 0 0 0; margin: 0;
+      border: none; border-radius: 1rem 1rem 0 0; box-shadow: var(--shadow-lg);
+    }
   }
 
-  /* Header */
-  .cl-cal-header { display: grid; grid-template-columns: auto auto 1fr auto auto; align-items: center; gap: var(--spacing-2, .5rem); }
-  .cl-cal-title { justify-self: center; margin: 0; font: inherit; color: var(--datepicker-header-text, var(--on-surface-strong)); }
-  .cl-nav-btn { background: transparent; border: 0; color: var(--datepicker-nav-icon, var(--on-surface)); inline-size: 2rem; block-size: 2rem; border-radius: var(--radius-interactive, .375rem); cursor: pointer; }
-  .cl-nav-btn:hover { color: var(--datepicker-nav-icon-hover, var(--on-surface-strong)); }
-  .cl-nav-btn:focus-visible { outline: var(--datepicker-focus-ring, 2px solid var(--color-info-500-vis)); outline-offset: var(--datepicker-focus-ring-offset, 1px); }
-
-  /* Weekdays */
-  .cl-cal-weekdays { display: grid; grid-template-columns: repeat(7, 1fr); gap: var(--datepicker-gap, .25rem); color: var(--datepicker-muted-text, var(--on-surface-muted)); font-size: .875rem; }
-  .cl-wk { text-align: center; }
-
-  /* Grid */
-  .cl-cal-grid { display: grid; grid-template-rows: repeat(6, 1fr); gap: var(--datepicker-gap, .25rem); }
-  .cl-cal-row { display: grid; grid-template-columns: repeat(7, 1fr); gap: var(--datepicker-gap, .25rem); }
-
-  /* Day cells */
-  .cl-day, .cl-day.disabled { display: inline-grid; place-items: center; inline-size: var(--datepicker-cell-size, 2.5rem); block-size: var(--datepicker-cell-size, 2.5rem); border-radius: var(--radius-interactive, .375rem); font: inherit; border: 0; }
-  .cl-day { background: var(--datepicker-day-bg, transparent); color: var(--datepicker-day-text, var(--on-surface-strong)); cursor: pointer; }
-  .cl-day:hover { background: var(--datepicker-day-hover-bg, var(--color-primary-100-vis)); }
-  .cl-day.selected { background: var(--datepicker-day-selected-bg, var(--color-primary-500-vis)); color: var(--datepicker-day-selected-text, var(--on-primary)); }
-  .cl-day.outside { color: var(--datepicker-day-outside-text, var(--on-surface-subtle)); }
-  .cl-day[aria-current="date"] { box-shadow: 0 0 0 2px var(--datepicker-day-today-ring, var(--color-info-400-vis)) inset; }
-  .cl-day:focus-visible { outline: var(--datepicker-focus-ring, 2px solid var(--color-info-500-vis)); outline-offset: var(--datepicker-focus-ring-offset, 1px); }
-  .cl-day.disabled { color: var(--datepicker-day-disabled-text, var(--on-surface-disabled)); }
-
-  /* Trigger + panel */
-  .cl-datepicker-pop { position: relative; display: inline-block; isolation: isolate; }
-  .cl-date-trigger { background: var(--color-surface-0, transparent); border: 1px solid var(--color-surface-300); border-radius: var(--radius-interactive, .375rem); padding: var(--spacing-2, .5rem) var(--spacing-3, .75rem); color: var(--on-surface-strong); }
-  .cl-date-trigger:focus-visible { outline: var(--datepicker-focus-ring, 2px solid var(--color-info-500-vis)); outline-offset: var(--datepicker-focus-ring-offset, 1px); }
-
-  .cl-pop-panel {
-    position: absolute;
-    z-index: 50;
-    margin-top: .25rem;
-    inset-inline-start: 0;
-    background: var(--datepicker-bg, var(--color-surface-100-vis));
-    border: var(--datepicker-border, 1px solid var(--color-surface-300));
-    border-radius: var(--datepicker-radius, var(--radius-surface));
-    box-shadow: 0 8px 24px rgba(0,0,0,.12);
+  /* Panel body */
+  .cl-datepicker{
+    background: var(--datepicker-bg);
+    color: var(--datepicker-text);
+    border: var(--datepicker-border);
+    border-radius: var(--datepicker-radius);
+    padding: var(--datepicker-padding-y, var(--spacing-3)) var(--datepicker-padding-x, var(--spacing-3));
+    display:grid; gap: var(--datepicker-gap, var(--spacing-2));
+    max-inline-size: 22rem; user-select:none;
   }
+
+  .cl-cal-header{
+    display:grid; grid-template-columns:auto auto 1fr auto auto;
+    align-items:center; gap: var(--spacing-2);
+  }
+  .cl-title{ justify-self:center; margin:0; font-weight:600; color: var(--datepicker-header-text); }
+  .cl-nav{
+    background: transparent; border:0; color: var(--datepicker-nav-icon);
+    inline-size: 2rem; block-size: 2rem; border-radius: var(--radius-interactive); cursor: pointer;
+  }
+  .cl-nav:hover{ color: var(--datepicker-nav-icon-hover); }
+  .cl-nav:focus-visible{ outline: var(--datepicker-focus-ring); outline-offset: var(--datepicker-focus-ring-offset); }
+
+  .cl-weekdays{
+    display:grid; grid-template-columns: repeat(7,1fr); gap: var(--datepicker-gap);
+    color: var(--on-surface-subtle); font-size:.8rem;
+  }
+  .cl-wk{ text-align:center; }
+
+  .cl-grid{ display:grid; gap: var(--datepicker-gap); }
+  .cl-row{ display:grid; grid-template-columns: repeat(7,1fr); gap: var(--datepicker-gap); }
+
+  .cl-day, .cl-day.disabled{
+    display:inline-grid; place-items:center;
+    inline-size: var(--datepicker-cell-size, 2.5rem);
+    block-size: var(--datepicker-cell-size, 2.5rem);
+    border-radius: .55rem; font: inherit; border:0;
+  }
+  .cl-day{ background: var(--datepicker-day-bg); color: var(--datepicker-day-text); cursor: pointer; transition: background .15s ease; }
+  .cl-day:hover{ background: var(--datepicker-day-hover-bg); }
+  .cl-day.selected{ background: var(--datepicker-day-selected-bg); color: var(--datepicker-day-selected-text); }
+  .cl-day[aria-current="date"]{ box-shadow: 0 0 0 2px var(--datepicker-day-today-ring) inset; }
+  .cl-day.outside{ color: var(--datepicker-day-outside-text); }
+  .cl-day.disabled{ color: var(--datepicker-day-disabled-text); }
+
+  .cl-actions{
+    display:flex; gap: var(--spacing-2);
+    background: var(--datepicker-actionbar-bg);
+    border-top: var(--datepicker-actionbar-border);
+    padding-top: var(--spacing-3);
+    justify-content:flex-end;
+  }
+  .cl-btn{ border-radius: var(--radius-interactive); padding: var(--spacing-2) var(--spacing-4); border:1px solid transparent; font-weight:600; }
+  .cl-btn.clear{ background: var(--datepicker-clear-bg); color: var(--datepicker-clear-text); }
+  .cl-btn.clear:hover{ background: var(--datepicker-clear-bg-hover); }
+  .cl-btn.done{ background: var(--datepicker-done-bg); color: var(--datepicker-done-text); }
+  .cl-btn.done:hover{ background: var(--datepicker-done-bg-hover); }
 </style>
+
+
 
 
 

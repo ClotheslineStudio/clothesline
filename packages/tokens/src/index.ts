@@ -21,6 +21,10 @@ import { tooltipTokens } from './components/tooltip.ts';
 import { dropdownTokens } from './components/dropdown.ts';
 import { popoverTokens } from './components/popover.ts';
 import { datepickerTokens } from './components/datepicker.ts';
+import { alertTokens } from './components/alert.ts';
+import { progressTokens } from './components/progress.ts';
+import { spinnerTokens } from './components/spinner.ts';
+import { toastTokens } from './components/toast.ts';
 
 
 // ✅ Named exports for others to import individually
@@ -40,6 +44,10 @@ export { tooltipTokens } from './components/tooltip.ts';
 export { dropdownTokens } from './components/dropdown.ts';
 export { popoverTokens } from './components/popover.ts';
 export { datepickerTokens } from './components/datepicker.ts';
+export { alertTokens } from './components/alert.ts';
+export { progressTokens } from './components/progress.ts';
+export { spinnerTokens } from './components/spinner.ts';
+export { toastTokens } from './components/toast.ts';
 
 // ✅ Grouped export for convenience
 export const baseTokens = {
@@ -58,7 +66,11 @@ export const baseTokens = {
   ...tooltipTokens,
   ...dropdownTokens,
   ...popoverTokens,
-  ...datepickerTokens
+  ...datepickerTokens,
+  ...alertTokens,
+  ...progressTokens,
+  ...spinnerTokens,
+  ...toastTokens
 };
 
 

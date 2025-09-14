@@ -1,43 +1,48 @@
 <script lang="ts">
-  import Progress from '$lib/components/feedback/ProgressBar/ProgressBar.svelte';
+  import { Progress } from '@clothesline/ui';
   import ComponentPreview from '$lib/components/dev/ComponentPreview/ComponentPreview.svelte';
 
-  let determinateExamples = [0, 25, 50, 75, 100];
+  const githubUrl =
+    'https://github.com/clotheslinestudio/ui/blob/main/src/components/feedback/Progress/Progress.svelte';
+
+  let value = 35;
+
+  const previewCenter = 'flex items-center justify-center min-h-24';
+  const rowWrapCenter = 'flex flex-col items-center justify-center gap-4';
 </script>
 
-<h1 class="text-2xl font-bold mb-4">Progress Component</h1>
+<h1 class="text-2xl font-bold mb-4">Progress</h1>
 
-<section class="space-y-8">
-  <div>
-    <h2 class="text-lg font-semibold mb-3">Determinate Progress</h2>
-
-    <div class="space-y-8">
-      {#each determinateExamples as value}
-        <div class="space-y-2">
-          <div class="text-sm opacity-70">Progress ({value}%)</div>
-
-          <ComponentPreview
-            githubUrl="https://github.com/clotheslinestudio/ui/blob/main/src/components/feedback/ProgressBar/ProgressBar.svelte"
-            code={`<Progress value={${value}} label="Progress at ${value}%" showLabel={true} />`}
-          >
-            <Progress value={value} label={`Progress at ${value}%`} showLabel={true} />
-          </ComponentPreview>
-        </div>
-      {/each}
-    </div>
+<section class="space-y-10">
+  <!-- Determinate -->
+  <div class="space-y-2">
+    <h2 class="text-lg font-semibold">Determinate</h2>
+    <ComponentPreview
+      {githubUrl}
+      code={`<Progress value={42} />`}
+    >
+      <div class={`${previewCenter} ${rowWrapCenter}`}>
+        <Progress value={value} class="min-w-[280px]" />
+        <input type="range" min="0" max="100" bind:value class="w-72" />
+        <div class="text-sm opacity-75">{value}%</div>
+      </div>
+    </ComponentPreview>
   </div>
 
+  <!-- Indeterminate -->
   <div class="space-y-2">
-    <h2 class="text-lg font-semibold">Indeterminate Progress</h2>
-
+    <h2 class="text-lg font-semibold">Indeterminate</h2>
     <ComponentPreview
-      githubUrl="https://github.com/clotheslinestudio/ui/blob/main/src/components/feedback/ProgressBar/ProgressBar.svelte"
-      code={`<Progress value={undefined} label="Loading..." showLabel={true} />`}
+      {githubUrl}
+      code={`<Progress indeterminate />`}
     >
-      <Progress value={undefined} label="Loading..." showLabel={true} />
+      <div class={`${previewCenter} ${rowWrapCenter}`}>
+        <Progress indeterminate style="min-width:280px;" />
+      </div>
     </ComponentPreview>
   </div>
 </section>
+
 
 
 

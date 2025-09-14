@@ -1,26 +1,62 @@
 <script lang="ts">
-  import Toast from '$lib/components/feedback/Toast/Toast.svelte';
+  import { ToastHost, toasts } from '@clothesline/ui';
+  import ComponentPreview from '$lib/components/dev/ComponentPreview/ComponentPreview.svelte';
 
-  type ToastType = 'info' | 'success' | 'warning' | 'error';
+  const githubUrl =
+    'https://github.com/clotheslinestudio/ui/blob/main/src/components/feedback/Toast/ToastHost.svelte';
 
-  const toasts: { type: ToastType; text: string }[] = [
-    { type: 'info', text: 'This is an info toast' },
-    { type: 'success', text: 'Upload completed successfully' },
-    { type: 'warning', text: 'This action is not reversible' },
-    { type: 'error', text: 'Failed to connect to the server' }
-  ];
+  function fire(kind: 'neutral'|'info'|'success'|'warning'|'error') {
+    toasts.push({
+      variant: kind,
+      title: kind[0].toUpperCase() + kind.slice(1),
+      message: `This is a ${kind} toast.`,
+      duration: 3000
+    });
+  }
+
+  const previewCenter = 'flex items-center justify-center min-h-24';
+  const rowWrapCenter = 'flex flex-wrap items-center justify-center gap-3';
 </script>
 
-<h1 class="text-2xl font-bold mb-4">Toast Component</h1>
+<h1 class="text-2xl font-bold mb-4">Toast</h1>
 
-<div class="flex flex-col gap-4 max-w-md">
-  {#each toasts as toast}
-    <Toast type={toast.type} duration={6000}>
-      {toast.text}
-    </Toast>
-  {/each}
+<section class="space-y-10">
+  <!-- Triggers -->
+  <div class="space-y-2">
+    <h2 class="text-lg font-semibold">Fire Toasts</h2>
+    <ComponentPreview
+      {githubUrl}
+      code={`<button on:click={() => toasts.push({ message: 'Saved!', variant: 'success' })}>Success</button>`}
+    >
+      <div class={`${previewCenter} ${rowWrapCenter}`}>
+        <button class="px-3 py-2 rounded border" on:click={() => fire('neutral')}>Neutral</button>
+        <button class="px-3 py-2 rounded border" on:click={() => fire('info')}>Info</button>
+        <button class="px-3 py-2 rounded border" on:click={() => fire('success')}>Success</button>
+        <button class="px-3 py-2 rounded border" on:click={() => fire('warning')}>Warning</button>
+        <button class="px-3 py-2 rounded border" on:click={() => fire('error')}>Error</button>
+      </div>
+    </ComponentPreview>
+  </div>
 
-  <Toast type="success" duration={0} dismissible={true}>
-    Persistent toast — must be manually closed
-  </Toast>
-</div>
+  <!-- Sticky -->
+  <div class="space-y-2">
+    <h2 class="text-lg font-semibold">Sticky (duration=0)</h2>
+    <ComponentPreview
+      {githubUrl}
+      code={`toasts.push({ title: 'Needs action', message: 'Click to dismiss', duration: 0 })`}
+    >
+      <div class={`${previewCenter} ${rowWrapCenter}`}>
+        <button
+          class="px-3 py-2 rounded border"
+          on:click={() => toasts.push({ title: 'Needs action', message: 'Click to dismiss', duration: 0 })}
+        >
+          Fire sticky toast
+        </button>
+      </div>
+    </ComponentPreview>
+  </div>
+
+  <!-- Host -->
+  <ToastHost />
+</section>
+

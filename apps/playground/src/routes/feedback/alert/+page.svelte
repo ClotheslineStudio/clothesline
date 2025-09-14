@@ -1,33 +1,70 @@
 <script lang="ts">
-  import Alert from '$lib/components/feedback/Alert/Alert.svelte';
+  import { Alert } from '@clothesline/ui';
+  import ComponentPreview from '$lib/components/dev/ComponentPreview/ComponentPreview.svelte';
+
+  const githubUrl =
+    'https://github.com/clotheslinestudio/ui/blob/main/src/components/feedback/Alert/Alert.svelte';
+
+  const variants = ['neutral', 'info', 'success', 'warning', 'error'] as const;
+
+  const previewCenter = 'flex items-center justify-center min-h-24';
+  const rowWrapCenter = 'flex flex-wrap items-center justify-center gap-3';
 </script>
 
-<h1 class="text-2xl font-bold mb-4">Alert Component</h1>
+<h1 class="text-2xl font-bold mb-4">Alert</h1>
 
-<div class="flex flex-col gap-4">
+<section class="space-y-10">
+  <!-- Basic -->
+  <div class="space-y-2">
+    <h2 class="text-lg font-semibold">Basic</h2>
+    <ComponentPreview {githubUrl} code={`<Alert>Heads up! Something happened.</Alert>`}>
+      <div class={`${previewCenter} ${rowWrapCenter}`}>
+        <Alert>Heads up! Something happened.</Alert>
+      </div>
+    </ComponentPreview>
+  </div>
 
-  <Alert
-    variant="info"
-    title="Heads up!"
-    message="This is an informational alert."
-  />
+  <!-- Variants -->
+  <div class="space-y-2">
+    <h2 class="text-lg font-semibold">Variants</h2>
+    <ComponentPreview
+      {githubUrl}
+      code={variants.map(v => `<Alert variant="${v}">${v} alert</Alert>`).join('\n')}
+    >
+      <div class={`${previewCenter} ${rowWrapCenter}`}>
+        {#each variants as v}
+          <Alert variant={v}>{v} alert</Alert>
+        {/each}
+      </div>
+    </ComponentPreview>
+  </div>
 
-  <Alert
-    variant="success"
-    title="Success!"
-    message="Your operation was completed successfully."
-  />
+  <!-- Dismissible -->
+  <div class="space-y-2">
+    <h2 class="text-lg font-semibold">Dismissible</h2>
+    <ComponentPreview
+      {githubUrl}
+      code={`<Alert variant="success" dismissible on:close={() => console.log('closed')}>Saved successfully.</Alert>`}
+    >
+      <div class={`${previewCenter} ${rowWrapCenter}`}>
+        <Alert variant="success" dismissible on:close={() => console.log('closed')}>
+          Saved successfully.
+        </Alert>
+      </div>
+    </ComponentPreview>
+  </div>
 
-  <Alert
-    variant="warning"
-    title="Warning!"
-    message="Be careful — something might be off."
-  />
+  <!-- With title -->
+  <div class="space-y-2">
+    <h2 class="text-lg font-semibold">With Title</h2>
+    <ComponentPreview
+      {githubUrl}
+      code={`<Alert variant="warning" title="Check your input">Zip code must be 5 digits.</Alert>`}
+    >
+      <div class={`${previewCenter} ${rowWrapCenter}`}>
+        <Alert variant="warning" title="Check your input">Zip code must be 5 digits.</Alert>
+      </div>
+    </ComponentPreview>
+  </div>
+</section>
 
-  <Alert
-    variant="error"
-    title="Error!"
-    message="Something went wrong. Please try again."
-  />
-
-</div>

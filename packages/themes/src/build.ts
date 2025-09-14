@@ -36,10 +36,9 @@ function toCSSVars(obj: Record<string, string>): string {
 /**
  * Emit base ramp + contrast companion (-ct) + vision alias (-vis)
  * - base:   --color-role-600
- * - -ct:    mixed toward black by --k-ct (derived from --contrast-factor in modes.css)
+ * - -ct:    mixed toward black/white by --k-ct (derived from --contrast-factor in modes.css)
  * - -vis:   defaults to -ct; vision layer can repoint/override if you want that path
  */
-// packages/themes/src/build.ts
 function roleVars(theme: ThemeConfig, mode: ThemeMode): string {
   const ramps = generateColorRamps(theme, mode);
   const pole = mode === 'dark' ? 'white' : 'black'; // ⬅️ flip target in dark
@@ -77,7 +76,6 @@ function renderVision(): string {
   const mono:   string[] = [];
 
   // PROTANOPIA
-  // Primary: +H, -C (small); Error: away from red, -C; Success/Info: +L for separation
   for (const shade of VISION_SHADE_STEPS) {
     protan.push(oklchFromCT(`--color-primary-${shade}`, 'L', 'calc(C * 0.85)', 'calc(H + 12deg)'));
   }
@@ -92,7 +90,6 @@ function renderVision(): string {
   }
 
   // DEUTERANOPIA
-  // Success: +H, -C, +L; Primary: slight +H, -C; Warning: -H a touch
   for (const shade of [400, 500, 600] as const) {
     deutan.push(oklchFromCT(`--color-success-${shade}`, 'calc(L + 6%)', 'calc(C * 0.70)', 'calc(H + 18deg)'));
   }
@@ -104,7 +101,6 @@ function renderVision(): string {
   }
 
   // TRITANOPIA
-  // Info: -C, -H, +L; Warning: +H, ~-C, +L; Primary: counter -H for separation
   for (const shade of [400, 500] as const) {
     tritan.push(oklchFromCT(`--color-info-${shade}`, 'calc(L + 6%)', 'calc(C * 0.70)', 'calc(H - 18deg)'));
   }
@@ -141,6 +137,57 @@ ${mono.join('\n')}
 `.trim();
 }
 
+/** Semantic foregrounds, aliases, and utilities emitted per mode */
+function onVars(mode: 'light' | 'dark') {
+  // In your system, surface ramps flip lightness in dark mode.
+  // Using the same indices gives correct contrast in both modes.
+  const roleOnLight = `
+--on-primary:   var(--color-surface-50);
+--on-secondary: var(--color-surface-50);
+--on-tertiary:  var(--color-surface-50);
+--on-success:   var(--color-surface-50);
+--on-warning:   var(--color-surface-950); /* yellow needs dark text */
+--on-error:     var(--color-surface-50);
+--on-info:      var(--color-surface-50);`;
+
+  const roleOnDark = `
+--on-primary:   var(--color-surface-950);
+--on-secondary: var(--color-surface-950);
+--on-tertiary:  var(--color-surface-950);
+--on-success:   var(--color-surface-950);
+--on-warning:   var(--color-surface-950);
+--on-error:     var(--color-surface-950);
+--on-info:      var(--color-surface-950);`;
+
+  return `
+/* ===== Semantic foregrounds ===== */
+--on-surface-strong: var(--color-surface-950);
+--on-surface:        var(--color-surface-900);
+--on-surface-muted:  var(--color-surface-700);
+--on-surface-subtle: var(--color-surface-600);
+--on-surface-disabled: var(--color-surface-500);
+${mode === 'light' ? roleOnLight : roleOnDark}
+
+/* ===== Aliases used by docs/components ===== */
+--color-border-default: var(--border-default-color);
+--color-border-subtle:  var(--border-muted-color);
+--color-text-strong:    var(--on-surface-strong);
+--color-text-muted:     var(--on-surface-muted);
+
+/* ===== Focus/shadow/size fallbacks ===== */
+--focus-ring: 2px solid var(--color-info-500-vis);
+--focus-offset: 1px;
+
+--shadow-sm: 0 1px 2px rgba(0,0,0,.08);
+--shadow-md: 0 4px 12px rgba(0,0,0,.10);
+--shadow-lg: 0 8px 24px rgba(0,0,0,.12);
+
+--size-control-sm: 2.25rem;
+--size-control-md: 2.5rem;
+--size-control-lg: 2.75rem;
+`.trim();
+}
+
 /** Per-theme CSS generator (light + dark + vision), single file output */
 function themeCSS(theme: ThemeConfig): string {
   const tokens = toCSSVars(baseTokens);
@@ -152,6 +199,7 @@ html[data-theme='${theme.name}'][data-mode='light'] {
   --k-ct: clamp(0%, calc((var(--contrast-factor, 1) - 1) * 120%), 25%);
 ${roleVars(theme, 'light')}
 ${tokens}
+${onVars('light')}
 }`;
 
   const dark = `
@@ -161,6 +209,7 @@ html[data-theme='${theme.name}'][data-mode='dark'] {
   --k-ct: clamp(0%, calc((var(--contrast-factor, 1) - 1) * 120%), 25%);
 ${roleVars(theme, 'dark')}
 ${tokens}
+${onVars('dark')}
 }`;
 
   const vision = renderVision();
@@ -223,6 +272,7 @@ run().catch(err => {
   console.error('Build failed:', err);
   process.exit(1);
 });
+
 
 
 
