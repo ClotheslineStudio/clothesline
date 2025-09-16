@@ -54,7 +54,7 @@
       code={`<Tooltip text="Opens on click" trigger="click"><button>Click me</button></Tooltip>`}
     >
       <div class={`${previewCenter} ${rowWrapCenter}`}>
-        <Tooltip text="Opens on click" trigger="click">
+        <Tooltip text="Opens on click">
           <button class="px-3 py-2 rounded border">Click me</button>
         </Tooltip>
       </div>

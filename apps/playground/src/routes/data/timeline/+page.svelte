@@ -1,39 +1,48 @@
 <script lang="ts">
-  import Timeline from '$lib/components/data/Timeline/Timeline.svelte';
+  import { Timeline, TimelineItem, TimelineNode, TimelineCard } from '@clothesline/ui';
+  import { CheckCircle, Play, AlertTriangle } from 'lucide-svelte';
 
-  const items: {
+  type TimelineColor = "success" | "info" | "warning" | "error" | "primary" | "secondary" | "neutral" | undefined;
+
+  interface TimelineItemType {
+    id: string;
     title: string;
-    description: string;
-    date: string;
-    status: "completed" | "in-progress" | "upcoming";
-  }[] = [
-    {
-      title: 'Design Phase Complete',
-      description: 'Final mockups delivered to dev team.',
-      date: '2025-08-01',
-      status: 'completed'
-    },
-    {
-      title: 'Development Started',
-      description: 'Core layout and components in progress.',
-      date: '2025-08-03',
-      status: 'in-progress'
-    },
-    {
-      title: 'QA Review',
-      description: 'Testing and accessibility checks.',
-      date: '2025-08-08',
-      status: 'upcoming'
-    },
-    {
-      title: 'Launch',
-      description: 'Version 1.0 release to production.',
-      date: '2025-08-15',
-      status: 'upcoming'
-    }
+    body: string;
+    icon: typeof CheckCircle | typeof Play | typeof AlertTriangle | undefined;
+    color: TimelineColor;
+  }
+
+  const items: TimelineItemType[] = [
+    { id: 'kickoff',  title: 'Kickoff',       body: 'Team aligned on scope, risks, and plan.',  icon: CheckCircle,  color: 'success' },
+    { id: 'design',   title: 'Design Review', body: 'First pass at Timeline API + tokens.',     icon: Play,         color: 'info'    },
+    { id: 'mvp',      title: 'MVP Demo',      body: 'Playable demo for stakeholders.',          icon: undefined,    color: 'warning' },
+    { id: 'qa',       title: 'QA & A11y',     body: 'Axe checks, keyboard nav, snapshots.',     icon: AlertTriangle,color: 'error'   }
   ];
 </script>
 
-<h1 class="text-2xl font-bold mb-4">Timeline Component</h1>
+<h1 class="text-2xl font-bold mb-6">Timeline — grid rail baseline</h1>
 
-<Timeline {items} />
+<div class="max-w-3xl">
+  <Timeline ariaLabel="Project timeline" rail="2.5rem">
+    {#each items as it}
+      <TimelineItem id={it.id}>
+        <svelte:fragment slot="node">
+          <TimelineNode color={it.color} icon={it.icon} label={it.title} />
+        </svelte:fragment>
+        <svelte:fragment slot="card">
+          <TimelineCard>
+            <h3 slot="header">{it.title}</h3>
+            <p class="text-[color:var(--on-surface-muted)]">{it.body}</p>
+          </TimelineCard>
+        </svelte:fragment>
+      </TimelineItem>
+    {/each}
+  </Timeline>
+</div>
+
+
+
+
+
+
+

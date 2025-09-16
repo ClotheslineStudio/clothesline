@@ -19,6 +19,6 @@ export * from './components/feedback/Spinner/index.js';
 
 export * from './components/form/DatePicker/index.js';
 
-
+export * from './components/data/Timeline/index.js';
 
 
