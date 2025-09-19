@@ -9,6 +9,7 @@ export * from './components/core/Text/index.js';
 export * from './components/core/Avatar/index.js';
 export * from './components/core/Badge/index.js';
 export * from './components/core/Label/index.js';
+export * from './components/core/Switch/index.js';
 
 export * from './components/feedback/Alert/index.js';
 export * from './components/feedback/Progess/index.js';
@@ -18,6 +19,7 @@ export * from './components/feedback/Spinner/index.js';
 
 
 export * from './components/form/DatePicker/index.js';
+
 
 export * from './components/data/Timeline/index.js';
 

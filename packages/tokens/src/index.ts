@@ -26,6 +26,7 @@ import { progressTokens } from './components/progress.ts';
 import { spinnerTokens } from './components/spinner.ts';
 import { toastTokens } from './components/toast.ts';
 import { timelineTokens } from './components/timeline.ts';
+import { switchTokens } from './components/switch.ts';
 
 
 // ✅ Named exports for others to import individually
@@ -50,6 +51,7 @@ export { progressTokens } from './components/progress.ts';
 export { spinnerTokens } from './components/spinner.ts';
 export { toastTokens } from './components/toast.ts';
 export { timelineTokens } from './components/timeline.ts';
+export { switchTokens } from './components/switch.ts';
 
 // ✅ Grouped export for convenience
 export const baseTokens = {
@@ -73,7 +75,8 @@ export const baseTokens = {
   ...progressTokens,
   ...spinnerTokens,
   ...toastTokens,
-  ...timelineTokens
+  ...timelineTokens,
+  ...switchTokens,
 };
 
 
