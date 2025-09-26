@@ -49,6 +49,7 @@
     "@clothesline/themes": "workspace:*",
     "@clothesline/tokens": "workspace:*",
     "@clothesline/ui": "workspace:*",
+    "@clothesline/icons": "workspace:*",
     "lucide-svelte": "^0.536.0",
     "prismjs": "^1.30.0"
   }

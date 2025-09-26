@@ -5,14 +5,14 @@
   "main": "./src/index.ts",
   "files": ["src"],
   "scripts": {
-    "build": "ts-node ./scripts/build-icons.ts",
+    "build": "node ./src/scripts/build-icons.mjs",
     "clean": "rimraf src/components src/index.ts"
   },
   "devDependencies": {
     "fast-glob": "^3.3.2",
     "svgo": "^3.3.2",
-    "ts-node": "^10.9.2",
-    "rimraf": "^6.0.1",
-    "typescript": "^5.5.0"
+    "rimraf": "^6.0.1"
   }
 }
+
+
