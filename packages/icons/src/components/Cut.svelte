@@ -1,15 +1,10 @@
 <!-- AUTO-GENERATED. Do not edit by hand. -->
 <script lang="ts">
   export let size: number | string = 24;
-  /** If not provided, uses var(--cl-icon-stroke) so HC mode can thicken automatically */
   export let strokeWidth: number | string | undefined = undefined;
-
   export let variant: 'stroke' | 'filled' | 'duotone' | 'animated' = 'stroke';
-
   export let role: 'default' | 'muted' | 'primary' | 'success' | 'warning' | 'error' = 'default';
-  /** Used for duotone secondary layer; defaults to 'muted' */
   export let secondaryRole: 'default' | 'muted' | 'primary' | 'success' | 'warning' | 'error' = 'muted';
-
   export let className: string = '';
   export let ariaLabel: string = 'icon';
   export let title: string | undefined = undefined;
@@ -40,6 +35,7 @@
   role="img"
   class={className}
   style="color: {colorByRole[role]}"
+  shape-rendering="geometricPrecision"
   {...$$restProps}
 >
   {#if title}<title>{title}</title>{/if}
@@ -49,20 +45,28 @@
       
     </g>
 
-  {:else if variant === 'duotone' && false}
-    <g class="tone1" style="color:{colorByRole[role]}">
-      
-    </g>
-    {#if false}
-      <g class="tone2" style="color:{colorByRole[secondaryRole]}">
-        <g fill="currentColor" stroke="none">
-          
-        </g>
+{:else if variant === 'duotone' && false}
+  {#if false}
+    <g class="tone2" style="color:{colorByRole[secondaryRole]}">
+      <g fill="currentColor" stroke="none">
+        
       </g>
-    {/if}
+    </g>
+  {/if}
+
+  <g class="tone1"
+     style="color:{colorByRole[role]}; paint-order: stroke fill"
+     stroke="currentColor"
+     stroke-width={effectiveStrokeWidth}>
+    
+  </g>
+
+
 
   {:else}
     <!-- Stroke (default/fallback) -->
-    <path d="M0 0h24v24H0z"/><path stroke-linecap="round" stroke-width="2" d="M8.5 8.5 12 12m-3 3L21 3m-6 12 6 6M9 18a3 3 0 1 1-6 0 3 3 0 0 1 6 0ZM9 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/>
+    <g stroke="currentColor" stroke-width={effectiveStrokeWidth}>
+      <rect width="24" height="24"/><path d="M8.5 8.5 12 12m-3 3L21 3m-6 12 6 6M9 18a3 3 0 1 1-6 0 3 3 0 0 1 6 0ZM9 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/>
+    </g>
   {/if}
 </svg>

@@ -1,0 +1,6 @@
+<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="Property 1=duotone">
+<path id="tone2" d="M6 19V7H8V5C8 3.89543 8.89543 3 10 3H12H14C15.1046 3 16 3.89543 16 5V5.5V7H18V19C18 20.1046 17.1046 21 16 21H8C6.89543 21 6 20.1046 6 19Z" fill="#FF7700"/>
+<path id="tone1" d="M6 7V19C6 20.1046 6.89543 21 8 21H16C17.1046 21 18 20.1046 18 19V7M6 7H4M6 7H8M18 7H20M18 7H16M8 7V5C8 3.89543 8.89543 3 10 3H14C15.1046 3 16 3.89543 16 5V7M8 7H16M10 17L10 11M14 17V11" stroke="white" stroke-width="2" stroke-linecap="round"/>
+</g>
+</svg>

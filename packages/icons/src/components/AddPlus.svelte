@@ -1,15 +1,10 @@
 <!-- AUTO-GENERATED. Do not edit by hand. -->
 <script lang="ts">
   export let size: number | string = 24;
-  /** If not provided, uses var(--cl-icon-stroke) so HC mode can thicken automatically */
   export let strokeWidth: number | string | undefined = undefined;
-
   export let variant: 'stroke' | 'filled' | 'duotone' | 'animated' = 'stroke';
-
   export let role: 'default' | 'muted' | 'primary' | 'success' | 'warning' | 'error' = 'default';
-  /** Used for duotone secondary layer; defaults to 'muted' */
   export let secondaryRole: 'default' | 'muted' | 'primary' | 'success' | 'warning' | 'error' = 'muted';
-
   export let className: string = '';
   export let ariaLabel: string = 'icon';
   export let title: string | undefined = undefined;
@@ -40,29 +35,38 @@
   role="img"
   class={className}
   style="color: {colorByRole[role]}"
+  shape-rendering="geometricPrecision"
   {...$$restProps}
 >
   {#if title}<title>{title}</title>{/if}
 
-  {#if variant === 'filled' && false}
+  {#if variant === 'filled' && true}
     <g fill="currentColor" stroke="none">
-      
+      <g id="Property 1=filled"><path id="Vector 1 (Stroke)" fill="currentColor" d="M11 21v-8H3a1 1 0 1 1 0-2h8V3a1 1 0 1 1 2 0v8h8a1 1 0 1 1 0 2h-8v8a1 1 0 1 1-2 0"/></g>
     </g>
 
-  {:else if variant === 'duotone' && false}
-    <g class="tone1" style="color:{colorByRole[role]}">
-      
-    </g>
-    {#if false}
-      <g class="tone2" style="color:{colorByRole[secondaryRole]}">
-        <g fill="currentColor" stroke="none">
-          
-        </g>
+{:else if variant === 'duotone' && false}
+  {#if false}
+    <g class="tone2" style="color:{colorByRole[secondaryRole]}">
+      <g fill="currentColor" stroke="none">
+        
       </g>
-    {/if}
+    </g>
+  {/if}
+
+  <g class="tone1"
+     style="color:{colorByRole[role]}; paint-order: stroke fill"
+     stroke="currentColor"
+     stroke-width={effectiveStrokeWidth}>
+    
+  </g>
+
+
 
   {:else}
     <!-- Stroke (default/fallback) -->
-    <path d="M0 0h24v24H0z"/><path stroke-linecap="round" stroke-width="2" d="M5 12h7m0 0h7m-7 0V5m0 7v7"/>
+    <g stroke="currentColor" stroke-width={effectiveStrokeWidth}>
+      <g id="Property 1=stroke"><path id="Vector 1" d="M3 12h9m0 0h9m-9 0V3m0 9v9"/></g>
+    </g>
   {/if}
 </svg>

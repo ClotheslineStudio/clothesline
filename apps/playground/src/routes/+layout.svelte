@@ -75,7 +75,8 @@
     { title: 'Popover', path: '/overlays/popover' },
     { title: 'ToggleButton', path: '/core/toggle' },
     { title: 'Avatar', path: '/core/avatar' },
-    { title: 'Badge', path: '/core/badge' }
+    { title: 'Badge', path: '/core/badge' },
+    { title: 'Test', path: '/test' }
   ];
 </script>
 

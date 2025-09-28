@@ -1,4 +1,5 @@
 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-<rect width="24" height="24" fill="white"/>
-<path d="M15.4282 15.9904L18.3205 21M17.7583 9.9282C17.7583 13.1481 15.1481 15.7583 11.9282 15.7583C8.70832 15.7583 6.09808 13.1481 6.09808 9.9282C6.09808 6.70831 8.70832 4.09808 11.9282 4.09808C15.1481 4.09808 17.7583 6.70831 17.7583 9.9282Z" stroke="black" stroke-width="2" stroke-linecap="round"/>
+<g id="Property 1=stroke">
+<path id="Vector" d="M14 14.5L17 20M16.6603 8.83013C16.6603 12.05 14.05 14.6603 10.8301 14.6603C7.61024 14.6603 5 12.05 5 8.83013C5 5.61024 7.61024 3 10.8301 3C14.05 3 16.6603 5.61024 16.6603 8.83013Z" stroke="white" stroke-width="2" stroke-linecap="round"/>
+</g>
 </svg>

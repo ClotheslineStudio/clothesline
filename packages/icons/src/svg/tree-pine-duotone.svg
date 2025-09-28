@@ -1,0 +1,9 @@
+<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="Property 1=duotone">
+<path id="tone2" d="M20 19H4L7.69231 14.0769H5.23077L8.92308 9.15385H6.46154L12 3L17.5385 9.15385H15.0769L18.7692 14.0769H16.3077L20 19Z" fill="#FF7700"/>
+<g id="tone1">
+<path id="Vector 138" d="M20 19H4L7.69231 14.0769H5.23077L8.92308 9.15385H6.46154L12 3L17.5385 9.15385H15.0769L18.7692 14.0769H16.3077L20 19Z" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<path id="Vector 139" d="M12 19V22" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+</g>
+</g>
+</svg>

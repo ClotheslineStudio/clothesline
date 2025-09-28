@@ -1,4 +1,5 @@
 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-<rect width="24" height="24" fill="white"/>
-<path d="M21 13C21 19.5 12 26.5 3 16M3 16L3 21M3 16H8M3 11C3 4.5 12 -2.41625 21 8.08375M21 8.08375V3.08375M21 8.08375H16" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<g id="Property 1=stroke">
+<path id="Vector" d="M21 13.3218C21 19.8218 12 26.8218 3 16.3218M3 16.3218L3 21.3218M3 16.3218H8M3 11.3218C3 4.82184 13.5 -2.00002 21 8.40558M21 8.40558V3.40558M21 8.40558H16" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+</g>
 </svg>

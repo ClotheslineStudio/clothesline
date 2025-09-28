@@ -1,15 +1,10 @@
 <!-- AUTO-GENERATED. Do not edit by hand. -->
 <script lang="ts">
   export let size: number | string = 24;
-  /** If not provided, uses var(--cl-icon-stroke) so HC mode can thicken automatically */
   export let strokeWidth: number | string | undefined = undefined;
-
   export let variant: 'stroke' | 'filled' | 'duotone' | 'animated' = 'stroke';
-
   export let role: 'default' | 'muted' | 'primary' | 'success' | 'warning' | 'error' = 'default';
-  /** Used for duotone secondary layer; defaults to 'muted' */
   export let secondaryRole: 'default' | 'muted' | 'primary' | 'success' | 'warning' | 'error' = 'muted';
-
   export let className: string = '';
   export let ariaLabel: string = 'icon';
   export let title: string | undefined = undefined;
@@ -40,6 +35,7 @@
   role="img"
   class={className}
   style="color: {colorByRole[role]}"
+  shape-rendering="geometricPrecision"
   {...$$restProps}
 >
   {#if title}<title>{title}</title>{/if}
@@ -49,20 +45,28 @@
       
     </g>
 
-  {:else if variant === 'duotone' && false}
-    <g class="tone1" style="color:{colorByRole[role]}">
-      
-    </g>
-    {#if false}
-      <g class="tone2" style="color:{colorByRole[secondaryRole]}">
-        <g fill="currentColor" stroke="none">
-          
-        </g>
+{:else if variant === 'duotone' && false}
+  {#if false}
+    <g class="tone2" style="color:{colorByRole[secondaryRole]}">
+      <g fill="currentColor" stroke="none">
+        
       </g>
-    {/if}
+    </g>
+  {/if}
+
+  <g class="tone1"
+     style="color:{colorByRole[role]}; paint-order: stroke fill"
+     stroke="currentColor"
+     stroke-width={effectiveStrokeWidth}>
+    
+  </g>
+
+
 
   {:else}
     <!-- Stroke (default/fallback) -->
-    <path d="M0 0h24v24H0z"/><path stroke-linecap="round" stroke-width="2" d="M7 21v-5a1 1 0 0 1 1-1h8a1 1 0 0 1 1 1v5M8 4v4a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4m-3 1.5v1M3 4v16a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1V8.414a1 1 0 0 0-.293-.707l-4.414-4.414A1 1 0 0 0 15.586 3H4a1 1 0 0 0-1 1Z"/>
+    <g stroke="currentColor" stroke-width={effectiveStrokeWidth}>
+      <g id="Property 1=stroke"><path id="Vector" d="M7.556 20v-4.444c0-.491.398-.89.888-.89h7.112c.49 0 .888.399.888.89V20m-8-15.111v3.555c0 .491.398.89.89.89h5.333c.49 0 .889-.399.889-.89V4.89m-2.667 1.333v.89M4 4.888V19.11c0 .491.398.889.889.889H19.11c.491 0 .889-.398.889-.889V8.813a.9.9 0 0 0-.26-.629L15.816 4.26a.9.9 0 0 0-.629-.26H4.89A.89.89 0 0 0 4 4.889Z"/></g>
+    </g>
   {/if}
 </svg>

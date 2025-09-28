@@ -15,10 +15,11 @@ import Refresh from './components/Refresh.svelte';
 import Save from './components/Save.svelte';
 import Search from './components/Search.svelte';
 import Sun from './components/Sun.svelte';
+import Tag from './components/Tag.svelte';
 import Trash from './components/Trash.svelte';
 import Upload from './components/Upload.svelte';
 
-export { AddPlus, Checkmark, Close, Copy, Cut, Download, Filter, Info, Link, Minus, Paste, Pencil, Refresh, Save, Search, Sun, Trash, Upload };
+export { AddPlus, Checkmark, Close, Copy, Cut, Download, Filter, Info, Link, Minus, Paste, Pencil, Refresh, Save, Search, Sun, Tag, Trash, Upload };
 
 export const iconRegistry = {
   "add-plus": AddPlus,
@@ -37,6 +38,7 @@ export const iconRegistry = {
   "save": Save,
   "search": Search,
   "sun": Sun,
+  "tag": Tag,
   "trash": Trash,
   "upload": Upload
 } as const;

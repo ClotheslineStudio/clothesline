@@ -1,18 +1,13 @@
 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="Property 1=duotone" clip-path="url(#clip0_70_756)">
 <g id="sun-duotone">
-<circle id="tone2" cx="12.0001" cy="12" r="4.00188" transform="rotate(90.027 12.0001 12)" fill="#FF7700"/>
-<g id="tone1">
-<circle id="circle" cx="12.0038" cy="12.0037" r="4.00188" transform="rotate(90.027 12.0038 12.0037)" stroke="black" stroke-width="2"/>
-<g id="rays">
-<path id="Vector 119" d="M22 12.0047L20 12.0038" stroke="black" stroke-width="2" stroke-linecap="round"/>
-<path id="Vector 123" d="M19.0745 4.93225L17.6596 6.3458" stroke="black" stroke-width="2" stroke-linecap="round"/>
-<path id="Vector 120" d="M4 11.9962L2 11.9953" stroke="black" stroke-width="2" stroke-linecap="round"/>
-<path id="Vector 124" d="M6.34058 17.6542L4.9257 19.0678" stroke="black" stroke-width="2" stroke-linecap="round"/>
-<path id="Vector 121" d="M12 2V4" stroke="black" stroke-width="2" stroke-linecap="round"/>
-<path id="Vector 125" d="M4.92896 4.92892L6.34317 6.34314" stroke="black" stroke-width="2" stroke-linecap="round"/>
-<path id="Vector 122" d="M12 22V20" stroke="black" stroke-width="2" stroke-linecap="round"/>
-<path id="Vector 126" d="M19.071 19.0711L17.6567 17.6569" stroke="black" stroke-width="2" stroke-linecap="round"/>
+<circle id="tone2" cx="12.0001" cy="12" r="3.99848" transform="rotate(90.027 12.0001 12)" fill="#FF7700"/>
+<path id="tone1" d="M22 12.0047L20 12.0038M19.0745 4.93225L17.6596 6.3458M4 11.9962L2 11.9953M6.34058 17.6542L4.9257 19.0678M12 2V4M4.92895 4.92892L6.34317 6.34314M12 22V20M19.071 19.0711L17.6567 17.6569M12.0019 16.0056C9.79175 16.0046 8.00089 14.212 8.00193 12.0019C8.00297 9.79169 9.79551 8.00083 12.0057 8.00187C14.2159 8.00291 16.0067 9.79546 16.0057 12.0056C16.0046 14.2158 14.2121 16.0067 12.0019 16.0056Z" stroke="black" stroke-width="2" stroke-linecap="round"/>
 </g>
 </g>
-</g>
+<defs>
+<clipPath id="clip0_70_756">
+<rect width="24" height="24" fill="white"/>
+</clipPath>
+</defs>
 </svg>

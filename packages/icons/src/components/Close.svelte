@@ -1,15 +1,10 @@
 <!-- AUTO-GENERATED. Do not edit by hand. -->
 <script lang="ts">
   export let size: number | string = 24;
-  /** If not provided, uses var(--cl-icon-stroke) so HC mode can thicken automatically */
   export let strokeWidth: number | string | undefined = undefined;
-
   export let variant: 'stroke' | 'filled' | 'duotone' | 'animated' = 'stroke';
-
   export let role: 'default' | 'muted' | 'primary' | 'success' | 'warning' | 'error' = 'default';
-  /** Used for duotone secondary layer; defaults to 'muted' */
   export let secondaryRole: 'default' | 'muted' | 'primary' | 'success' | 'warning' | 'error' = 'muted';
-
   export let className: string = '';
   export let ariaLabel: string = 'icon';
   export let title: string | undefined = undefined;
@@ -40,29 +35,38 @@
   role="img"
   class={className}
   style="color: {colorByRole[role]}"
+  shape-rendering="geometricPrecision"
   {...$$restProps}
 >
   {#if title}<title>{title}</title>{/if}
 
-  {#if variant === 'filled' && false}
+  {#if variant === 'filled' && true}
     <g fill="currentColor" stroke="none">
-      
+      <g id="Property 1=filled"><path fill="currentColor" id="Vector 1" d="M5.5 5.5 12 12m0 0 6.5 6.5M12 12l6.5-6.5M12 12l-6.5 6.5"/></g>
     </g>
 
-  {:else if variant === 'duotone' && false}
-    <g class="tone1" style="color:{colorByRole[role]}">
-      
-    </g>
-    {#if false}
-      <g class="tone2" style="color:{colorByRole[secondaryRole]}">
-        <g fill="currentColor" stroke="none">
-          
-        </g>
+{:else if variant === 'duotone' && false}
+  {#if false}
+    <g class="tone2" style="color:{colorByRole[secondaryRole]}">
+      <g fill="currentColor" stroke="none">
+        
       </g>
-    {/if}
+    </g>
+  {/if}
+
+  <g class="tone1"
+     style="color:{colorByRole[role]}; paint-order: stroke fill"
+     stroke="currentColor"
+     stroke-width={effectiveStrokeWidth}>
+    
+  </g>
+
+
 
   {:else}
     <!-- Stroke (default/fallback) -->
-    <path d="M0 0h24v24H0z"/><path stroke-linecap="round" stroke-width="2" d="m5 5 7 7m0 0 7 7m-7-7 7-7m-7 7-7 7"/>
+    <g stroke="currentColor" stroke-width={effectiveStrokeWidth}>
+      <g id="Property 1=stroke"><path id="Vector 1" d="M5.5 5.5 12 12m0 0 6.5 6.5M12 12l6.5-6.5M12 12l-6.5 6.5"/></g>
+    </g>
   {/if}
 </svg>

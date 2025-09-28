@@ -1,15 +1,10 @@
 <!-- AUTO-GENERATED. Do not edit by hand. -->
 <script lang="ts">
   export let size: number | string = 24;
-  /** If not provided, uses var(--cl-icon-stroke) so HC mode can thicken automatically */
   export let strokeWidth: number | string | undefined = undefined;
-
   export let variant: 'stroke' | 'filled' | 'duotone' | 'animated' = 'stroke';
-
   export let role: 'default' | 'muted' | 'primary' | 'success' | 'warning' | 'error' = 'default';
-  /** Used for duotone secondary layer; defaults to 'muted' */
   export let secondaryRole: 'default' | 'muted' | 'primary' | 'success' | 'warning' | 'error' = 'muted';
-
   export let className: string = '';
   export let ariaLabel: string = 'icon';
   export let title: string | undefined = undefined;
@@ -40,6 +35,7 @@
   role="img"
   class={className}
   style="color: {colorByRole[role]}"
+  shape-rendering="geometricPrecision"
   {...$$restProps}
 >
   {#if title}<title>{title}</title>{/if}
@@ -49,20 +45,28 @@
       
     </g>
 
-  {:else if variant === 'duotone' && false}
-    <g class="tone1" style="color:{colorByRole[role]}">
-      
-    </g>
-    {#if false}
-      <g class="tone2" style="color:{colorByRole[secondaryRole]}">
-        <g fill="currentColor" stroke="none">
-          
-        </g>
+{:else if variant === 'duotone' && false}
+  {#if false}
+    <g class="tone2" style="color:{colorByRole[secondaryRole]}">
+      <g fill="currentColor" stroke="none">
+        
       </g>
-    {/if}
+    </g>
+  {/if}
+
+  <g class="tone1"
+     style="color:{colorByRole[role]}; paint-order: stroke fill"
+     stroke="currentColor"
+     stroke-width={effectiveStrokeWidth}>
+    
+  </g>
+
+
 
   {:else}
     <!-- Stroke (default/fallback) -->
-    <path d="M0 0h24v24H0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.172 3H4.828C3.047 3 2.154 5.154 3.414 6.414l6 6A2 2 0 0 1 10 13.828V18a2 2 0 0 0 .8 1.6l1.6 1.2A1 1 0 0 0 14 20v-6.172a2 2 0 0 1 .586-1.414l6-6C21.846 5.154 20.953 3 19.172 3"/>
+    <g stroke="currentColor" stroke-width={effectiveStrokeWidth}>
+      <rect width="24" height="24"/><path d="M19.172 3H4.828C3.047 3 2.154 5.154 3.414 6.414l6 6A2 2 0 0 1 10 13.828V18a2 2 0 0 0 .8 1.6l1.6 1.2A1 1 0 0 0 14 20v-6.172a2 2 0 0 1 .586-1.414l6-6C21.846 5.154 20.953 3 19.172 3"/>
+    </g>
   {/if}
 </svg>
