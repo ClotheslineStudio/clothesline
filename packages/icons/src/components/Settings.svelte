@@ -1,7 +1,24 @@
+<!-- AUTO-GENERATED. Do not edit by hand. -->
 <script lang="ts">
   export let size: number | string = 24;
-  export let strokeWidth: number | string = 2;
+  export let strokeWidth: number | string | undefined = undefined;
+  export let variant: 'stroke' | 'filled' | 'duotone' | 'animated' = 'stroke';
+  export let role: 'default' | 'muted' | 'primary' | 'success' | 'warning' | 'error' = 'default';
+  export let secondaryRole: 'default' | 'muted' | 'primary' | 'success' | 'warning' | 'error' = 'muted';
+  export let className: string = '';
   export let ariaLabel: string = 'icon';
+  export let title: string | undefined = undefined;
+
+  const colorByRole = {
+    default: 'var(--cl-icon)',
+    muted: 'var(--cl-icon-muted)',
+    primary: 'var(--cl-icon-primary)',
+    success: 'var(--cl-icon-success)',
+    warning: 'var(--cl-icon-warning)',
+    error: 'var(--cl-icon-error)'
+  } as const;
+
+  $: effectiveStrokeWidth = strokeWidth ?? 'var(--cl-icon-stroke)';
 </script>
 
 <svg
@@ -11,11 +28,45 @@
   height={size}
   fill="none"
   stroke="currentColor"
-  stroke-width={strokeWidth}
+  stroke-width={effectiveStrokeWidth}
   stroke-linecap="round"
   stroke-linejoin="round"
   aria-label={ariaLabel}
   role="img"
+  class={className}
+  style="color: {colorByRole[role]}"
+  shape-rendering="geometricPrecision"
+  {...$$restProps}
 >
-  <path fill="#1E1E1E" d="M0 0h24v24H0z"/><path fill="#2B2A2A" d="M-29-183h464v1442H-29z"/><path fill="#878787" d="M-19-12h444v58H-19z"/><path stroke="#000" stroke-width="2" d="M12 3q.817.001 1.592.144c.487.088.772.567.886 1.048a2.41 2.41 0 0 0 3.044 1.757c.474-.142 1.03-.135 1.35.242a9 9 0 0 1 1.597 2.76c.168.466-.105.951-.466 1.29a2.4 2.4 0 0 0-.76 1.759c0 .693.292 1.319.76 1.759.361.339.634.825.466 1.29a9 9 0 0 1-1.596 2.758c-.32.378-.876.385-1.35.243a2.4 2.4 0 0 0-1.902.22c-.6.347-.996.912-1.143 1.538-.114.482-.398.962-.886 1.05a9 9 0 0 1-3.184 0c-.487-.088-.772-.568-.885-1.05A2.4 2.4 0 0 0 8.38 18.27a2.4 2.4 0 0 0-1.903-.22c-.474.142-1.03.136-1.35-.242A9 9 0 0 1 3.53 15.05c-.168-.466.105-.952.466-1.291a2.407 2.407 0 0 0 0-3.519c-.36-.339-.634-.825-.466-1.29a9 9 0 0 1 1.596-2.758c.32-.377.877-.385 1.35-.243a2.41 2.41 0 0 0 3.045-1.758c.114-.482.398-.96.886-1.048A9 9 0 0 1 12 3Zm0 6a3 3 0 1 0 0 6 3 3 0 0 0 0-6Z" clip-rule="evenodd"/>
+  {#if title}<title>{title}</title>{/if}
+
+  {#if variant === 'filled' && false}
+    <g fill="currentColor" stroke="none">
+      
+    </g>
+
+{:else if variant === 'duotone' && false}
+  {#if false}
+    <g class="tone2" style="color:{colorByRole[secondaryRole]}">
+      <g fill="currentColor" stroke="none">
+        
+      </g>
+    </g>
+  {/if}
+
+  <g class="tone1"
+     style="color:{colorByRole[role]}; paint-order: stroke fill"
+     stroke="currentColor"
+     stroke-width={effectiveStrokeWidth}>
+    
+  </g>
+
+
+
+  {:else}
+    <!-- Stroke (default/fallback) -->
+    <g stroke="currentColor" stroke-width={effectiveStrokeWidth}>
+      <g id="Property 1=stroke"><path id="Settings" fill-rule="evenodd" d="M12 3q.863.001 1.682.144c.515.088.815.567.936 1.048.156.625.574 1.19 1.208 1.537a2.67 2.67 0 0 0 2.007.22c.5-.142 1.088-.135 1.426.242.724.81 1.3 1.742 1.687 2.76.178.466-.11.951-.492 1.29A2.35 2.35 0 0 0 19.651 12c0 .693.309 1.319.803 1.759.381.339.67.825.492 1.29a8.9 8.9 0 0 1-1.685 2.758c-.338.378-.926.385-1.427.243a2.67 2.67 0 0 0-2.008.22 2.42 2.42 0 0 0-1.208 1.538c-.12.482-.42.962-.936 1.05a10 10 0 0 1-3.363 0c-.515-.088-.816-.568-.936-1.05a2.42 2.42 0 0 0-1.207-1.538 2.67 2.67 0 0 0-2.01-.22c-.501.142-1.089.136-1.427-.242a8.9 8.9 0 0 1-1.685-2.758c-.178-.466.111-.952.493-1.291A2.35 2.35 0 0 0 4.352 12c0-.694-.31-1.32-.805-1.76-.382-.339-.67-.825-.493-1.29A8.9 8.9 0 0 1 4.74 6.191c.338-.377.926-.385 1.427-.243.65.185 1.376.126 2.01-.22A2.42 2.42 0 0 0 9.381 4.19c.12-.482.421-.96.936-1.048A10 10 0 0 1 12.001 3Zm0 6c-1.75 0-3 1.343-3 3s1.25 3 3 3 3-1.343 3-3-1.25-3-3-3Z" clip-rule="evenodd"/></g>
+    </g>
+  {/if}
 </svg>

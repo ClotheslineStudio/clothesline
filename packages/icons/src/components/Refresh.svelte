@@ -66,7 +66,7 @@
   {:else}
     <!-- Stroke (default/fallback) -->
     <g stroke="currentColor" stroke-width={effectiveStrokeWidth}>
-      <rect width="24" height="24"/><path d="M21 13c0 6.5-9 13.5-18 3m0 0v5m0-5h5m-5-5c0-6.5 9-13.416 18-2.916m0 0v-5m0 5h-5"/>
+      <g id="Property 1=stroke"><path id="Vector" d="M21 13.322c0 6.5-9 13.5-18 3m0 0v5m0-5h5m-5-5C3 4.822 13.5-2 21 8.406m0 0v-5m0 5h-5"/></g>
     </g>
   {/if}
 </svg>
