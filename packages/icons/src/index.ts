@@ -29,8 +29,9 @@ import Trash from './components/Trash.svelte';
 import TreePalm from './components/TreePalm.svelte';
 import TreePine from './components/TreePine.svelte';
 import Upload from './components/Upload.svelte';
+import User from './components/User.svelte';
 
-export { AddPlus, Bookmark, Checkmark, Close, Copy, Cut, Download, File, Filter, Heart, Info, Leaf, Link, Minus, Moon, Paste, Pencil, Pin, Refresh, Save, Search, Settings, Sort, Star, Sun, Tag, Trash, TreePalm, TreePine, Upload };
+export { AddPlus, Bookmark, Checkmark, Close, Copy, Cut, Download, File, Filter, Heart, Info, Leaf, Link, Minus, Moon, Paste, Pencil, Pin, Refresh, Save, Search, Settings, Sort, Star, Sun, Tag, Trash, TreePalm, TreePine, Upload, User };
 
 export const iconRegistry = {
   "add-plus": AddPlus,
@@ -62,7 +63,8 @@ export const iconRegistry = {
   "trash": Trash,
   "tree-palm": TreePalm,
   "tree-pine": TreePine,
-  "upload": Upload
+  "upload": Upload,
+  "user": User
 } as const;
 
 export type IconName = keyof typeof iconRegistry;
