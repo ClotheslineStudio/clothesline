@@ -15,6 +15,7 @@ import { retrogradeTheme }   from '../configs/retrograde.ts';
 import { tidalGlassTheme }   from '../configs/tidal-glass.ts';
 import { copperSunTheme }    from '../configs/copper-sun.ts';
 import { milkywayTheme }     from '../configs/milkyway.ts';
+import { bigSkyTheme }      from '../configs/bigsky.ts';
 
 type ThemeMode = 'light' | 'dark';
 const SHADES = [50,100,200,300,400,500,600,700,800,900,950] as const;
@@ -258,6 +259,7 @@ async function run() {
     tidalGlassTheme,
     copperSunTheme,
     milkywayTheme,
+    bigSkyTheme
   ];
 
   await fs.ensureDir(distDir);

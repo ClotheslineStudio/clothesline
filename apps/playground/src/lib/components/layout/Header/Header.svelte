@@ -18,7 +18,8 @@
     'milkyway',
     'retrograde',
     'tidal-glass',
-    'night-market'
+    'night-market',
+    'bigsky'
   ] as const;
 
   const modes = ['light', 'dark'] as const;

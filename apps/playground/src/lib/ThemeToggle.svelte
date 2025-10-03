@@ -22,7 +22,8 @@
     'retrograde',
     'tidal-glass',
     'copper-sun',
-    'milkyway'
+    'milkyway',
+    'bigsky'
   ] as const;
 
   const modes = ['light', 'dark'] as const;
