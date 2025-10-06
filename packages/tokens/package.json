@@ -4,12 +4,17 @@
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
-  "exports": {
-    ".": {
-      "import": "./dist/index.js",
-      "types": "./dist/index.d.ts"
-    }
+"exports": {
+  ".": {
+    "import": "./dist/index.js",
+    "types": "./dist/index.d.ts"
   },
+  "./colors": {
+    "types": "./dist/colors/index.d.ts",
+    "import": "./dist/colors/index.js"
+  }
+},
+"sideEffects": false,
   "files": [
     "dist"
   ],

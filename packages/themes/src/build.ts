@@ -3,7 +3,10 @@ import fs from 'fs-extra';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
-import { generateColorRamps } from '../../tokens/utils/generateRamps.js';
+import { generateColorRampFromSeed, rampNames as TOKEN_SHADES } from '@clothesline/tokens/colors';
+
+
+
 import { baseTokens } from '../../tokens/src/index.js';
 import type { ThemeConfig } from './types.ts';
 import type { OklchColor } from '../../tokens/utils/colorEngine.js';
@@ -21,7 +24,7 @@ import { milkywayTheme }     from '../configs/milkyway.ts';
 import { bigSkyTheme }       from '../configs/bigsky.ts';
 
 type ThemeMode = 'light' | 'dark';
-const SHADES = [50,100,200,300,400,500,600,700,800,900,950] as const;
+const SHADES = TOKEN_SHADES;
 type Step = (typeof SHADES)[number];
 
 // Shades & families used by the vision layer (keep lean)
@@ -138,7 +141,7 @@ function rampsForTheme(theme: ThemeConfig, mode: ThemeMode): Record<string, Reco
     const seed = getRoleSeed(theme, mode, role);
     if (!seed) continue;
     // generateColorRamps currently returns a single ramp (Record<Step,string>) from one seed
-    result[role] = generateColorRamps(seed) as Record<Step, string>;
+    result[role] = generateColorRampFromSeed(seed) as Record<Step, string>;
   }
   return result;
 }

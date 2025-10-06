@@ -263,6 +263,9 @@ importers:
 
   packages/themes:
     devDependencies:
+      '@clothesline/tokens':
+        specifier: workspace:*
+        version: link:../tokens
       '@types/fs-extra':
         specifier: ^11.0.4
         version: 11.0.4
