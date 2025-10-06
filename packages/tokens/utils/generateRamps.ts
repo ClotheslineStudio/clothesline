@@ -1,11 +1,15 @@
-// packages/tokens/utils/generateRamps.ts
 import { snapToGamut } from './snapToGamut.js';
 import type { OklchColor } from './colorEngine.js';
 import { toOklchCss } from './toCssColor.js';
 
-// --- Types & shared steps (exported) ---------------------------------
-export const RAMP_STEPS = [50,100,200,300,400,500,600,700,800,900,950] as const;
-export type Step = (typeof RAMP_STEPS)[number];
+// ✅ pull the canonical step labels from oklch
+import { rampNames } from '../colors/oklch.js';
+
+// ✅ export the labels under the old name for back-compat (optional)
+export { rampNames as RAMP_STEPS } from '../colors/oklch.js';
+
+// ✅ derive the Step type from the canonical labels
+export type Step = (typeof rampNames)[number];
 
 // --- Generator -------------------------------------------------------
 export function generateRampFromSeed(seed: OklchColor): Record<Step, string> {

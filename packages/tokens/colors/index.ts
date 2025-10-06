@@ -4,12 +4,13 @@
 import { generateOklchRamp } from './oklch.js';
 
 // Re-export the proven, gamut-safe seed → ramp builder (no behavior change).
-export {
-  generateRampFromSeed as generateColorRampFromSeed,
-  RAMP_STEPS as rampNames,
-} from '../utils/generateRamps.js';
+// ✅ keep the gamut-safe builder
+export { generateRampFromSeed as generateColorRampFromSeed } from '../utils/generateRamps.js';
 
-// Type-only re-export must be separate.
+// ✅ re-export the *canonical* labels from oklch.ts
+export { rampNames } from './oklch.js';
+
+// ✅ keep type-only re-export
 export type { Step } from '../utils/generateRamps.js';
 
 // ---- Default roles + options -------------------------------------------------
