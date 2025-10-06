@@ -7,13 +7,20 @@
   "exports": {
     ".": {
       "import": "./dist/index.js",
-      "types": "./dist/index.d.ts"
-    },
-    "./colors": {
-      "types": "./dist/colors/index.d.ts",
-      "import": "./dist/colors/index.js"
+    "types": "./dist/index.d.ts"
+  },
+  "./colors": {
+    "types": "./dist/colors/index.d.ts",
+    "import": "./dist/colors/index.js"
+  }
+},
+  "typesVersions": {
+    "*": {
+      "colors": ["dist/colors/index.d.ts"],
+      "*": ["dist/index.d.ts"]
     }
   },
+
   "sideEffects": false,
   "files": [
     "dist"

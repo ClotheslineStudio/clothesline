@@ -13,6 +13,9 @@ export { rampNames } from './oklch.js';
 // ✅ keep type-only re-export
 export type { Step } from '../utils/generateRamps.js';
 
+
+export { rampFormatsFromSeed } from '../utils/emitFormats.js';
+
 // ---- Default roles + options -------------------------------------------------
 
 export const roleHues = {
