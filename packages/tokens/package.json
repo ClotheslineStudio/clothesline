@@ -4,26 +4,31 @@
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
-"exports": {
-  ".": {
-    "import": "./dist/index.js",
-    "types": "./dist/index.d.ts"
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./colors": {
+      "types": "./dist/colors/index.d.ts",
+      "import": "./dist/colors/index.js"
+    }
   },
-  "./colors": {
-    "types": "./dist/colors/index.d.ts",
-    "import": "./dist/colors/index.js"
-  }
-},
-"sideEffects": false,
+  "sideEffects": false,
   "files": [
     "dist"
   ],
-  "scripts": {
-    "build": "tsup"
+   "scripts": {
+    "build": "tsup",
+    "pretest": "pnpm build",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "license": "MIT",
   "devDependencies": {
-    "tsup": "^8.5.0"
+    "@types/node": "^24.3.1",
+    "tsup": "^8.5.0",
+    "vitest": "^3.2.4"
   },
   "dependencies": {
     "culori": "^4.0.2"
