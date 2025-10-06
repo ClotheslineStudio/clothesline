@@ -16,8 +16,9 @@
     "allowImportingTsExtensions": true,
     "verbatimModuleSyntax": true,
 
-    "outDir": "dist"
+    "outDir": "dist",
+    "typeRoots": ["./types", "./node_modules/@types"]
   },
-  "include": ["src/**/*.ts"],
+  "include": ["src", "utils", "types"],
   "exclude": ["dist", "node_modules"]
 }

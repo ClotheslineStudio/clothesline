@@ -3,9 +3,12 @@ import fs from 'fs-extra';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
-import { generateColorRamps } from '../../tokens/utils/generateRamps.ts';
+import { generateColorRamps } from '../../tokens/utils/generateRamps.js';
 import { baseTokens } from '../../tokens/src/index.js';
 import type { ThemeConfig } from './types.ts';
+import type { OklchColor } from '../../tokens/utils/colorEngine.js';
+import { toOklch } from '../../tokens/utils/colorEngine.js';
+
 
 // Theme configs (single-source, no variants)
 import { clotheslineTheme } from '../configs/clothesline.ts';
@@ -15,12 +18,13 @@ import { retrogradeTheme }   from '../configs/retrograde.ts';
 import { tidalGlassTheme }   from '../configs/tidal-glass.ts';
 import { copperSunTheme }    from '../configs/copper-sun.ts';
 import { milkywayTheme }     from '../configs/milkyway.ts';
-import { bigSkyTheme }      from '../configs/bigsky.ts';
+import { bigSkyTheme }       from '../configs/bigsky.ts';
 
 type ThemeMode = 'light' | 'dark';
 const SHADES = [50,100,200,300,400,500,600,700,800,900,950] as const;
+type Step = (typeof SHADES)[number];
 
-// Shades & families we actually adjust for vision (keep lean)
+// Shades & families used by the vision layer (keep lean)
 const VISION_SHADE_STEPS = [300, 400, 500, 600] as const;
 const VISION_FAMILIES    = ['primary', 'success', 'warning', 'error', 'info'] as const;
 
@@ -34,6 +38,111 @@ function toCSSVars(obj: Record<string, string>): string {
     .join('\n');
 }
 
+/* ------------------------------------------------------------------ */
+/* RAMP HELPERS – this is the only new part you needed                */
+/* ------------------------------------------------------------------ */
+
+// Names of color roles we expect in the theme config
+const ROLES = [
+  'primary','secondary','tertiary',
+  'success','warning','error','info',
+  'accent','neutral','surface'
+] as const;
+type RoleName = typeof ROLES[number];
+
+/**
+ * Try to find an OKLCH seed for a given role + mode in your ThemeConfig.
+ * This is tolerant to a few likely shapes. If your config is different,
+ * send me one roles object and I’ll tailor this.
+ */
+function getRoleSeed(theme: ThemeConfig, mode: ThemeMode, role: RoleName): OklchColor | null {
+  const node: any =
+    (theme as any).roles?.[role] ??
+    (theme as any)[role] ??
+    (theme as any).colors?.[role] ??
+    null;
+
+  function coerceToOklch(input: any, fallbackHue = 0): OklchColor | null {
+  if (input == null) return null;
+
+  // hex / rgb() / hsl() / oklch() strings
+  if (typeof input === 'string') {
+    const o: any = toOklch(input);
+    if (o && typeof o.l === 'number') {
+      return { mode: 'oklch', l: o.l, c: o.c ?? 0, h: o.h ?? fallbackHue, alpha: o.alpha };
+    }
+    return null;
+  }
+
+  // just a hue number -> sensible defaults
+  if (typeof input === 'number') {
+    return { mode: 'oklch', l: 0.64, c: 0.12, h: input };
+  }
+
+  if (typeof input === 'object') {
+    // ✅ your shape: { hue, chroma }
+    if (typeof input.hue === 'number') {
+      const h = input.hue;
+      const c = typeof input.chroma === 'number' ? input.chroma : 0.12;
+      return { mode: 'oklch', l: 0.64, c, h };
+    }
+
+    // oklch-ish object
+    if (input.mode === 'oklch' && typeof input.l === 'number') {
+      return { mode: 'oklch', l: input.l, c: input.c ?? 0, h: input.h ?? fallbackHue, alpha: input.alpha };
+    }
+    if (typeof input.l === 'number' && typeof input.c === 'number') {
+      return { mode: 'oklch', l: input.l, c: input.c, h: input.h ?? fallbackHue, alpha: input.alpha };
+    }
+
+    // common nests
+    if (input.light !== undefined || input.dark !== undefined) {
+      const pick = input[/* @ts-ignore */ fallbackHue ? 'dark' : 'light'] ?? input.light ?? input.dark;
+      const hGuess = typeof input.hue === 'number' ? input.hue : fallbackHue;
+      return coerceToOklch(pick, hGuess);
+    }
+    if (input.seed?.light !== undefined || input.seed?.dark !== undefined) {
+      const pick = input.seed.light ?? input.seed.dark;
+      return coerceToOklch(pick, fallbackHue);
+    }
+    if (input.seed !== undefined) return coerceToOklch(input.seed, fallbackHue);
+    if (input.value !== undefined) return coerceToOklch(input.value, fallbackHue);
+
+    // last try: let culori parse whatever it is
+    const o: any = toOklch(input);
+    if (o && typeof o.l === 'number') {
+      return { mode: 'oklch', l: o.l, c: o.c ?? 0, h: o.h ?? fallbackHue, alpha: o.alpha };
+    }
+  }
+
+  return null;
+}
+
+
+  const seed = coerceToOklch(node);
+  if (!seed) {
+    console.warn(`[themes] No seed for role "${role}" in theme "${(theme as any).name}" (${mode}).`);
+  }
+  return seed;
+}
+
+
+/**
+ * Build a complete map of ramps for a theme+mode, by calling
+ * the single-seed generator once per role.
+ * Shape returned: { primary: {50:"oklch(...)",...}, secondary: {...}, ... }
+ */
+function rampsForTheme(theme: ThemeConfig, mode: ThemeMode): Record<string, Record<Step, string>> {
+  const result: Record<string, Record<Step, string>> = {};
+  for (const role of ROLES) {
+    const seed = getRoleSeed(theme, mode, role);
+    if (!seed) continue;
+    // generateColorRamps currently returns a single ramp (Record<Step,string>) from one seed
+    result[role] = generateColorRamps(seed) as Record<Step, string>;
+  }
+  return result;
+}
+
 /**
  * Emit base ramp + contrast companion (-ct) + vision alias (-vis)
  * - base:   --color-role-600
@@ -41,21 +150,23 @@ function toCSSVars(obj: Record<string, string>): string {
  * - -vis:   defaults to -ct; vision layer can repoint/override if you want that path
  */
 function roleVars(theme: ThemeConfig, mode: ThemeMode): string {
-  const ramps = generateColorRamps(theme, mode);
-  const pole = mode === 'dark' ? 'white' : 'black'; // ⬅️ flip target in dark
+  const ramps = rampsForTheme(theme, mode);
+  const pole = mode === 'dark' ? 'white' : 'black'; // flip pole in dark
 
   const lines: string[] = [];
-  for (const [role, colors] of Object.entries(ramps)) {
-    (colors as string[]).forEach((color, i) => {
-      const shade = SHADES[i];
+  for (const role of Object.keys(ramps)) {
+    const ramp = ramps[role] as Record<Step, string>;
+    for (const shade of SHADES) {
+      const val = ramp[shade];
+      if (!val) continue;
+
       const base = `--color-${role}-${shade}`;
       lines.push(
-        `  ${base}: ${color};`,
-        // use mode-specific pole; magnitude still comes from --k-ct
+        `  ${base}: ${val};`,
         `  ${base}-ct: color-mix(in oklab, var(${base}) calc(100% - var(--k-ct)), ${pole} var(--k-ct));`,
         `  ${base}-vis: var(${base}-ct);`
       );
-    });
+    }
   }
   return lines.join('\n');
 }
@@ -112,7 +223,7 @@ function renderVision(): string {
     tritan.push(oklchFromCT(`--color-primary-${shade}`, 'L', 'calc(C * 0.88)', 'calc(H - 8deg)'));
   }
 
-  // MONOCHROME – semantic families to grayscale (neutrals/surfaces are already near gray)
+  // MONOCHROME – semantic families to grayscale (neutrals/surfaces are near gray already)
   for (const family of VISION_FAMILIES) {
     for (const shade of VISION_SHADE_STEPS) {
       mono.push(oklchFromCT(`--color-${family}-${shade}`, 'L', '0', 'H'));
@@ -140,8 +251,6 @@ ${mono.join('\n')}
 
 /** Semantic foregrounds, aliases, and utilities emitted per mode */
 function onVars(mode: 'light' | 'dark') {
-  // In your system, surface ramps flip lightness in dark mode.
-  // Using the same indices gives correct contrast in both modes.
   const roleOnLight = `
 --on-primary:   var(--color-surface-50);
 --on-secondary: var(--color-surface-50);
@@ -274,6 +383,7 @@ run().catch(err => {
   console.error('Build failed:', err);
   process.exit(1);
 });
+
 
 
 

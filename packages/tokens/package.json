@@ -19,6 +19,8 @@
   "license": "MIT",
   "devDependencies": {
     "tsup": "^8.5.0"
+  },
+  "dependencies": {
+    "culori": "^4.0.2"
   }
 }
-

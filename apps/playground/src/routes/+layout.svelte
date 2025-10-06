@@ -1,7 +1,7 @@
 <!-- +layout.svelte -->
 <script lang="ts">
   import '../app.css';
-  import { setTheme } from '@clothesline/themes';
+  // import { setTheme } from '@clothesline/themes'; // not needed for mode toggle
   import { browser } from '$app/environment';
 
   import Header from '$lib/components/layout/Header/Header.svelte';
@@ -11,8 +11,31 @@
   import ThreeColumn from '$lib/components/layout/ThreeColumn/ThreeColumn.svelte';
   import TableOfContents from '$lib/components/navigation/TableOfContents/TableOfContents.svelte';
 
-  import '@clothesline/themes/dist/clothesline.css';
-	import Dropdown from '$lib/components/overlays/Dropdown/Dropdown.svelte';
+  import Dropdown from '$lib/components/overlays/Dropdown/Dropdown.svelte';
+
+  // ✅ add this
+  let mode: 'light' | 'dark' = 'light';
+
+  if (browser) {
+    // on first load, respect saved or current attribute
+    const root = document.documentElement;
+    const saved = localStorage.getItem('mode');
+    const initial = (saved === 'dark' || saved === 'light')
+      ? saved
+      : root.getAttribute('data-mode') ?? 'light';
+    mode = initial as 'light' | 'dark';
+    root.setAttribute('data-mode', mode);
+    root.style.colorScheme = mode; // native widgets follow
+  }
+
+  function toggleMode() {
+    if (!browser) return;
+    const root = document.documentElement;
+    mode = mode === 'dark' ? 'light' : 'dark';
+    root.setAttribute('data-mode', mode);
+    root.style.colorScheme = mode;
+    localStorage.setItem('mode', mode);
+  }
 
   const routes = [
     { title: 'Button', path: '/core/button' },
@@ -99,7 +122,10 @@
 
       <div slot="right">
         <input type="search" placeholder="Search…" class="rounded border px-2 py-1 text-sm" />
-        <button>🌞</button>
+        <button on:click={toggleMode} aria-pressed={mode === 'dark'}>
+  {mode === 'dark' ? '🌚' : '🌞'}
+</button>
+
         <a href="https://github.com" target="_blank">GitHub</a>
       </div>
     </Header>
