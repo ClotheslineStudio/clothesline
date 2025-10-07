@@ -1,0 +1,465 @@
+{
+  "$description": "Clothesline \"milkyway\" – dark mode",
+  "color": {
+    "primary": {
+      "50": {
+        "$type": "color",
+        "$value": "oklch(96.550% 0.01818 295.03deg)"
+      },
+      "100": {
+        "$type": "color",
+        "$value": "oklch(93.600% 0.03345 292.62deg)"
+      },
+      "200": {
+        "$type": "color",
+        "$value": "oklch(88.000% 0.06000 290.00deg)"
+      },
+      "300": {
+        "$type": "color",
+        "$value": "oklch(80.000% 0.08000 290.00deg)"
+      },
+      "400": {
+        "$type": "color",
+        "$value": "oklch(72.000% 0.10000 290.00deg)"
+      },
+      "500": {
+        "$type": "color",
+        "$value": "oklch(64.000% 0.12000 290.00deg)"
+      },
+      "600": {
+        "$type": "color",
+        "$value": "oklch(56.000% 0.12000 290.00deg)"
+      },
+      "700": {
+        "$type": "color",
+        "$value": "oklch(48.000% 0.10000 290.00deg)"
+      },
+      "800": {
+        "$type": "color",
+        "$value": "oklch(40.000% 0.08000 290.00deg)"
+      },
+      "900": {
+        "$type": "color",
+        "$value": "oklch(32.000% 0.06000 290.00deg)"
+      },
+      "950": {
+        "$type": "color",
+        "$value": "oklch(26.000% 0.05000 290.00deg)"
+      }
+    },
+    "secondary": {
+      "50": {
+        "$type": "color",
+        "$value": "oklch(96.847% 0.03888 200.13deg)"
+      },
+      "100": {
+        "$type": "color",
+        "$value": "oklch(94.000% 0.05000 210.00deg)"
+      },
+      "200": {
+        "$type": "color",
+        "$value": "oklch(88.000% 0.06000 210.00deg)"
+      },
+      "300": {
+        "$type": "color",
+        "$value": "oklch(80.000% 0.08000 210.00deg)"
+      },
+      "400": {
+        "$type": "color",
+        "$value": "oklch(72.000% 0.10000 210.00deg)"
+      },
+      "500": {
+        "$type": "color",
+        "$value": "oklch(64.428% 0.11193 211.26deg)"
+      },
+      "600": {
+        "$type": "color",
+        "$value": "oklch(56.895% 0.09958 213.06deg)"
+      },
+      "700": {
+        "$type": "color",
+        "$value": "oklch(48.767% 0.08536 213.06deg)"
+      },
+      "800": {
+        "$type": "color",
+        "$value": "oklch(40.491% 0.07065 212.34deg)"
+      },
+      "900": {
+        "$type": "color",
+        "$value": "oklch(32.212% 0.05596 211.26deg)"
+      },
+      "950": {
+        "$type": "color",
+        "$value": "oklch(26.227% 0.04564 211.66deg)"
+      }
+    },
+    "tertiary": {
+      "50": {
+        "$type": "color",
+        "$value": "oklch(96.558% 0.03045 325.81deg)"
+      },
+      "100": {
+        "$type": "color",
+        "$value": "oklch(93.953% 0.04829 321.37deg)"
+      },
+      "200": {
+        "$type": "color",
+        "$value": "oklch(88.000% 0.06000 320.00deg)"
+      },
+      "300": {
+        "$type": "color",
+        "$value": "oklch(80.000% 0.08000 320.00deg)"
+      },
+      "400": {
+        "$type": "color",
+        "$value": "oklch(72.000% 0.10000 320.00deg)"
+      },
+      "500": {
+        "$type": "color",
+        "$value": "oklch(64.000% 0.12000 320.00deg)"
+      },
+      "600": {
+        "$type": "color",
+        "$value": "oklch(56.000% 0.12000 320.00deg)"
+      },
+      "700": {
+        "$type": "color",
+        "$value": "oklch(48.000% 0.10000 320.00deg)"
+      },
+      "800": {
+        "$type": "color",
+        "$value": "oklch(40.000% 0.08000 320.00deg)"
+      },
+      "900": {
+        "$type": "color",
+        "$value": "oklch(32.000% 0.06000 320.00deg)"
+      },
+      "950": {
+        "$type": "color",
+        "$value": "oklch(26.000% 0.05000 320.00deg)"
+      }
+    },
+    "success": {
+      "50": {
+        "$type": "color",
+        "$value": "oklch(97.000% 0.04000 160.00deg)"
+      },
+      "100": {
+        "$type": "color",
+        "$value": "oklch(94.000% 0.05000 160.00deg)"
+      },
+      "200": {
+        "$type": "color",
+        "$value": "oklch(88.000% 0.06000 160.00deg)"
+      },
+      "300": {
+        "$type": "color",
+        "$value": "oklch(80.000% 0.08000 160.00deg)"
+      },
+      "400": {
+        "$type": "color",
+        "$value": "oklch(72.000% 0.10000 160.00deg)"
+      },
+      "500": {
+        "$type": "color",
+        "$value": "oklch(64.000% 0.12000 160.00deg)"
+      },
+      "600": {
+        "$type": "color",
+        "$value": "oklch(56.000% 0.12000 160.00deg)"
+      },
+      "700": {
+        "$type": "color",
+        "$value": "oklch(48.000% 0.10000 160.00deg)"
+      },
+      "800": {
+        "$type": "color",
+        "$value": "oklch(40.000% 0.08000 160.00deg)"
+      },
+      "900": {
+        "$type": "color",
+        "$value": "oklch(32.000% 0.06000 160.00deg)"
+      },
+      "950": {
+        "$type": "color",
+        "$value": "oklch(26.000% 0.05000 160.00deg)"
+      }
+    },
+    "warning": {
+      "50": {
+        "$type": "color",
+        "$value": "oklch(96.060% 0.03194 75.29deg)"
+      },
+      "100": {
+        "$type": "color",
+        "$value": "oklch(93.461% 0.04505 65.98deg)"
+      },
+      "200": {
+        "$type": "color",
+        "$value": "oklch(88.000% 0.06000 60.00deg)"
+      },
+      "300": {
+        "$type": "color",
+        "$value": "oklch(80.000% 0.08000 60.00deg)"
+      },
+      "400": {
+        "$type": "color",
+        "$value": "oklch(72.000% 0.10000 60.00deg)"
+      },
+      "500": {
+        "$type": "color",
+        "$value": "oklch(64.000% 0.12000 60.00deg)"
+      },
+      "600": {
+        "$type": "color",
+        "$value": "oklch(56.000% 0.12000 60.00deg)"
+      },
+      "700": {
+        "$type": "color",
+        "$value": "oklch(48.000% 0.10000 60.00deg)"
+      },
+      "800": {
+        "$type": "color",
+        "$value": "oklch(40.000% 0.08000 60.00deg)"
+      },
+      "900": {
+        "$type": "color",
+        "$value": "oklch(32.000% 0.06000 60.00deg)"
+      },
+      "950": {
+        "$type": "color",
+        "$value": "oklch(26.000% 0.05000 60.00deg)"
+      }
+    },
+    "error": {
+      "50": {
+        "$type": "color",
+        "$value": "oklch(95.787% 0.02190 3.95deg)"
+      },
+      "100": {
+        "$type": "color",
+        "$value": "oklch(92.965% 0.03694 6.82deg)"
+      },
+      "200": {
+        "$type": "color",
+        "$value": "oklch(88.000% 0.06000 10.00deg)"
+      },
+      "300": {
+        "$type": "color",
+        "$value": "oklch(80.000% 0.08000 10.00deg)"
+      },
+      "400": {
+        "$type": "color",
+        "$value": "oklch(72.000% 0.10000 10.00deg)"
+      },
+      "500": {
+        "$type": "color",
+        "$value": "oklch(64.000% 0.12000 10.00deg)"
+      },
+      "600": {
+        "$type": "color",
+        "$value": "oklch(56.000% 0.12000 10.00deg)"
+      },
+      "700": {
+        "$type": "color",
+        "$value": "oklch(48.000% 0.10000 10.00deg)"
+      },
+      "800": {
+        "$type": "color",
+        "$value": "oklch(40.000% 0.08000 10.00deg)"
+      },
+      "900": {
+        "$type": "color",
+        "$value": "oklch(32.000% 0.06000 10.00deg)"
+      },
+      "950": {
+        "$type": "color",
+        "$value": "oklch(26.000% 0.05000 10.00deg)"
+      }
+    },
+    "info": {
+      "50": {
+        "$type": "color",
+        "$value": "oklch(96.727% 0.03674 202.47deg)"
+      },
+      "100": {
+        "$type": "color",
+        "$value": "oklch(93.887% 0.04813 214.73deg)"
+      },
+      "200": {
+        "$type": "color",
+        "$value": "oklch(88.000% 0.06000 220.00deg)"
+      },
+      "300": {
+        "$type": "color",
+        "$value": "oklch(80.000% 0.08000 220.00deg)"
+      },
+      "400": {
+        "$type": "color",
+        "$value": "oklch(72.000% 0.10000 220.00deg)"
+      },
+      "500": {
+        "$type": "color",
+        "$value": "oklch(64.149% 0.11733 220.64deg)"
+      },
+      "600": {
+        "$type": "color",
+        "$value": "oklch(56.767% 0.10641 223.77deg)"
+      },
+      "700": {
+        "$type": "color",
+        "$value": "oklch(48.536% 0.09046 223.08deg)"
+      },
+      "800": {
+        "$type": "color",
+        "$value": "oklch(40.306% 0.07454 222.11deg)"
+      },
+      "900": {
+        "$type": "color",
+        "$value": "oklch(32.073% 0.05866 220.63deg)"
+      },
+      "950": {
+        "$type": "color",
+        "$value": "oklch(26.111% 0.04795 221.18deg)"
+      }
+    },
+    "accent": {
+      "50": {
+        "$type": "color",
+        "$value": "oklch(97.000% 0.04000 190.00deg)"
+      },
+      "100": {
+        "$type": "color",
+        "$value": "oklch(94.000% 0.05000 190.00deg)"
+      },
+      "200": {
+        "$type": "color",
+        "$value": "oklch(88.000% 0.06000 190.00deg)"
+      },
+      "300": {
+        "$type": "color",
+        "$value": "oklch(80.000% 0.08000 190.00deg)"
+      },
+      "400": {
+        "$type": "color",
+        "$value": "oklch(72.000% 0.10000 190.00deg)"
+      },
+      "500": {
+        "$type": "color",
+        "$value": "oklch(64.443% 0.11134 189.83deg)"
+      },
+      "600": {
+        "$type": "color",
+        "$value": "oklch(56.904% 0.09838 189.64deg)"
+      },
+      "700": {
+        "$type": "color",
+        "$value": "oklch(48.789% 0.08435 189.64deg)"
+      },
+      "800": {
+        "$type": "color",
+        "$value": "oklch(40.506% 0.07001 189.71deg)"
+      },
+      "900": {
+        "$type": "color",
+        "$value": "oklch(32.220% 0.05567 189.83deg)"
+      },
+      "950": {
+        "$type": "color",
+        "$value": "oklch(26.235% 0.04533 189.78deg)"
+      }
+    },
+    "neutral": {
+      "50": {
+        "$type": "color",
+        "$value": "oklch(96.551% 0.01681 251.89deg)"
+      },
+      "100": {
+        "$type": "color",
+        "$value": "oklch(93.528% 0.03093 260.65deg)"
+      },
+      "200": {
+        "$type": "color",
+        "$value": "oklch(87.959% 0.05842 269.63deg)"
+      },
+      "300": {
+        "$type": "color",
+        "$value": "oklch(80.000% 0.08000 270.00deg)"
+      },
+      "400": {
+        "$type": "color",
+        "$value": "oklch(72.000% 0.10000 270.00deg)"
+      },
+      "500": {
+        "$type": "color",
+        "$value": "oklch(64.000% 0.12000 270.00deg)"
+      },
+      "600": {
+        "$type": "color",
+        "$value": "oklch(56.000% 0.12000 270.00deg)"
+      },
+      "700": {
+        "$type": "color",
+        "$value": "oklch(48.000% 0.10000 270.00deg)"
+      },
+      "800": {
+        "$type": "color",
+        "$value": "oklch(40.000% 0.08000 270.00deg)"
+      },
+      "900": {
+        "$type": "color",
+        "$value": "oklch(32.000% 0.06000 270.00deg)"
+      },
+      "950": {
+        "$type": "color",
+        "$value": "oklch(26.000% 0.05000 270.00deg)"
+      }
+    },
+    "surface": {
+      "50": {
+        "$type": "color",
+        "$value": "oklch(96.551% 0.01941 234.19deg)"
+      },
+      "100": {
+        "$type": "color",
+        "$value": "oklch(93.529% 0.03314 245.57deg)"
+      },
+      "200": {
+        "$type": "color",
+        "$value": "oklch(87.970% 0.05890 259.54deg)"
+      },
+      "300": {
+        "$type": "color",
+        "$value": "oklch(80.000% 0.08000 260.00deg)"
+      },
+      "400": {
+        "$type": "color",
+        "$value": "oklch(72.000% 0.10000 260.00deg)"
+      },
+      "500": {
+        "$type": "color",
+        "$value": "oklch(64.000% 0.12000 260.00deg)"
+      },
+      "600": {
+        "$type": "color",
+        "$value": "oklch(56.000% 0.12000 260.00deg)"
+      },
+      "700": {
+        "$type": "color",
+        "$value": "oklch(48.000% 0.10000 260.00deg)"
+      },
+      "800": {
+        "$type": "color",
+        "$value": "oklch(40.000% 0.08000 260.00deg)"
+      },
+      "900": {
+        "$type": "color",
+        "$value": "oklch(32.000% 0.06000 260.00deg)"
+      },
+      "950": {
+        "$type": "color",
+        "$value": "oklch(26.000% 0.05000 260.00deg)"
+      }
+    }
+  }
+}

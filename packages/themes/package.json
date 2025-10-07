@@ -30,7 +30,8 @@
   "scripts": {
     "build": "tsx src/build.ts",
     "build:watch": "chokidar \"src/**/*.{ts,json}\" \"configs/**/*.{ts,json}\" -c \"pnpm build\"",
-    "build:formats": "tsx src/build-formats.ts"
+    "build:formats": "tsx src/build-formats.ts",
+     "build:figma": "tsx src/build-figma-tokens.ts"
   },
   "devDependencies": {
     "@types/fs-extra": "^11.0.4",
