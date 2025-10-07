@@ -31,13 +31,15 @@
     "build": "tsx src/build.ts",
     "build:watch": "chokidar \"src/**/*.{ts,json}\" \"configs/**/*.{ts,json}\" -c \"pnpm build\"",
     "build:formats": "tsx src/build-formats.ts",
-     "build:figma": "tsx src/build-figma-tokens.ts"
+    "build:figma": "tsx src/build-figma-tokens.ts",
+    "build:figma:merged": "tsx src/build-figma-merged.ts"
   },
   "devDependencies": {
+    "@clothesline/tokens": "workspace:*",
     "@types/fs-extra": "^11.0.4",
     "fs-extra": "^11.3.0",
     "ts-node": "^10.9.2",
-    "typescript": "^5.0.0",
-    "@clothesline/tokens": "workspace:*"
+    "tsx": "^4.20.3",
+    "typescript": "^5.0.0"
   }
 }

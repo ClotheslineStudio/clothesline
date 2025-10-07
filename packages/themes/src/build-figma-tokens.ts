@@ -1,31 +1,17 @@
 // packages/themes/src/build-figma-tokens.ts
-// Build Tokens Studio–friendly JSON for each theme & mode.
-// Writes to BOTH:
-//   - dist/figma/  (ephemeral build output)
-//   - tokens/      (committed so the Figma plugin can Pull from GitHub)
-//
-// JSON shape (per file):
-// {
-//   "$description": "...",
-//   "color": {
-//     "primary": { "50": { "$type":"color", "$value":"oklch(...)" }, ... },
-//     ...
-//   }
-// }
-
 import fs from 'fs-extra';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
-// Prefer the clean subpath; if your editor complains, switch to the relative fallback:
-//   import { generateColorRampFromSeed, rampNames } from '../../tokens/colors/index.js';
+// If your editor complains about the subpath import, use the relative fallback:
+// import { generateColorRampFromSeed, rampNames } from '../../tokens/colors/index.js';
 import { generateColorRampFromSeed, rampNames } from '@clothesline/tokens/colors';
 
 import type { ThemeConfig } from './types.ts';
 import type { OklchColor } from '../../tokens/utils/colorEngine.js';
 import { toOklch } from '../../tokens/utils/colorEngine.js';
 
-// Theme configs (same set you use in build.ts)
+// Theme configs
 import { clotheslineTheme } from '../configs/clothesline.ts';
 import { timberlineTheme }   from '../configs/timberline.ts';
 import { nightMarketTheme }  from '../configs/night-market.ts';
@@ -45,7 +31,7 @@ type RoleName = typeof ROLES[number];
 
 const __dirname  = path.dirname(fileURLToPath(import.meta.url));
 const figmaDist  = path.resolve(__dirname, '../dist/figma'); // build output
-const figmaRepo  = path.resolve(__dirname, '../tokens');     // committed path for plugin
+const figmaRepo  = path.resolve(__dirname, '../tokens');     // committed for plugin Pull
 const OUT_DIRS   = [figmaDist, figmaRepo];
 
 /* -------------------------------- helpers --------------------------------- */
@@ -130,10 +116,9 @@ async function writeThemeTokens(theme: ThemeConfig, mode: ThemeMode) {
 
   const filename = `${theme.name}.${mode}.tokens.json`;
   for (const dir of OUT_DIRS) {
-    const file = path.join(dir, filename);
-    await fs.outputJson(file, out, { spaces: 2 });
-    console.log(`✅ Wrote ${path.relative(process.cwd(), file)}`);
+    await fs.outputJson(path.join(dir, filename), out, { spaces: 2 });
   }
+  console.log(`✅ Wrote ${theme.name}.${mode}.tokens.json → dist/figma + tokens`);
 }
 
 async function run() {
@@ -155,10 +140,11 @@ async function run() {
     await writeThemeTokens(t, 'dark');
   }
 
-  console.log('✨ Figma tokens generated to dist/figma/ and tokens/');
+  console.log('✨ Figma color tokens generated.');
 }
 
 run().catch(err => {
   console.error('Figma tokens build failed:', err);
   process.exit(1);
 });
+
