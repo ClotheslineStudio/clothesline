@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { setTheme } from '@clothesline/themes';
-  import { Palette, Sun, Moon, Eye, Contrast } from 'lucide-svelte';
+  import { Palette, Sun, Moon, Eye, Contrast, Github } from 'lucide-svelte';
 
   type ModeState = {
     theme: string;

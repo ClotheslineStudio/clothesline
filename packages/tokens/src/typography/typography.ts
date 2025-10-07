@@ -16,7 +16,7 @@ export const typographyTokens = {
   "--base-font-style": "normal",
   "--base-letter-spacing": "0em",
   "--base-font-color": "var(--color-surface-950)",
-  "--base-font-color-dark": "var(--color-surface-50)",
+  "--base-font-color-dark": "var(--color-surface-950)",
 
   // Headings
   "--heading-font-family": "inherit",

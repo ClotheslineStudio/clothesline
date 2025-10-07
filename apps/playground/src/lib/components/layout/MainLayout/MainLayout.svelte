@@ -24,23 +24,23 @@
   data-sticky-header={stickyHeader ? 'true' : 'false'}
   data-sticky-footer={stickyFooter ? 'true' : 'false'}
 >
-  <header class="layout__header" role="banner">
+  <header class="layout__header">
     <slot name="header" />
   </header>
 
   <div class="layout__body">
-    <aside class="layout__sidebar" role="complementary">
+    <aside class="layout__sidebar">
       <slot name="sidebar" />
     </aside>
 
-    <main class="layout__content" role="main">
+    <main class="layout__content">
       <div class="layout__content-inner">
         <slot name="content" />
       </div>
     </main>
   </div>
 
-  <footer class="layout__footer" role="contentinfo">
+  <footer class="layout__footer">
     <slot name="footer" />
   </footer>
 </div>

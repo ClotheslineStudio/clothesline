@@ -27,6 +27,21 @@ type ThemeMode = 'light' | 'dark';
 const SHADES = TOKEN_SHADES;
 type Step = (typeof SHADES)[number];
 
+// ADD THESE LINES ↓↓↓
+const SHADE_ORDER: Step[] = [50,100,200,300,400,500,600,700,800,900,950];
+const SHADE_ORDER_REV: Step[] = [...SHADE_ORDER].reverse() as Step[];
+
+/** Reverse a generated ramp so 50 gets 950’s value, 100 gets 900, etc. */
+function flipRampForDark(ramp: Record<Step, string>): Record<Step, string> {
+  const out = {} as Record<Step, string>;
+  for (let i = 0; i < SHADE_ORDER.length; i++) {
+    const lightStep = SHADE_ORDER[i];
+    const darkStep  = SHADE_ORDER_REV[i];
+    out[lightStep] = ramp[darkStep];
+  }
+  return out;
+}
+
 // Shades & families used by the vision layer (keep lean)
 const VISION_SHADE_STEPS = [300, 400, 500, 600] as const;
 const VISION_FAMILIES    = ['primary', 'success', 'warning', 'error', 'info'] as const;
@@ -140,11 +155,16 @@ function rampsForTheme(theme: ThemeConfig, mode: ThemeMode): Record<string, Reco
   for (const role of ROLES) {
     const seed = getRoleSeed(theme, mode, role);
     if (!seed) continue;
-    // generateColorRamps currently returns a single ramp (Record<Step,string>) from one seed
-    result[role] = generateColorRampFromSeed(seed) as Record<Step, string>;
+
+    // generate the normal (light-direction) ramp from the seed
+    const ramp = generateColorRampFromSeed(seed) as Record<Step, string>;
+
+    // key change: in dark mode, reverse the step mapping so 50 is dark and 950 is light
+    result[role] = mode === 'dark' ? flipRampForDark(ramp) : ramp;
   }
   return result;
 }
+
 
 /**
  * Emit base ramp + contrast companion (-ct) + vision alias (-vis)

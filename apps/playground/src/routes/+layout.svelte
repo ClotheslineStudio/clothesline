@@ -1,31 +1,34 @@
 <!-- +layout.svelte -->
 <script lang="ts">
   import '../app.css';
-  // import { setTheme } from '@clothesline/themes'; // not needed for mode toggle
   import { browser } from '$app/environment';
 
-  import Header from '$lib/components/layout/Header/Header.svelte';
+  // Shell + Region
+  import { AppShell } from '@clothesline/ui';
+  import { AppBar } from '@clothesline/ui';
+
+  // Local pieces
   import Footer from '$lib/components/layout/Footer/Footer.svelte';
-  import MainLayout from '$lib/components/layout/MainLayout/MainLayout.svelte';
   import Sidebar from '$lib/components/layout/Sidebar.svelte';
   import ThreeColumn from '$lib/components/layout/ThreeColumn/ThreeColumn.svelte';
   import TableOfContents from '$lib/components/navigation/TableOfContents/TableOfContents.svelte';
 
-  import Dropdown from '$lib/components/overlays/Dropdown/Dropdown.svelte';
+  // Icons
+  import { Menu, Sun, Moon, Github, Search } from 'lucide-svelte';
 
-  // ✅ add this
+  // Mode state
   let mode: 'light' | 'dark' = 'light';
 
   if (browser) {
-    // on first load, respect saved or current attribute
     const root = document.documentElement;
     const saved = localStorage.getItem('mode');
-    const initial = (saved === 'dark' || saved === 'light')
-      ? saved
-      : root.getAttribute('data-mode') ?? 'light';
+    const initial =
+      saved === 'dark' || saved === 'light'
+        ? saved
+        : root.getAttribute('data-mode') ?? 'light';
     mode = initial as 'light' | 'dark';
     root.setAttribute('data-mode', mode);
-    root.style.colorScheme = mode; // native widgets follow
+    root.style.colorScheme = mode;
   }
 
   function toggleMode() {
@@ -37,12 +40,18 @@
     localStorage.setItem('mode', mode);
   }
 
+  // Sidebar collapse (AppShell controls off-canvas on small screens)
+  let collapsed = true;
+  function toggleSidebar() {
+    collapsed = !collapsed;
+  }
+
   const routes = [
     { title: 'Button', path: '/core/button' },
     { title: 'Card', path: '/core/card' },
     { title: 'Divider', path: '/core/divider' },
     { title: 'Icon', path: '/core/icon' },
-    { title: 'Label', path: '/core/label' },
+    { title: 'Label', path: '/typography/label' },
     { title: 'Text', path: '/core/text' },
     { title: 'Chart', path: '/data/chart' },
     { title: 'DataList', path: '/data/datalist' },
@@ -87,51 +96,57 @@
     { title: 'MediaPlayer', path: '/media/mediaplayer' },
     { title: 'MediaPreview', path: '/media/mediapreview' },
     { title: 'VideoPlayer', path: '/media/videoplayer' },
-    { title: 'ZoomImage', path: '/media/zoomimage' },
-    { title: 'TopBar', path: '/layout/topbar' },
     { title: 'ThreeColumn', path: '/layout/threecolumn' },
     { title: 'MainLayout', path: '/layout/mainlayout' },
     { title: 'Sidebar', path: '/layout/sidebar' },
-    { title: 'Header', path: '/layout/header' },
     { title: 'Footer', path: '/layout/footer' },
-    { title: 'Dropdown', path: '/overlays/dropdown' },
-    { title: 'Popover', path: '/overlays/popover' },
-    { title: 'ToggleButton', path: '/core/toggle' },
-    { title: 'Avatar', path: '/core/avatar' },
-    { title: 'Badge', path: '/core/badge' },
-    { title: 'Test', path: '/test' },
     { title: 'Heading', path: '/typography/heading' },
     { title: 'Paragraph', path: '/typography/paragraph' },
-    { title: 'Label', path: '/typography/label' }
+    { title: 'AppBar', path: '/navigation/appbar' }
   ];
 </script>
 
-<MainLayout>
-  <!-- Header -->
+<AppShell
+  {collapsed}
+  collapsible={true}
+  sidebarWidth="272px"
+  contentMaxWidth="1200px"
+  pageGutterX="var(--spacing-4, 1rem)"
+>
+  <!-- Header (AppBar fully owns surface and gutters via AppShell) -->
   <div slot="header">
-    <Header>
-      <div slot="left">
-        <img src="/Clothesline-Logo.svg" alt="Logo" style="height: 2rem;" />
-        <span class="font-bold">Clothesline UI</span>
+    <AppBar sticky border elevated>
+      <div slot="left" class="brand">
+        <button class="icon-btn" on:click={toggleSidebar} aria-label="Toggle sidebar"><Menu size={18} /></button>
+        <a href="/" class="brand-link">
+          <img src="/Logo-01.svg" alt="Logo" class="brand-logo" />
+          <span class="brand-name">Clothesline UI</span>
+        </a>
       </div>
 
       <div slot="center">
-        <nav class="hidden md:flex gap-4 text-sm hover:bg-[var(--color-surface-200)] text-[var(--base-font-color)] transition-colors">
+        <nav class="main-nav">
           <a href="/docs">Docs</a>
           <a href="/components">Components</a>
           <a href="/apps">Apps</a>
         </nav>
       </div>
 
-      <div slot="right">
-        <input type="search" placeholder="Search…" class="rounded border px-2 py-1 text-sm" />
-        <button on:click={toggleMode} aria-pressed={mode === 'dark'}>
-  {mode === 'dark' ? '🌚' : '🌞'}
-</button>
+      <div slot="right" class="actions">
+        <div class="search">
+          <Search size={16} />
+          <input type="search" placeholder="Search…" />
+        </div>
 
-        <a href="https://github.com" target="_blank">GitHub</a>
+        <button on:click={toggleMode} aria-pressed={mode === 'dark'} aria-label="Toggle dark mode" class="icon-btn">
+          {#if mode === 'dark'} <Moon size={18} /> {:else} <Sun size={18} /> {/if}
+        </button>
+
+        <a href="https://github.com/clotheslinestudio/ui" target="_blank" rel="noopener noreferrer" class="icon-link" aria-label="GitHub">
+          <Github size={18} />
+        </a>
       </div>
-    </Header>
+    </AppBar>
   </div>
 
   <!-- Sidebar -->
@@ -139,19 +154,12 @@
     <Sidebar {routes} />
   </div>
 
-  <!-- Content area with ThreeColumn layout -->
+  <!-- Content -->
   <div slot="content">
-    <ThreeColumn
-      maxWidth={920}
-      tocWidth={280}
-      stickyTop={16}
-    >
-      <!-- Main page content -->
+    <ThreeColumn maxWidth={920} tocWidth={280} stickyTop={16}>
       <div slot="main">
         <slot />
       </div>
-
-      <!-- TOC column -->
       <div slot="toc">
         <TableOfContents selector=".main" />
       </div>
@@ -164,22 +172,76 @@
       <div slot="left">
         <span class="text-sm">© {new Date().getFullYear()} Clothesline Studio</span>
       </div>
-
       <div slot="center">
-        <nav class="flex gap-4 text-xs text-muted-foreground">
+        <nav class="footer-nav">
           <a href="/privacy">Privacy</a>
           <a href="/terms">Terms</a>
           <a href="/contact">Contact</a>
         </nav>
       </div>
-
       <div slot="right">
         <a href="https://twitter.com" target="_blank">Twitter</a>
         <a href="https://discord.gg" target="_blank">Discord</a>
       </div>
     </Footer>
   </div>
-</MainLayout>
+</AppShell>
+
+<style>
+  /* Brand */
+  .brand { display:flex; align-items:center; gap:.5rem; }
+  .brand-link { display:flex; align-items:center; gap:.5rem; color: inherit; text-decoration: none; }
+  .brand-logo { height: 2rem; }
+  .brand-name { font-weight: 700; }
+
+  /* Center nav */
+  .main-nav { display:flex; gap:1rem; font-size:.9rem; }
+  .main-nav a {
+    text-decoration:none;
+    color: var(--base-font-color);
+    opacity:.85;
+    padding:.25rem .5rem;
+    border-radius:.5rem;
+  }
+  .main-nav a:hover { opacity:1; background: color-mix(in oklab, var(--base-font-color) 10%, transparent); }
+  :global(html[data-mode="dark"]) .main-nav a { color: var(--base-font-color-dark); }
+
+  /* Right actions */
+  .actions { display:flex; align-items:center; gap:.5rem; }
+
+  .icon-btn, .icon-link {
+    display:inline-flex; align-items:center; justify-content:center;
+    width:32px; height:32px; border-radius:.5rem;
+    color: inherit; opacity:.9; transition: background .15s ease, opacity .15s ease;
+  }
+  .icon-btn:hover, .icon-link:hover { opacity:1; background: color-mix(in oklab, currentColor 12%, transparent); }
+
+  /* Search box (dark-safe) */
+  .search {
+    display:flex; align-items:center; gap:.4rem;
+    border:1px solid var(--color-surface-300);
+    background: color-mix(in oklab, var(--color-surface-100) 88%, transparent);
+    padding:.25rem .5rem; border-radius:.5rem;
+  }
+  .search input {
+    border:0; outline:0; background:transparent;
+    color: var(--base-font-color);
+    font-size:.9rem; min-width:12ch;
+  }
+  .search input::placeholder { color: var(--text-muted, #667085); }
+  :global(html[data-mode="dark"]) .search {
+    border-color: var(--color-surface-700);
+    background: color-mix(in oklab, var(--color-surface-900) 90%, transparent);
+  }
+  :global(html[data-mode="dark"]) .search input { color: var(--base-font-color-dark); }
+  :global(html[data-mode="dark"]) .search input::placeholder { color: var(--text-muted, #a1a1aa); }
+
+  /* Footer nav */
+  .footer-nav { display:flex; gap:1rem; font-size:.8rem; opacity:.9; }
+  .footer-nav a { text-decoration:none; color: inherit; }
+</style>
+
+
 
 
 
