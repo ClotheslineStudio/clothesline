@@ -99,7 +99,10 @@
     { title: 'ToggleButton', path: '/core/toggle' },
     { title: 'Avatar', path: '/core/avatar' },
     { title: 'Badge', path: '/core/badge' },
-    { title: 'Test', path: '/test' }
+    { title: 'Test', path: '/test' },
+    { title: 'Heading', path: '/typography/heading' },
+    { title: 'Paragraph', path: '/typography/paragraph' },
+    { title: 'Label', path: '/typography/label' }
   ];
 </script>
 

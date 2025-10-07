@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { setTheme } from '@clothesline/themes';
+  import { Palette, Sun, Moon, Eye, Contrast } from 'lucide-svelte';
 
   type ModeState = {
     theme: string;
@@ -12,19 +13,13 @@
   export let className = '';
 
   const themes = [
-    'clothesline',
-    'copper-sun',
-    'timberline',
-    'milkyway',
-    'retrograde',
-    'tidal-glass',
-    'night-market',
-    'bigsky'
+    'clothesline','copper-sun','timberline','milkyway',
+    'retrograde','tidal-glass','night-market','bigsky'
   ] as const;
 
-  const modes = ['light', 'dark'] as const;
-  const visions = ['none', 'protanopia', 'deuteranopia', 'tritanopia', 'monochromacy'] as const;
-  const contrasts = ['normal', 'high', 'custom'] as const;
+  const modes = ['light','dark'] as const;
+  const visions = ['none','protanopia','deuteranopia','tritanopia','monochromacy'] as const;
+  const contrasts = ['normal','high','custom'] as const;
 
   let selectedTheme: string = 'clothesline';
   let selectedMode: (typeof modes)[number] = 'light';
@@ -47,25 +42,17 @@
 
   function applyDomAttributes() {
     const html = document.documentElement;
-
-    // theme/mode always set by setTheme, but ensure presence for safety
     html.setAttribute('data-theme', selectedTheme);
     html.setAttribute('data-mode', selectedMode);
 
-    // IMPORTANT: actively remove data-vision when "none"
-    if (selectedVision === 'none') {
-      html.removeAttribute('data-vision');
-    } else {
-      html.setAttribute('data-vision', selectedVision);
-    }
+    if (selectedVision === 'none') html.removeAttribute('data-vision');
+    else html.setAttribute('data-vision', selectedVision);
 
-    // Keep data-contrast accurate + clean inline var when not custom
     if (selectedContrast === 'custom') {
       html.setAttribute('data-contrast', 'custom');
       html.style.setProperty('--contrast-factor', String(Number(customContrastFactor) || 1));
     } else {
       html.setAttribute('data-contrast', selectedContrast);
-      // remove inline override so theme mapping takes over
       html.style.removeProperty('--contrast-factor');
     }
   }
@@ -75,14 +62,12 @@
       selectedContrast === 'custom'
         ? { custom: Number(customContrastFactor) }
         : selectedContrast;
-
-    const state: ModeState = {
+    return {
       theme: selectedTheme,
       mode: selectedMode,
       contrast,
       ...(selectedVision !== 'none' ? { vision: selectedVision } : {})
     };
-    return state;
   }
 
   function persist(state: ModeState) {
@@ -92,8 +77,13 @@
   function updateTheme() {
     const state = buildState();
     setTheme(state);
-    applyDomAttributes();     // <-- ensure attributes truly reflect UI
+    applyDomAttributes();
     persist(state);
+  }
+
+  function toggleMode() {
+    selectedMode = selectedMode === 'light' ? 'dark' : 'light';
+    updateTheme();
   }
 
   onMount(() => {
@@ -114,16 +104,14 @@
       }
     } catch { /* ignore */ }
 
-    // Apply on first paint
     const state = buildState();
     setTheme(state);
-    applyDomAttributes();      // <-- ensure vision 'none' actually removes the attr
+    applyDomAttributes();
     persist(state);
   });
 </script>
 
-
-<header class="header {className}">
+<header class={`header ${className}`}>
   <div class="header-left">
     <slot name="left" />
   </div>
@@ -134,53 +122,56 @@
 
   <div class="header-right">
     <slot name="right" />
+
+    <!-- Quick mode toggle -->
+    <button class="icon-btn" on:click={toggleMode} aria-label="Toggle light/dark">
+      {#if selectedMode === 'light'} <Moon size={18} /> {:else} <Sun size={18} /> {/if}
+    </button>
+
     <div class="theme-toggle-controls">
       <!-- Theme -->
-      <label class="sr-only" for="cl-theme">Theme</label>
-      <select id="cl-theme" bind:value={selectedTheme} on:change={updateTheme} aria-label="Theme">
-        {#each themes as theme}
-          <option value={theme}>{theme}</option>
-        {/each}
-      </select>
+      <div class="control">
+        <Palette size={16} aria-hidden="true" />
+        <label class="sr-only" for="cl-theme">Theme</label>
+        <select id="cl-theme" bind:value={selectedTheme} on:change={updateTheme} aria-label="Theme">
+          {#each themes as theme}<option value={theme}>{theme}</option>{/each}
+        </select>
+      </div>
 
       <!-- Mode -->
-      <label class="sr-only" for="cl-mode">Mode</label>
-      <select id="cl-mode" bind:value={selectedMode} on:change={updateTheme} aria-label="Mode">
-        {#each modes as mode}
-          <option value={mode}>{mode}</option>
-        {/each}
-      </select>
+      <div class="control">
+        {#if selectedMode === 'light'} <Sun size={16} aria-hidden="true" /> {:else} <Moon size={16} aria-hidden="true" /> {/if}
+        <label class="sr-only" for="cl-mode">Mode</label>
+        <select id="cl-mode" bind:value={selectedMode} on:change={updateTheme} aria-label="Mode">
+          {#each modes as mode}<option value={mode}>{mode}</option>{/each}
+        </select>
+      </div>
 
       <!-- Vision -->
-      <label class="sr-only" for="cl-vision">Vision</label>
-      <select id="cl-vision" bind:value={selectedVision} on:change={updateTheme} aria-label="Vision">
-        {#each visions as vision}
-          <option value={vision}>{vision}</option>
-        {/each}
-      </select>
+      <div class="control">
+        <Eye size={16} aria-hidden="true" />
+        <label class="sr-only" for="cl-vision">Vision</label>
+        <select id="cl-vision" bind:value={selectedVision} on:change={updateTheme} aria-label="Vision">
+          {#each visions as vision}<option value={vision}>{vision}</option>{/each}
+        </select>
+      </div>
 
       <!-- Contrast -->
-      <label class="sr-only" for="cl-contrast">Contrast</label>
-      <select id="cl-contrast" bind:value={selectedContrast} on:change={updateTheme} aria-label="Contrast">
-        {#each contrasts as contrast}
-          <option value={contrast}>{contrast}</option>
-        {/each}
-      </select>
+      <div class="control">
+        <Contrast size={16} aria-hidden="true" />
+        <label class="sr-only" for="cl-contrast">Contrast</label>
+        <select id="cl-contrast" bind:value={selectedContrast} on:change={updateTheme} aria-label="Contrast">
+          {#each contrasts as contrast}<option value={contrast}>{contrast}</option>{/each}
+        </select>
+      </div>
 
       {#if selectedContrast === 'custom'}
-        <label class="sr-only" for="cl-contrast-factor">
-          Custom contrast factor
-        </label>
+        <label class="sr-only" for="cl-contrast-factor">Custom contrast factor</label>
         <input
           id="cl-contrast-factor"
-          type="range"
-          min="1.00"
-          max="1.40"
-          step="0.01"
-          bind:value={customContrastFactor}
-          on:input={updateTheme}
-          aria-label="Custom contrast factor"
-          class="w-32"
+          type="range" min="1.00" max="1.40" step="0.01"
+          bind:value={customContrastFactor} on:input={updateTheme}
+          aria-label="Custom contrast factor" class="range"
         />
       {/if}
     </div>
@@ -189,56 +180,81 @@
 
 <style>
   .sr-only {
-    position: absolute;
-    width: 1px; height: 1px;
-    padding: 0; margin: -1px;
-    overflow: hidden; clip: rect(0, 0, 0, 0);
-    white-space: nowrap; border: 0;
+    position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+    overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0;
   }
 
+  /* High-contrast header palette with mode-aware tokens */
   .header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
+    --header-bg: var(--color-surface-100);
+    --header-fg: var(--base-font-color, var(--color-surface-950));
+    --header-border: var(--color-surface-300);
+    --header-shadow: var(--shadow-sm, 0 1px 0 rgba(0,0,0,.06));
+
+    display: flex; align-items: center; justify-content: space-between;
     gap: var(--gap-base, 1rem);
-    padding: var(--spacing-4, 1rem);
-    background-color: var(--background-panel, #fff);
-    border-bottom: var(--border-subtle, 1px) solid var(--border-default-color, #ccc);
-    color: var(--base-font-color, #000);
+    padding: var(--spacing-3, .75rem) var(--spacing-4, 1rem);
+    background:
+      linear-gradient(to bottom, color-mix(in oklab, var(--header-bg) 92%, transparent), var(--header-bg));
+    color: var(--header-fg);
+    border-bottom: 1px solid var(--header-border);
+    box-shadow: var(--header-shadow);
+    position: relative;
+    z-index: 10;
   }
 
-  .header-left,
-  .header-center,
-  .header-right {
-    display: flex;
-    align-items: center;
-    gap: var(--gap-small, 0.5rem);
+  :global(html[data-mode="dark"]) .header {
+    --header-bg: var(--color-surface-900);
+    --header-fg: var(--base-font-color-dark, var(--color-surface-50));
+    --header-border: var(--color-surface-700);
+    --header-shadow: 0 1px 0 rgba(255,255,255,.06);
   }
 
-  .header-center {
-    flex: 1;
-    justify-content: center;
+  /* High contrast boost */
+  :global(html[data-contrast="high"]) .header {
+    --header-bg: color-mix(in oklab, var(--header-bg) 85%, transparent);
+    --header-border: color-mix(in oklab, var(--header-fg) 18%, var(--header-border));
   }
 
-  .header-right {
-    justify-content: flex-end;
+  .header-left, .header-center, .header-right {
+    display: flex; align-items: center; gap: var(--gap-small, .5rem);
+  }
+  .header-center { flex: 1; justify-content: center; }
+  .header-right { justify-content: flex-end; gap: .75rem; }
+
+  /* Icon button */
+  .icon-btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 32px; height: 32px; border-radius: 8px;
+    color: var(--header-fg); opacity: .9; transition: background .15s ease, opacity .15s ease;
+  }
+  .icon-btn:hover { opacity: 1; background: color-mix(in oklab, var(--header-fg) 12%, transparent); }
+
+  /* Controls group */
+  .theme-toggle-controls { display: flex; align-items: center; gap: .5rem; }
+  .control { display: inline-flex; align-items: center; gap: .375rem; }
+
+  .theme-toggle-controls select {
+    appearance: none;
+    background: color-mix(in oklab, var(--header-bg) 92%, transparent);
+    color: var(--header-fg);
+    border: 1px solid var(--header-border);
+    border-radius: .5rem;
+    padding: .35rem .6rem;
+    font-size: .875rem;
+    line-height: 1.2;
+  }
+  .theme-toggle-controls select:focus {
+    outline: 2px solid color-mix(in oklab, var(--header-fg) 28%, transparent);
+    outline-offset: 1px;
   }
 
-  .theme-toggle-controls {
-    display: flex;
-    gap: 0.5rem;
-    align-items: center;
-  }
-
-  .theme-toggle-controls select,
-  .theme-toggle-controls input[type="range"] {
-    padding: 0.3rem 0.5rem;
-    font-size: 0.875rem;
-    background: var(--color-surface-100);
-    border: 1px solid var(--color-surface-300);
-    border-radius: 0.25rem;
+  .range {
+    accent-color: var(--header-fg);
+    width: 8rem;
   }
 </style>
+
 
 
 
