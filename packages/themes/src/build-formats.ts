@@ -5,7 +5,7 @@ import { fileURLToPath } from 'url';
 
 // Prefer the clean subpath; if your editor complains, switch to the relative fallback:
 // import { rampFormatsFromSeed, rampNames } from '../../tokens/colors/index.js';
-import { rampFormatsFromSeed, rampNames } from '@clothesline/tokens/colors';
+// Removed duplicate import; all imports must be at the top level.
 
 import type { ThemeConfig } from './types.ts';
 import type { OklchColor } from '../../tokens/utils/colorEngine.js';
@@ -32,7 +32,30 @@ const ROLES = [
 ] as const;
 type RoleName = typeof ROLES[number];
 
+import { rampFormatsFromSeed, rampNames } from '@clothesline/tokens/colors';
+
 /** Coerce various config shapes into an OKLCH seed. (Copied from build.ts pattern) */
+type Step = (typeof rampNames)[number];
+
+const SHADE_ORDER = rampNames as Step[];
+const SHADE_ORDER_REV = [...SHADE_ORDER].reverse() as Step[];
+
+function flipOneRamp<T extends Record<Step, string>>(r: T): T {
+  const out = {} as T;
+  for (let i = 0; i < SHADE_ORDER.length; i++) {
+    const lightStep = SHADE_ORDER[i];
+    const darkStep  = SHADE_ORDER_REV[i];
+    (out as any)[lightStep] = r[darkStep];
+  }
+  return out;
+}
+
+function flipFormatsForDark(formats: Record<string, Record<Step, string>>) {
+  const out: typeof formats = {};
+  for (const k of Object.keys(formats)) out[k] = flipOneRamp(formats[k] as any);
+  return out;
+}
+
 function getRoleSeed(theme: ThemeConfig, mode: ThemeMode, role: RoleName): OklchColor | null {
   const node: any =
     (theme as any).roles?.[role] ??
@@ -104,7 +127,8 @@ async function writeFormats(theme: ThemeConfig) {
     for (const role of ROLES) {
       const seed = getRoleSeed(theme, mode, role);
       if (!seed) continue;
-      out[mode][role] = rampFormatsFromSeed(seed);
+      const fmts = rampFormatsFromSeed(seed) as Record<string, Record<Step, string>>;
+      out[mode][role] = mode === 'dark' ? flipFormatsForDark(fmts) : fmts;
     }
   }
 

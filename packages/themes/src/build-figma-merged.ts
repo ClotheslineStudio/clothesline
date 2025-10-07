@@ -45,6 +45,19 @@ const THEMES: ThemeConfig[] = [
 ];
 
 /* ---------------- helpers ---------------- */
+type Step = (typeof rampNames)[number];
+const SHADE_ORDER = rampNames as Step[];
+const SHADE_ORDER_REV = [...SHADE_ORDER].reverse() as Step[];
+
+function flipRampForDark(ramp: Record<Step, string>): Record<Step, string> {
+  const out = {} as Record<Step, string>;
+  for (let i = 0; i < SHADE_ORDER.length; i++) {
+    const lightStep = SHADE_ORDER[i];
+    const darkStep  = SHADE_ORDER_REV[i];
+    out[lightStep] = ramp[darkStep];
+  }
+  return out;
+}
 
 function coerceToOklch(input: any, fallbackHue = 0): OklchColor | null {
   if (input == null) return null;
@@ -127,13 +140,14 @@ function buildGlobalSet() {
   return global;
 }
 
-function buildThemeModeSet(theme: ThemeConfig, _mode: ThemeMode) {
+function buildThemeModeSet(theme: ThemeConfig, mode: ThemeMode) {
   const set: any = { color: {} };
   for (const role of ROLES) {
     const src: any = (theme as any).roles?.[role] ?? (theme as any)[role] ?? (theme as any).colors?.[role] ?? null;
     const seed = coerceToOklch(src);
     if (!seed) continue;
-    const ramp = generateColorRampFromSeed(seed); // {50:'oklch(...)',...}
+    let ramp = generateColorRampFromSeed(seed) as Record<Step, string>; // {50:'oklch(...)',...}
+    if (mode === 'dark') ramp = flipRampForDark(ramp);
     const roleObj: Record<string, any> = {};
     for (const step of rampNames) roleObj[step] = { $type: 'color', $value: ramp[step] };
     set.color[role] = roleObj;

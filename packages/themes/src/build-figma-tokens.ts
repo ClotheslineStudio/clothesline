@@ -36,6 +36,22 @@ const OUT_DIRS   = [figmaDist, figmaRepo];
 
 /* -------------------------------- helpers --------------------------------- */
 
+type Step = (typeof rampNames)[number];
+const SHADE_ORDER = rampNames as Step[];
+const SHADE_ORDER_REV = [...SHADE_ORDER].reverse() as Step[];
+
+function flipRampForDark(ramp: Record<Step, string>): Record<Step, string> {
+  const out = {} as Record<Step, string>;
+  for (let i = 0; i < SHADE_ORDER.length; i++) {
+    const lightStep = SHADE_ORDER[i];
+    const darkStep  = SHADE_ORDER_REV[i];
+    out[lightStep] = ramp[darkStep];
+  }
+  return out;
+}
+
+
+
 function coerceToOklch(input: any, fallbackHue = 0): OklchColor | null {
   if (input == null) return null;
 
@@ -106,7 +122,8 @@ async function writeThemeTokens(theme: ThemeConfig, mode: ThemeMode) {
     const seed = getRoleSeed(theme, mode, role);
     if (!seed) continue;
 
-    const ramp = generateColorRampFromSeed(seed); // { 50:'oklch(...)', ... } gamut-safe
+    let ramp = generateColorRampFromSeed(seed) as Record<Step, string>;
+    if (mode === 'dark') ramp = flipRampForDark(ramp);
     const roleObj: Record<string, any> = {};
     for (const step of rampNames) {
       roleObj[step] = { $type: 'color', $value: ramp[step] };
