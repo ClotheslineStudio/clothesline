@@ -3,8 +3,7 @@ import fs from 'fs-extra';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
-// If your editor complains about the subpath import, use the relative fallback:
-// import { generateColorRampFromSeed, rampNames } from '../../tokens/colors/index.js';
+// Colors
 import { generateColorRampFromSeed, rampNames } from '@clothesline/tokens/colors';
 
 import type { ThemeConfig } from './types.ts';
@@ -29,139 +28,131 @@ const ROLES = [
 ] as const;
 type RoleName = typeof ROLES[number];
 
-const __dirname  = path.dirname(fileURLToPath(import.meta.url));
-const figmaDist  = path.resolve(__dirname, '../dist/figma'); // build output
-const figmaRepo  = path.resolve(__dirname, '../tokens');     // committed for plugin Pull
-const OUT_DIRS   = [figmaDist, figmaRepo];
-
-/* -------------------------------- helpers --------------------------------- */
-
 type Step = (typeof rampNames)[number];
-const SHADE_ORDER = rampNames as Step[];
+const SHADE_ORDER     = rampNames as Step[];
 const SHADE_ORDER_REV = [...SHADE_ORDER].reverse() as Step[];
 
-function flipRampForDark(ramp: Record<Step, string>): Record<Step, string> {
-  const out = {} as Record<Step, string>;
-  for (let i = 0; i < SHADE_ORDER.length; i++) {
-    const lightStep = SHADE_ORDER[i];
-    const darkStep  = SHADE_ORDER_REV[i];
-    out[lightStep] = ramp[darkStep];
+function flipRampForDark(r: Record<Step,string>) {
+  const out = {} as Record<Step,string>;
+  for (let i=0;i<SHADE_ORDER.length;i++) {
+    out[SHADE_ORDER[i]] = r[SHADE_ORDER_REV[i]];
   }
   return out;
 }
 
-
-
 function coerceToOklch(input: any, fallbackHue = 0): OklchColor | null {
   if (input == null) return null;
-
   if (typeof input === 'string') {
     const o: any = toOklch(input);
     return o && typeof o.l === 'number'
       ? { mode: 'oklch', l: o.l, c: o.c ?? 0, h: o.h ?? fallbackHue, alpha: o.alpha }
       : null;
   }
-  if (typeof input === 'number') {
-    return { mode: 'oklch', l: 0.64, c: 0.12, h: input };
-  }
+  if (typeof input === 'number') return { mode:'oklch', l:0.64, c:0.12, h:input };
   if (typeof input === 'object') {
-    if (typeof input.hue === 'number') {
-      const h = input.hue;
-      const c = typeof input.chroma === 'number' ? input.chroma : 0.12;
-      return { mode: 'oklch', l: 0.64, c, h };
-    }
-    if (input.mode === 'oklch' && typeof input.l === 'number') {
-      return { mode: 'oklch', l: input.l, c: input.c ?? 0, h: input.h ?? fallbackHue, alpha: input.alpha };
-    }
-    if (typeof input.l === 'number' && typeof input.c === 'number') {
-      return { mode: 'oklch', l: input.l, c: input.c, h: input.h ?? fallbackHue, alpha: input.alpha };
-    }
-    if (input.light !== undefined || input.dark !== undefined) {
-      const pick = input.light ?? input.dark;
-      const hGuess = typeof input.hue === 'number' ? input.hue : fallbackHue;
-      return coerceToOklch(pick, hGuess);
-    }
-    if (input.seed?.light !== undefined || input.seed?.dark !== undefined) {
-      const pick = input.seed.light ?? input.seed.dark;
-      return coerceToOklch(pick, fallbackHue);
-    }
-    if (input.seed !== undefined) return coerceToOklch(input.seed, fallbackHue);
-    if (input.value !== undefined) return coerceToOklch(input.value, fallbackHue);
-
+    if (typeof input.hue === 'number')
+      return { mode:'oklch', l:0.64, c: typeof input.chroma==='number'?input.chroma:0.12, h: input.hue };
+    if (input.mode === 'oklch' && typeof input.l === 'number')
+      return { mode:'oklch', l:input.l, c:input.c ?? 0, h:input.h ?? fallbackHue, alpha: input.alpha };
+    if (typeof input.l === 'number' && typeof input.c === 'number')
+      return { mode:'oklch', l:input.l, c:input.c, h:input.h ?? fallbackHue, alpha: input.alpha };
+    if (input.seed?.light !== undefined || input.seed?.dark !== undefined)
+      return coerceToOklch(input.seed.light ?? input.seed.dark, fallbackHue);
+    if (input.seed !== undefined)   return coerceToOklch(input.seed, fallbackHue);
+    if (input.value !== undefined)  return coerceToOklch(input.value, fallbackHue);
     const o: any = toOklch(input);
     return o && typeof o.l === 'number'
-      ? { mode: 'oklch', l: o.l, c: o.c ?? 0, h: o.h ?? fallbackHue, alpha: o.alpha }
+      ? { mode:'oklch', l:o.l, c:o.c ?? 0, h:o.h ?? fallbackHue, alpha:o.alpha }
       : null;
   }
   return null;
 }
 
-function getRoleSeed(theme: ThemeConfig, _mode: ThemeMode, role: RoleName): OklchColor | null {
+function getRoleSeed(theme: ThemeConfig, role: RoleName): OklchColor | null {
   const node: any =
     (theme as any).roles?.[role] ??
     (theme as any)[role] ??
     (theme as any).colors?.[role] ??
     null;
-
   const seed = coerceToOklch(node);
-  if (!seed) {
-    console.warn(`[figma] No seed for role "${role}" in "${(theme as any).name}".`);
-  }
+  if (!seed) console.warn(`[figma] No seed for role "${role}" in "${(theme as any).name}".`);
   return seed;
 }
 
-/* ------------------------------ main writer -------------------------------- */
+const THEMES: ThemeConfig[] = [
+  clotheslineTheme,
+  timberlineTheme,
+  nightMarketTheme,
+  retrogradeTheme,
+  tidalGlassTheme,
+  copperSunTheme,
+  milkywayTheme,
+  bigSkyTheme
+];
 
-async function writeThemeTokens(theme: ThemeConfig, mode: ThemeMode) {
-  const out: any = {
-    $description: `Clothesline "${theme.name}" – ${mode} mode`,
-    color: {}
+const __dirname  = path.dirname(fileURLToPath(import.meta.url));
+const outDir     = path.resolve(__dirname, '../dist/figma');
+const repoDir    = path.resolve(__dirname, '../tokens');
+
+// Build a single multi-set file + $themes so light/dark become modes
+function buildFile() {
+  const file: any = {
+    $description: 'Clothesline color tokens for Tokens Studio (one set per theme+mode) + $themes for Figma modes',
+    $metadata: {
+      tokenSetOrder: THEMES.flatMap(t => [`${t.name}.light`, `${t.name}.dark`])
+    }
   };
 
-  for (const role of ROLES) {
-    const seed = getRoleSeed(theme, mode, role);
-    if (!seed) continue;
-
-    let ramp = generateColorRampFromSeed(seed) as Record<Step, string>;
-    if (mode === 'dark') ramp = flipRampForDark(ramp);
-    const roleObj: Record<string, any> = {};
-    for (const step of rampNames) {
-      roleObj[step] = { $type: 'color', $value: ramp[step] };
+  // color sets
+  for (const theme of THEMES) {
+    for (const mode of ['light','dark'] as ThemeMode[]) {
+      const set: any = { color: {} };
+      for (const role of ROLES) {
+        const seed = getRoleSeed(theme, role);
+        if (!seed) continue;
+        let ramp = generateColorRampFromSeed(seed) as Record<Step,string>;
+        if (mode === 'dark') ramp = flipRampForDark(ramp);
+        set.color[role] = Object.fromEntries(
+          rampNames.map(step => [step, { $type:'color', $value: ramp[step] }])
+        );
+      }
+      file[`${theme.name}.${mode}`] = set;
     }
-    out.color[role] = roleObj;
   }
 
-  const filename = `${theme.name}.${mode}.tokens.json`;
-  for (const dir of OUT_DIRS) {
-    await fs.outputJson(path.join(dir, filename), out, { spaces: 2 });
-  }
-  console.log(`✅ Wrote ${theme.name}.${mode}.tokens.json → dist/figma + tokens`);
+  // $themes: same name, two modes → Tokens Studio pushes as one collection with modes
+  file.$themes = THEMES.flatMap(t => ([
+    {
+      name: t.name,
+      mode: 'Light',
+      group: t.name.replace(/(^|\s)\S/g, s => s.toUpperCase()),
+      selectedTokenSets: { [`${t.name}.light`]: 'enabled' }
+    },
+    {
+      name: t.name,
+      mode: 'Dark',
+      group: t.name.replace(/(^|\s)\S/g, s => s.toUpperCase()),
+      selectedTokenSets: { [`${t.name}.dark`]: 'enabled' }
+    }
+  ]));
+
+  return file;
 }
 
 async function run() {
-  const themes: ThemeConfig[] = [
-    clotheslineTheme,
-    timberlineTheme,
-    nightMarketTheme,
-    retrogradeTheme,
-    tidalGlassTheme,
-    copperSunTheme,
-    milkywayTheme,
-    bigSkyTheme
-  ];
-
-  await Promise.all(OUT_DIRS.map(d => fs.ensureDir(d)));
-
-  for (const t of themes) {
-    await writeThemeTokens(t, 'light');
-    await writeThemeTokens(t, 'dark');
-  }
-
-  console.log('✨ Figma color tokens generated.');
+  await fs.ensureDir(outDir);
+  await fs.ensureDir(repoDir);
+  const file = buildFile();
+  const distFile = path.join(outDir, 'colors.tokens.json');
+  const repoFile = path.join(repoDir, 'colors.tokens.json');
+  await fs.outputJson(distFile, file, { spaces: 2 });
+  await fs.outputJson(repoFile, file, { spaces: 2 });
+  console.log('✨ Wrote color tokens with $themes (modes).');
 }
 
 run().catch(err => {
-  console.error('Figma tokens build failed:', err);
+  console.error('Figma color tokens build failed:', err);
   process.exit(1);
 });
+
 
