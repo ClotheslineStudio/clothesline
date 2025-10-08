@@ -1,6 +1,7 @@
 // packages/themes/src/build-figma-merged.ts
 // Builds ONE Tokens Studio JSON (tokens.json) with:
-//  - global (spacing, radii, borderWidth, sizing, opacity, fontSizes, fontWeights, lineHeights, letterSpacing, optional aliases)
+//  - global (spacing, borderRadius, borderWidth, sizing, opacity, fontSizes, fontWeights, lineHeights, letterSpacing)
+//  - synthesized spacing semantics (stack/grid/form/nav/section + gap.*)
 //  - one color set per theme+mode: "<theme>.<mode>"
 //  - $themes so light/dark become modes of the same collection
 //
@@ -50,6 +51,15 @@ function flipRampForDark(r: Record<Step,string>) {
   return out;
 }
 
+function setPath(root: any, parts: string[], val: any) {
+  let node = root;
+  for (let i = 0; i < parts.length - 1; i++) {
+    node[parts[i]] ||= {};
+    node = node[parts[i]];
+  }
+  node[parts[parts.length - 1]] = val;
+}
+
 function coerceToOklch(input: any, fallbackHue = 0): OklchColor | null {
   if (input == null) return null;
   if (typeof input === 'string') {
@@ -78,6 +88,8 @@ function coerceToOklch(input: any, fallbackHue = 0): OklchColor | null {
   return null;
 }
 
+
+
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const outDist   = path.resolve(__dirname, '../dist/figma');
 const outRepo   = path.resolve(__dirname, '../tokens');
@@ -89,7 +101,7 @@ function emitFromCssVars(
   opts: { prefix: string; type: string; renameRoot?: string }
 ) {
   const out: Record<string, any> = {};
-  const setPath = (root: any, parts: string[], val: any) => {
+  const _setPath = (root: any, parts: string[], val: any) => {
     let node = root;
     for (let i=0;i<parts.length-1;i++) {
       node[parts[i]] ||= {};
@@ -101,31 +113,108 @@ function emitFromCssVars(
     if (!k.startsWith(opts.prefix)) continue;
     const slug = k.slice(opts.prefix.length).replace(/^\-/, '');
     const parts = slug ? slug.split('-').filter(Boolean) : ['base'];
-    setPath(out, parts, { $type: opts.type, $value: String(v) });
+    _setPath(out, parts, { $type: opts.type, $value: String(v) });
   }
   return opts.renameRoot ? { [opts.renameRoot]: out } : out;
 }
+
+
 
 /** Map your CSS variables → DTCG categories for Figma Variables */
 function buildGlobalSet() {
   const vars = baseTokens as unknown as Record<string,string>;
   const global: any = {};
 
+  // Core scales
   Object.assign(global, emitFromCssVars(vars, { prefix: '--spacing',     type: 'spacing',      renameRoot: 'spacing' }));
   Object.assign(global, emitFromCssVars(vars, { prefix: '--radius',      type: 'borderRadius', renameRoot: 'borderRadius' }));
   Object.assign(global, emitFromCssVars(vars, { prefix: '--border',      type: 'borderWidth',  renameRoot: 'borderWidth' }));
   Object.assign(global, emitFromCssVars(vars, { prefix: '--size',        type: 'sizing',       renameRoot: 'sizing' }));
   Object.assign(global, emitFromCssVars(vars, { prefix: '--opacity',     type: 'opacity',      renameRoot: 'opacity' }));
 
-  // Typography pieces (Numbers/Strings in Figma)
+  // Typography scales
   Object.assign(global, emitFromCssVars(vars, { prefix: '--font-size',      type: 'fontSizes',     renameRoot: 'fontSizes' }));
   Object.assign(global, emitFromCssVars(vars, { prefix: '--line-height',    type: 'lineHeights',   renameRoot: 'lineHeights' }));
   Object.assign(global, emitFromCssVars(vars, { prefix: '--font-weight',    type: 'fontWeights',   renameRoot: 'fontWeights' }));
   Object.assign(global, emitFromCssVars(vars, { prefix: '--letter-spacing', type: 'letterSpacing', renameRoot: 'letterSpacing' }));
 
-  // Optional semantic text colors as aliases (Color → Figma Color)
-  // If your baseTokens already contain the resolved values for these, include them:
-  Object.assign(global, emitFromCssVars(vars, { prefix: '--on-', type: 'color', renameRoot: 'on' })); // e.g. --on-surface, --on-primary etc.
+  // Synthesized spacing semantics (references to the spacing scale)
+  global.spacing ||= {};
+  const spacingRefs: Record<string,string> = {
+    'semantic.stack':   '{spacing.5}',
+    'semantic.grid':    '{spacing.4}',
+    'semantic.form':    '{spacing.4}',
+    'semantic.nav':     '{spacing.3}',
+    'semantic.section': '{spacing.8}',
+    'gap.small':        '{spacing.2}',
+    'gap.base':         '{spacing.3}',
+    'gap.large':        '{spacing.6}'
+  };
+  for (const [dotPath, ref] of Object.entries(spacingRefs)) {
+    const parts = ['spacing', ...dotPath.split('.')];
+    setPath(global, parts, { $type: 'spacing', $value: ref });
+  }
+
+  // Scaling (Numbers)
+{
+  const map: Record<string, string> = {
+    '--text-scaling': 'text',
+    '--ui-scaling': 'ui',
+    '--icon-scaling': 'icon',
+    '--density-scaling': 'density',
+    '--scaling-xs': 'xs',
+    '--scaling-sm': 'sm',
+    '--scaling-md': 'md',
+    '--scaling-lg': 'lg',
+    '--scaling-xl': 'xl',
+    '--tap-target-scale': 'tapTarget',
+    '--focus-ring-scale': 'focusRing',
+    '--control-height-multiplier': 'controlHeight',
+  };
+  const root = (global.scales ||= {});
+  for (const [cssVar, key] of Object.entries(map)) {
+    const val = (vars as any)[cssVar];
+    if (val != null) setPath(root, [key], { $type: 'number', $value: String(val) });
+  }
+}
+// Helper to convert duration strings like "200ms" or "0.2s" to milliseconds as number
+function toMsNumber(val: string): number | null {
+  if (val.endsWith('ms')) return parseFloat(val);
+  if (val.endsWith('s')) return parseFloat(val) * 1000;
+  const num = parseFloat(val);
+  return isNaN(num) ? null : num;
+}
+
+// Motion (duration as Number ms; easing as String)
+{
+  const motionRoot = (global.motion ||= {});
+  const durRoot = (motionRoot.duration ||= {});
+  const durations: Record<string, string> = {
+    '--motion-duration-fast': 'fast',
+    '--motion-duration-base': 'base',
+    '--motion-duration-slow': 'slow',
+  };
+  for (const [cssVar, key] of Object.entries(durations)) {
+    const raw = (vars as any)[cssVar];
+    const ms = raw != null ? toMsNumber(String(raw)) : null;
+    if (ms != null) setPath(durRoot, [key], { $type: 'number', $value: ms });
+  }
+  const ease = (vars as any)['--motion-ease'];
+  if (ease != null) setPath(motionRoot, ['ease'], { $type: 'string', $value: String(ease) });
+  const scale = (vars as any)['--motion-scale'];
+  if (scale != null) setPath(motionRoot, ['scale'], { $type: 'number', $value: String(scale) });
+}
+// Control sizing (Numbers) e.g. --size-control-sm/md/lg
+{
+  const ctrlRoot = (global.sizing ||= {});
+  const control = (ctrlRoot.control ||= {});
+  const sizeVars = Object.entries(vars).filter(([k]) => k.startsWith('--size-control-'));
+  for (const [k, v] of sizeVars) {
+    const name = k.replace('--size-control-', ''); // sm|md|lg...
+    setPath(control, [name], { $type: 'sizing', $value: String(v) });
+  }
+}
+
 
   return global;
 }
@@ -162,19 +251,19 @@ async function run() {
     file[`${theme.name}.dark`]  = buildThemeModeSet(theme, 'dark');
   }
 
-  // $themes → make light/dark become modes of the same collection
+  // $themes → light/dark as modes; include global as enabled so it pushes to Figma
   file.$themes = THEMES.flatMap(t => ([
     {
       name: t.name,
       mode: 'Light',
       group: t.name.replace(/(^|\s)\S/g, s => s.toUpperCase()),
-      selectedTokenSets: { global: 'source', [`${t.name}.light`]: 'enabled' }
+      selectedTokenSets: { global: 'enabled', [`${t.name}.light`]: 'enabled' }
     },
     {
       name: t.name,
       mode: 'Dark',
       group: t.name.replace(/(^|\s)\S/g, s => s.toUpperCase()),
-      selectedTokenSets: { global: 'source', [`${t.name}.dark`]: 'enabled' }
+      selectedTokenSets: { global: 'enabled', [`${t.name}.dark`]: 'enabled' }
     }
   ]));
 
@@ -191,5 +280,6 @@ run().catch(err => {
   console.error('Figma merged build failed:', err);
   process.exit(1);
 });
+
 
 
