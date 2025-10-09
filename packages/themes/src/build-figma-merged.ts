@@ -214,6 +214,66 @@ function toMsNumber(val: string): number | null {
     setPath(control, [name], { $type: 'sizing', $value: String(v) });
   }
 }
+  // ---------------- Typography (structured) ----------------
+  {
+    const t = (global.typography ||= {});
+    const base = (t.base ||= {});
+    const heading = (t.heading ||= {});
+    const anchor = (t.anchor ||= {});
+    const code = (t.code ||= {});
+    const text = (global.text ||= {}); // for semantic text colors like muted/disabled
+
+    // Helpers
+    const str = (v: any) => ({ $type: 'string', $value: String(v) });
+    const fs  = (v: any) => ({ $type: 'fontSizes', $value: String(v) });
+    const lh  = (v: any) => ({ $type: 'lineHeights', $value: String(v) });
+    const fw  = (v: any) => ({ $type: 'fontWeights', $value: String(v) });
+    const ls  = (v: any) => ({ $type: 'letterSpacing', $value: String(v) });
+    const col = (v: any) => ({ $type: 'color', $value: String(v) });
+
+    // Base
+    if (vars['--base-font-family'])      base.family        = str(vars['--base-font-family']);
+    if (vars['--base-font-size'])        base.size          = fs(vars['--base-font-size']);
+    if (vars['--base-line-height'])      base.lineHeight    = lh(vars['--base-line-height']);
+    if (vars['--base-font-weight'])      base.weight        = fw(vars['--base-font-weight']);
+    if (vars['--base-font-style'])       base.style         = str(vars['--base-font-style']);
+    if (vars['--base-letter-spacing'])   base.letterSpacing = ls(vars['--base-letter-spacing']);
+    if (vars['--base-font-color'])       base.color         = col(vars['--base-font-color']);
+    // (we ignore --base-font-color-dark; modes will override base.color per theme)
+
+    // Headings
+    if (vars['--heading-font-family'])      heading.family        = str(vars['--heading-font-family']);
+    if (vars['--heading-font-weight'])      heading.weight        = fw(vars['--heading-font-weight']);
+    if (vars['--heading-font-style'])       heading.style         = str(vars['--heading-font-style']);
+    if (vars['--heading-letter-spacing'])   heading.letterSpacing = ls(vars['--heading-letter-spacing']);
+    if (vars['--heading-font-color'])       heading.color         = col(vars['--heading-font-color']);
+
+    // Anchor
+    if (vars['--anchor-font-color'])            anchor.color           = col(vars['--anchor-font-color']);
+    if (vars['--anchor-font-family'])           anchor.family          = str(vars['--anchor-font-family']);
+    if (vars['--anchor-font-size'])             anchor.size            = fs(vars['--anchor-font-size']);
+    if (vars['--anchor-line-height'])           anchor.lineHeight      = lh(vars['--anchor-line-height']);
+    if (vars['--anchor-font-weight'])           anchor.weight          = fw(vars['--anchor-font-weight']);
+    if (vars['--anchor-font-style'])            anchor.style           = str(vars['--anchor-font-style']);
+    if (vars['--anchor-letter-spacing'])        anchor.letterSpacing   = ls(vars['--anchor-letter-spacing']);
+    if (vars['--anchor-text-decoration'])       anchor.textDecoration       = str(vars['--anchor-text-decoration']);
+    if (vars['--anchor-text-decoration-hover']) anchor.textDecorationHover  = str(vars['--anchor-text-decoration-hover']);
+    if (vars['--anchor-text-decoration-active'])anchor.textDecorationActive = str(vars['--anchor-text-decoration-active']);
+    if (vars['--anchor-text-decoration-focus']) anchor.textDecorationFocus  = str(vars['--anchor-text-decoration-focus']);
+
+    // Code
+    if (vars['--code-font-family']) code.family = str(vars['--code-font-family']);
+
+    // Small helpers from your set that are "loose" tokens
+    if (vars['--font-size-sm'])        (global.fontSizes ||= {}).sm = fs(vars['--font-size-sm']);
+    if (vars['--font-size-lg'])        (global.fontSizes ||= {}).lg = fs(vars['--font-size-lg']);
+    if (vars['--font-weight-semibold'])(global.fontWeights ||= {}).semibold = fw(vars['--font-weight-semibold']);
+    if (vars['--font-weight-light'])   (global.fontWeights ||= {}).light    = fw(vars['--font-weight-light']);
+
+    // Semantic text colors
+    if (vars['--text-muted'])    text.muted    = col(vars['--text-muted']);
+    if (vars['--text-disabled']) text.disabled = col(vars['--text-disabled']);
+  }
 
 
   return global;
