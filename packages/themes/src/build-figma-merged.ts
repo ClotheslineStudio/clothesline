@@ -1,7 +1,9 @@
 // packages/themes/src/build-figma-merged.ts
 // Builds ONE Tokens Studio JSON (tokens.json) with:
 //  - global (spacing, borderRadius, borderWidth, sizing, opacity, fontSizes, fontWeights, lineHeights, letterSpacing)
+//  - scaling (numbers) + motion (duration as ms number; ease as string)
 //  - synthesized spacing semantics (stack/grid/form/nav/section + gap.*)
+//  - structured typography (base, heading, anchor, code) + semantic text colors
 //  - one color set per theme+mode: "<theme>.<mode>"
 //  - $themes so light/dark become modes of the same collection
 //
@@ -29,7 +31,6 @@ import { bigSkyTheme }       from '../configs/bigsky.ts';
 
 type ThemeMode = 'light' | 'dark';
 const ROLES = ['primary','secondary','tertiary','success','warning','error','info','accent','neutral','surface'] as const;
-
 const THEMES: ThemeConfig[] = [
   clotheslineTheme,
   timberlineTheme,
@@ -60,6 +61,14 @@ function setPath(root: any, parts: string[], val: any) {
   node[parts[parts.length - 1]] = val;
 }
 
+function toMsNumber(val: string): number | null {
+  const s = String(val).trim().toLowerCase();
+  if (s.endsWith('ms')) return Number.parseFloat(s.slice(0, -2));
+  if (s.endsWith('s'))  return Number.parseFloat(s.slice(0, -1)) * 1000;
+  const n = Number.parseFloat(s);
+  return Number.isFinite(n) ? n : null;
+}
+
 function coerceToOklch(input: any, fallbackHue = 0): OklchColor | null {
   if (input == null) return null;
   if (typeof input === 'string') {
@@ -88,8 +97,6 @@ function coerceToOklch(input: any, fallbackHue = 0): OklchColor | null {
   return null;
 }
 
-
-
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const outDist   = path.resolve(__dirname, '../dist/figma');
 const outRepo   = path.resolve(__dirname, '../tokens');
@@ -111,14 +118,12 @@ function emitFromCssVars(
   };
   for (const [k, v] of Object.entries(varsObj)) {
     if (!k.startsWith(opts.prefix)) continue;
-    const slug = k.slice(opts.prefix.length).replace(/^\-/, '');
+    const slug  = k.slice(opts.prefix.length).replace(/^\-/, '');
     const parts = slug ? slug.split('-').filter(Boolean) : ['base'];
     _setPath(out, parts, { $type: opts.type, $value: String(v) });
   }
   return opts.renameRoot ? { [opts.renameRoot]: out } : out;
 }
-
-
 
 /** Map your CSS variables → DTCG categories for Figma Variables */
 function buildGlobalSet() {
@@ -138,7 +143,7 @@ function buildGlobalSet() {
   Object.assign(global, emitFromCssVars(vars, { prefix: '--font-weight',    type: 'fontWeights',   renameRoot: 'fontWeights' }));
   Object.assign(global, emitFromCssVars(vars, { prefix: '--letter-spacing', type: 'letterSpacing', renameRoot: 'letterSpacing' }));
 
-  // Synthesized spacing semantics (references to the spacing scale)
+  // Synthesized spacing semantics (references to spacing scale)
   global.spacing ||= {};
   const spacingRefs: Record<string,string> = {
     'semantic.stack':   '{spacing.5}',
@@ -156,64 +161,59 @@ function buildGlobalSet() {
   }
 
   // Scaling (Numbers)
-{
-  const map: Record<string, string> = {
-    '--text-scaling': 'text',
-    '--ui-scaling': 'ui',
-    '--icon-scaling': 'icon',
-    '--density-scaling': 'density',
-    '--scaling-xs': 'xs',
-    '--scaling-sm': 'sm',
-    '--scaling-md': 'md',
-    '--scaling-lg': 'lg',
-    '--scaling-xl': 'xl',
-    '--tap-target-scale': 'tapTarget',
-    '--focus-ring-scale': 'focusRing',
-    '--control-height-multiplier': 'controlHeight',
-  };
-  const root = (global.scales ||= {});
-  for (const [cssVar, key] of Object.entries(map)) {
-    const val = (vars as any)[cssVar];
-    if (val != null) setPath(root, [key], { $type: 'number', $value: String(val) });
+  {
+    const map: Record<string, string> = {
+      '--text-scaling': 'text',
+      '--ui-scaling': 'ui',
+      '--icon-scaling': 'icon',
+      '--density-scaling': 'density',
+      '--scaling-xs': 'xs',
+      '--scaling-sm': 'sm',
+      '--scaling-md': 'md',
+      '--scaling-lg': 'lg',
+      '--scaling-xl': 'xl',
+      '--tap-target-scale': 'tapTarget',
+      '--focus-ring-scale': 'focusRing',
+      '--control-height-multiplier': 'controlHeight',
+    };
+    const root = (global.scaling ||= {});
+    for (const [cssVar, key] of Object.entries(map)) {
+      const val = (vars as any)[cssVar];
+      if (val != null) setPath(root, [key], { $type: 'number', $value: String(val) });
+    }
   }
-}
-// Helper to convert duration strings like "200ms" or "0.2s" to milliseconds as number
-function toMsNumber(val: string): number | null {
-  if (val.endsWith('ms')) return parseFloat(val);
-  if (val.endsWith('s')) return parseFloat(val) * 1000;
-  const num = parseFloat(val);
-  return isNaN(num) ? null : num;
-}
 
-// Motion (duration as Number ms; easing as String)
-{
-  const motionRoot = (global.motion ||= {});
-  const durRoot = (motionRoot.duration ||= {});
-  const durations: Record<string, string> = {
-    '--motion-duration-fast': 'fast',
-    '--motion-duration-base': 'base',
-    '--motion-duration-slow': 'slow',
-  };
-  for (const [cssVar, key] of Object.entries(durations)) {
-    const raw = (vars as any)[cssVar];
-    const ms = raw != null ? toMsNumber(String(raw)) : null;
-    if (ms != null) setPath(durRoot, [key], { $type: 'number', $value: ms });
+  // Motion (duration as Number ms; easing as String; motion scale as Number)
+  {
+    const motionRoot = (global.motion ||= {});
+    const durRoot = (motionRoot.duration ||= {});
+    const durations: Record<string, string> = {
+      '--motion-duration-fast': 'fast',
+      '--motion-duration-base': 'base',
+      '--motion-duration-slow': 'slow',
+    };
+    for (const [cssVar, key] of Object.entries(durations)) {
+      const raw = (vars as any)[cssVar];
+      const ms  = raw != null ? toMsNumber(String(raw)) : null;
+      if (ms != null) setPath(durRoot, [key], { $type: 'number', $value: ms });
+    }
+    const ease  = (vars as any)['--motion-ease'];
+    if (ease  != null) setPath(motionRoot, ['ease'],  { $type: 'string', $value: String(ease) });
+    const msc   = (vars as any)['--motion-scale'];
+    if (msc   != null) setPath(motionRoot, ['scale'], { $type: 'number', $value: String(msc) });
   }
-  const ease = (vars as any)['--motion-ease'];
-  if (ease != null) setPath(motionRoot, ['ease'], { $type: 'string', $value: String(ease) });
-  const scale = (vars as any)['--motion-scale'];
-  if (scale != null) setPath(motionRoot, ['scale'], { $type: 'number', $value: String(scale) });
-}
-// Control sizing (Numbers) e.g. --size-control-sm/md/lg
-{
-  const ctrlRoot = (global.sizing ||= {});
-  const control = (ctrlRoot.control ||= {});
-  const sizeVars = Object.entries(vars).filter(([k]) => k.startsWith('--size-control-'));
-  for (const [k, v] of sizeVars) {
-    const name = k.replace('--size-control-', ''); // sm|md|lg...
-    setPath(control, [name], { $type: 'sizing', $value: String(v) });
+
+  // Control sizing (Numbers) e.g. --size-control-sm/md/lg
+  {
+    const ctrlRoot = (global.sizing ||= {});
+    const control  = (ctrlRoot.control ||= {});
+    const sizeVars = Object.entries(vars).filter(([k]) => k.startsWith('--size-control-'));
+    for (const [k, v] of sizeVars) {
+      const name = k.replace('--size-control-', ''); // sm|md|lg...
+      setPath(control, [name], { $type: 'sizing', $value: String(v) });
+    }
   }
-}
+
   // ---------------- Typography (structured) ----------------
   {
     const t = (global.typography ||= {});
@@ -221,15 +221,15 @@ function toMsNumber(val: string): number | null {
     const heading = (t.heading ||= {});
     const anchor = (t.anchor ||= {});
     const code = (t.code ||= {});
-    const text = (global.text ||= {}); // for semantic text colors like muted/disabled
+    const text = (global.text ||= {}); // semantic text colors
 
     // Helpers
-    const str = (v: any) => ({ $type: 'string', $value: String(v) });
-    const fs  = (v: any) => ({ $type: 'fontSizes', $value: String(v) });
-    const lh  = (v: any) => ({ $type: 'lineHeights', $value: String(v) });
-    const fw  = (v: any) => ({ $type: 'fontWeights', $value: String(v) });
-    const ls  = (v: any) => ({ $type: 'letterSpacing', $value: String(v) });
-    const col = (v: any) => ({ $type: 'color', $value: String(v) });
+    const str = (v: any) => ({ $type: 'string',       $value: String(v) });
+    const fs  = (v: any) => ({ $type: 'fontSizes',    $value: String(v) });
+    const lh  = (v: any) => ({ $type: 'lineHeights',  $value: String(v) });
+    const fw  = (v: any) => ({ $type: 'fontWeights',  $value: String(v) });
+    const ls  = (v: any) => ({ $type: 'letterSpacing',$value: String(v) });
+    const col = (v: any) => ({ $type: 'color',        $value: String(v) });
 
     // Base
     if (vars['--base-font-family'])      base.family        = str(vars['--base-font-family']);
@@ -239,7 +239,6 @@ function toMsNumber(val: string): number | null {
     if (vars['--base-font-style'])       base.style         = str(vars['--base-font-style']);
     if (vars['--base-letter-spacing'])   base.letterSpacing = ls(vars['--base-letter-spacing']);
     if (vars['--base-font-color'])       base.color         = col(vars['--base-font-color']);
-    // (we ignore --base-font-color-dark; modes will override base.color per theme)
 
     // Headings
     if (vars['--heading-font-family'])      heading.family        = str(vars['--heading-font-family']);
@@ -264,17 +263,16 @@ function toMsNumber(val: string): number | null {
     // Code
     if (vars['--code-font-family']) code.family = str(vars['--code-font-family']);
 
-    // Small helpers from your set that are "loose" tokens
-    if (vars['--font-size-sm'])        (global.fontSizes ||= {}).sm = fs(vars['--font-size-sm']);
-    if (vars['--font-size-lg'])        (global.fontSizes ||= {}).lg = fs(vars['--font-size-lg']);
-    if (vars['--font-weight-semibold'])(global.fontWeights ||= {}).semibold = fw(vars['--font-weight-semibold']);
-    if (vars['--font-weight-light'])   (global.fontWeights ||= {}).light    = fw(vars['--font-weight-light']);
+    // Loose helpers
+    if (vars['--font-size-sm'])         (global.fontSizes  ||= {}).sm       = fs(vars['--font-size-sm']);
+    if (vars['--font-size-lg'])         (global.fontSizes  ||= {}).lg       = fs(vars['--font-size-lg']);
+    if (vars['--font-weight-semibold']) (global.fontWeights||= {}).semibold = fw(vars['--font-weight-semibold']);
+    if (vars['--font-weight-light'])    (global.fontWeights||= {}).light    = fw(vars['--font-weight-light']);
 
     // Semantic text colors
     if (vars['--text-muted'])    text.muted    = col(vars['--text-muted']);
     if (vars['--text-disabled']) text.disabled = col(vars['--text-disabled']);
   }
-
 
   return global;
 }
@@ -340,6 +338,7 @@ run().catch(err => {
   console.error('Figma merged build failed:', err);
   process.exit(1);
 });
+
 
 
 
