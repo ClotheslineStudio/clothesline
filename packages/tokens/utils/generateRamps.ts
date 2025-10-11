@@ -1,31 +1,107 @@
+// packages/tokens/utils/generateRamps.ts
 import { snapToGamut } from './snapToGamut.js';
 import type { OklchColor } from './colorEngine.js';
 import { toOklchCss } from './toCssColor.js';
 
-// ✅ pull the canonical step labels from oklch
+// Canonical step labels from the OKLCH ramp
 import { rampNames } from '../colors/oklch.js';
-
-// ✅ export the labels under the old name for back-compat (optional)
 export { rampNames as RAMP_STEPS } from '../colors/oklch.js';
-
-// ✅ derive the Step type from the canonical labels
 export type Step = (typeof rampNames)[number];
 
-// --- Generator -------------------------------------------------------
+/* ================================
+   Lightness plans (near-white tops)
+   ================================ */
+
+// Base/neutral lightness ladder (brighter 50/100 than before)
+const L_PLAN: Record<Step, number> = {
+  50: 0.985, 100: 0.960, 200: 0.900, 300: 0.800, 400: 0.720,
+  500: 0.640, 600: 0.560, 700: 0.480, 800: 0.400, 900: 0.320, 950: 0.260
+};
+
+// Surface gets an even brighter top for ultra-clean canvas
+const L_PLAN_SURFACE: Record<Step, number> = {
+  ...L_PLAN, 50: 0.992, 100: 0.968
+};
+
+/* =========================================
+   Chroma shapes (punchy for chromatic roles)
+   ========================================= */
+
+// Punchier chroma curve (peaks ~0.18)
+const C_SHAPE_PUNCH: Record<Step, number> = {
+  50: 0.050, 100: 0.060, 200: 0.080, 300: 0.100, 400: 0.130,
+  500: 0.180, 600: 0.180, 700: 0.140, 800: 0.110, 900: 0.080, 950: 0.060
+};
+
+// Neutral caps: distinct from surface, barely tinted, never warm/muddy
+const C_CAPS_NEUTRAL: Record<Step, number> = {
+  50: 0.000, 100: 0.000, 200: 0.003, 300: 0.006, 400: 0.008,
+  500: 0.012, 600: 0.012, 700: 0.010, 800: 0.008, 900: 0.006, 950: 0.006
+};
+
+/* ====================================
+   Family detection (no role parameter)
+   ====================================
+
+   We infer the intent from the seed chroma:
+   - surface: c≈0 → pure achromatic
+   - neutral: 0 < c < 0.03 → tiny-capped cool-ish gray
+   - chromatic: otherwise → punchy shape
+*/
+const NEAR_ZERO = 0.0005;
+const NEUTRAL_THRESHOLD = 0.03;
+
+/* ============================================================
+   Public API — same signature as before (seed → ramp strings)
+   ============================================================ */
 export function generateRampFromSeed(seed: OklchColor): Record<Step, string> {
-  // [step, lightness, chroma]
-  const plan: Array<[Step, number, number]> = [
-    [50, 0.97, 0.04], [100, 0.94, 0.05], [200, 0.88, 0.06],
-    [300, 0.80, 0.08], [400, 0.72, 0.10], [500, 0.64, 0.12],
-    [600, 0.56, 0.12], [700, 0.48, 0.10], [800, 0.40, 0.08],
-    [900, 0.32, 0.06], [950, 0.26, 0.05],
-  ];
+  const c = Math.max(0, seed.c ?? 0);
 
+  if (c <= NEAR_ZERO) {
+    // SURFACE: achromatic, ultra-bright 50/100, hue irrelevant
+    return buildRamp({
+      lPlan: L_PLAN_SURFACE,
+      cForStep: () => 0
+    });
+  }
+
+  if (c < NEUTRAL_THRESHOLD) {
+    // NEUTRAL: tiny capped chroma (distinct from surface), keep seed hue
+    const h = seed.h ?? 255; // if missing, bias cool
+    return buildRamp({
+      lPlan: L_PLAN,
+      cForStep: (step) => Math.min(c, C_CAPS_NEUTRAL[step]),
+      h
+    });
+  }
+
+  // CHROMATIC: punchy curve, keep seed hue
   const h = seed.h ?? 0;
-  const out = {} as Record<Step, string>;
+  return buildRamp({
+    lPlan: L_PLAN,
+    cForStep: (step) => C_SHAPE_PUNCH[step],
+    h
+  });
+}
 
-  for (const [step, L, C] of plan) {
+/* ======================
+   Internal ramp builder
+   ====================== */
+function buildRamp({
+  lPlan,
+  cForStep,
+  h
+}: {
+  lPlan: Record<Step, number>;
+  cForStep: (step: Step) => number;
+  h?: number;
+}): Record<Step, string> {
+  const out = {} as Record<Step, string>;
+  for (const step of rampNames) {
+    const L = lPlan[step];
+    const C = Math.max(0, cForStep(step));
     const candidate: OklchColor = { mode: 'oklch', l: L, c: C, h };
+    // Keep results display-safe
     out[step] = toOklchCss(snapToGamut(candidate, 'srgb'));
   }
   return out;
@@ -33,6 +109,7 @@ export function generateRampFromSeed(seed: OklchColor): Record<Step, string> {
 
 // Back-compat alias
 export const generateColorRamps = generateRampFromSeed;
+
 
 
 

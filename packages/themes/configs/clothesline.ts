@@ -1,18 +1,25 @@
 // packages/themes/configs/clothesline.ts
 import type { ThemeConfig } from '../src/types.js';
 
+// packages/themes/configs/clothesline.ts
 const roles = {
-  primary:   { hue: 270, chroma: 0.09 }, // violet brand
-  secondary: { hue: 220, chroma: 0.09 }, // blue support
-  tertiary:  { hue: 180, chroma: 0.09 }, // teal support
-  success:   { hue: 145, chroma: 0.09 },
-  warning:   { hue:  75, chroma: 0.09 },
-  error:     { hue:  25, chroma: 0.09 },
-  info:      { hue: 200, chroma: 0.09 },
-  accent:    { hue: 310, chroma: 0.09 }, // magenta accent
-  neutral:   { hue: 270, chroma: 0.03 },
-  surface:   { hue:   0, chroma: 0.01 }
+  // Brand/status (vivid)
+  primary:   { hue: 270,   chroma: 0.10 },
+  secondary: { hue: 220,   chroma: 0.11 },
+  tertiary:  { hue: 180,   chroma: 0.10 },
+  success:   { hue: 145,   chroma: 0.11 },
+  warning:   { hue:  75,   chroma: 0.11 },
+  error:     { hue:  25,   chroma: 0.11 },
+  info:      { hue: 200,   chroma: 0.11 },
+
+  // Poppy accent (your request)
+  accent:    { hue: 43.26, chroma: 0.1882 }, // punchy sunset orange
+
+  // Cool, *not beige* backgrounds
+  neutral:   { hue: 255,   chroma: 0.010 }, // cool gray track (UI chrome)
+  surface:   { hue: 255,   chroma: 0.000 }, // pure achromatic (paper)
 } as const;
+
 
 /**
  * Clothesline — base palette + stackable modes

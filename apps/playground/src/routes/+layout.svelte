@@ -1,7 +1,6 @@
 <!-- +layout.svelte -->
 <script lang="ts">
   import '../app.css';
-  import { browser } from '$app/environment';
 
   // Shell + Region
   import { AppShell } from '@clothesline/ui';
@@ -13,32 +12,13 @@
   import ThreeColumn from '$lib/components/layout/ThreeColumn/ThreeColumn.svelte';
   import TableOfContents from '$lib/components/navigation/TableOfContents/TableOfContents.svelte';
 
+  // Theme toggle (header control)
+  import ThemePicker from '$lib/ThemePicker.svelte';
+  import ModeToggle from '$lib/ModeToggle.svelte';
+
   // Icons
-  import { Menu, Sun, Moon, Github, Search } from 'lucide-svelte';
-
-  // Mode state
-  let mode: 'light' | 'dark' = 'light';
-
-  if (browser) {
-    const root = document.documentElement;
-    const saved = localStorage.getItem('mode');
-    const initial =
-      saved === 'dark' || saved === 'light'
-        ? saved
-        : root.getAttribute('data-mode') ?? 'light';
-    mode = initial as 'light' | 'dark';
-    root.setAttribute('data-mode', mode);
-    root.style.colorScheme = mode;
-  }
-
-  function toggleMode() {
-    if (!browser) return;
-    const root = document.documentElement;
-    mode = mode === 'dark' ? 'light' : 'dark';
-    root.setAttribute('data-mode', mode);
-    root.style.colorScheme = mode;
-    localStorage.setItem('mode', mode);
-  }
+  import { Menu, Github} from 'lucide-svelte';
+  import { Search as SearchIcon } from '@clothesline/icons';
 
   // Sidebar collapse (AppShell controls off-canvas on small screens)
   let collapsed = true;
@@ -134,13 +114,14 @@
 
       <div slot="right" class="actions">
         <div class="search">
-          <Search size={16} />
+          <SearchIcon size={16} />
           <input type="search" placeholder="Search…" />
         </div>
 
-        <button on:click={toggleMode} aria-pressed={mode === 'dark'} aria-label="Toggle dark mode" class="icon-btn">
-          {#if mode === 'dark'} <Moon size={18} /> {:else} <Sun size={18} /> {/if}
-        </button>
+        <!-- Theme toggle lives in the header now -->
+        <ThemePicker />
+
+        <ModeToggle size={32} rounded={8} />
 
         <a href="https://github.com/clotheslinestudio/ui" target="_blank" rel="noopener noreferrer" class="icon-link" aria-label="GitHub">
           <Github size={18} />
@@ -214,13 +195,13 @@
     width:32px; height:32px; border-radius:.5rem;
     color: inherit; opacity:.9; transition: background .15s ease, opacity .15s ease;
   }
-  .icon-btn:hover, .icon-link:hover { opacity:1; background: color-mix(in oklab, currentColor 12%, transparent); }
+  .icon-btn:hover, .icon-link:hover { opacity:1; background: color-mix(in oklab, currentColor 20%, transparent); }
 
   /* Search box (dark-safe) */
   .search {
     display:flex; align-items:center; gap:.4rem;
     border:1px solid var(--color-surface-300);
-    background: color-mix(in oklab, var(--color-surface-100) 88%, transparent);
+    background: color-mix(in oklab, var(--color-surface-50) 88%, transparent);
     padding:.25rem .5rem; border-radius:.5rem;
   }
   .search input {
@@ -240,6 +221,7 @@
   .footer-nav { display:flex; gap:1rem; font-size:.8rem; opacity:.9; }
   .footer-nav a { text-decoration:none; color: inherit; }
 </style>
+
 
 
 

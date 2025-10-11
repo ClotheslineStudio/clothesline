@@ -1,15 +1,15 @@
 <script lang="ts">
   // --- Props ---
-  export let checked: boolean = false;
+  // removed unused export 'checked'
   export let defaultChecked: boolean | undefined = undefined;
   export let name: string | undefined = undefined;
   export let id: string | undefined = undefined;
   export let disabled: boolean = false;
   export let readOnly: boolean = false;
-  export let required: boolean = false;
-  export let size: "sm" | "md" | "lg" = "md";
-  export let variant: "solid" | "soft" | "outline" = "solid";
-  export let color:
+  // removed unused export 'required'
+  // export let size: "sm" | "md" | "lg" = "md"; // Removed unused export property 'size'
+  let variant: "solid" | "soft" | "outline" = "solid";
+  let color:
     | "primary"
     | "secondary"
     | "success"

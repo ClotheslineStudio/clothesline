@@ -2,18 +2,10 @@
   import { onMount } from 'svelte';
   import { browser } from '$app/environment';
 
-  // Roles & shades emitted by your theme build
   const ROLES = [
-    'primary',
-    'secondary',
-    'tertiary',
-    'accent',
-    'success',
-    'warning',
-    'error',
-    'info',
-    'neutral',
-    'surface'
+    'primary','secondary','tertiary',
+    'accent','success','warning','error','info',
+    'neutral','surface'
   ] as const;
 
   const SHADES = [50,100,200,300,400,500,600,700,800,900,950] as const;
@@ -25,24 +17,20 @@
 
   let rows: Array<{
     role: string;
-    swatches: Array<{shade:number; varName:string; css:string; hex:string; text:'white'|'black'; cr:number;}>;
+    swatches: Array<{
+      shade: number;
+      varName: string;
+      css: string;
+      hex: string;
+      text: 'white'|'black';
+      cr: number;
+    }>;
   }> = [];
 
-  function resolveVarToRGB(varName: string): RGB {
-    if (!browser) return [0, 0, 0]; // SSR safety
-    const el = document.createElement('div');
-    el.style.color = `var(${varName})`;
-    document.body.appendChild(el);
-    const rgb = getComputedStyle(el).color;
-    document.body.removeChild(el);
-    const m = rgb.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/i);
-    return m ? [Number(m[1]), Number(m[2]), Number(m[3])] : [0, 0, 0];
-  }
-
-  // sRGB helpers → luminance/contrast
+  // ----- Helpers ----------------------------------------------------
   const toLin = (c:number) => {
-    const x=c/255;
-    return x<=0.04045 ? x/12.92 : Math.pow((x+0.055)/1.055, 2.4);
+    const x = c/255;
+    return x <= 0.04045 ? x/12.92 : Math.pow((x+0.055)/1.055, 2.4);
   };
   const luminance = ([r,g,b]:RGB) => 0.2126*toLin(r)+0.7152*toLin(g)+0.0722*toLin(b);
   function contrastRatio(fg:RGB, bg:RGB) {
@@ -51,24 +39,52 @@
     return (hi + 0.05) / (lo + 0.05);
   }
   const rgbToHex = ([r,g,b]:RGB) =>
-    '#' + [r,g,b].map(v => v.toString(16).padStart(2,'0')).join('');
+    '#' + [r,g,b].map(v => Math.round(v).toString(16).padStart(2,'0')).join('').toUpperCase();
 
-  function varFor(role: string, shade: number) {
-    const suffix = variant === 'base' ? '' : `-${variant}`;
+  function varFor(role: string, shade: number, v: Variant) {
+    const suffix = v === 'base' ? '' : `-${v}`;
     return `--color-${role}-${shade}${suffix}`;
+  }
+
+  // Single hidden probe element (perf)
+  let probe: HTMLDivElement | null = null;
+
+  function ensureProbe() {
+    if (!browser) return null;
+    if (!probe) {
+      probe = document.createElement('div');
+      probe.style.position = 'fixed';
+      probe.style.left = '-9999px';
+      probe.style.top = '-9999px';
+      probe.style.width = '1px';
+      probe.style.height = '1px';
+      document.body.appendChild(probe);
+    }
+    return probe;
+  }
+
+  function readVarRGB(varName: string): RGB {
+    const p = ensureProbe();
+    if (!p) return [0,0,0];
+    p.style.color = `var(${varName})`;
+    const rgb = getComputedStyle(p).color; // rgb(a)
+    const m = rgb.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/i);
+    return m ? [Number(m[1]), Number(m[2]), Number(m[3])] : [0,0,0];
   }
 
   function build() {
     if (!browser) return;
     rows = ROLES.map(role => {
       const swatches = SHADES.map(shade => {
-        const varName = varFor(role, shade);
-        const bg = resolveVarToRGB(varName);
+        const varName = varFor(role, shade, variant);
+        const bg = readVarRGB(varName);
+
         const CRw = contrastRatio([255,255,255], bg);
         const CRb = contrastRatio([0,0,0], bg);
         const useWhite = CRw >= CRb;
         const text: 'white'|'black' = useWhite ? 'white' : 'black';
         const cr = Number((useWhite ? CRw : CRb).toFixed(2));
+
         return {
           shade,
           varName,
@@ -82,22 +98,29 @@
     });
   }
 
-  // Run on client + react to <html data-*> changes
+  // Recompute on mount & when theme attrs or variant change
   onMount(() => {
     build();
-    const obs = new MutationObserver(build);
+    const obs = new MutationObserver(() => {
+      // batch updates, avoid thrash
+      requestAnimationFrame(build);
+    });
     obs.observe(document.documentElement, {
       attributes: true,
-      attributeFilter: ['data-theme','data-mode','data-vision','data-contrast']
+      attributeFilter: ['data-theme','data-mode','data-vision','data-contrast','style']
     });
     return () => obs.disconnect();
   });
 
-  // Rebuild when toggling base/ct/vis
   $: if (browser && variant) build();
+
+  // UI sugar: click-to-copy
+  async function copy(text: string) {
+    try { await navigator.clipboard.writeText(text); } catch {}
+  }
+
+  const gridTemplate = `100px repeat(${SHADES.length}, minmax(96px, 1fr))`;
 </script>
-
-
 
 <svelte:head>
   <title>Theme Ramp Explorer</title>
@@ -105,21 +128,24 @@
 
 <section class="max-w-[1200px] mx-auto p-6">
   <h1 class="text-2xl font-bold mb-2">Theme Ramp Explorer</h1>
-  <p class="text-sm text-[var(--text-muted, var(--color-surface-700))] mb-6">
-    Use the header to change theme / mode / vision / contrast. Toggle which value to preview:
+  <p class="text-sm opacity-80 mb-6">
+    Toggle preview value. <code>-vis</code> usually aliases <code>-ct</code> unless you changed it in the build.
   </p>
 
   <!-- Variant toggle -->
-  <div class="mb-6 flex items-center gap-3 text-sm">
-    <label class="font-semibold" for="variant-vis">Value:</label>
+  <div class="mb-6 flex flex-wrap items-center gap-3 text-sm">
+    <label class="font-semibold" for="v-vis">Value:</label>
     <label class="inline-flex items-center gap-2">
-      <input id="variant-vis" type="radio" name="v" value="vis" bind:group={variant}> <span>-vis (vision-aware)</span>
+      <input type="radio" name="v" value="vis" bind:group={variant} id="v-vis" />
+      <span>-vis (vision-aware)</span>
     </label>
     <label class="inline-flex items-center gap-2">
-      <input type="radio" name="v" value="ct" bind:group={variant}> <span>-ct (contrast-adjusted)</span>
+      <input type="radio" name="v" value="ct" bind:group={variant} id="v-ct" />
+      <span>-ct (contrast-mixed)</span>
     </label>
     <label class="inline-flex items-center gap-2">
-      <input type="radio" name="v" value="base" bind:group={variant}> <span>base (raw ramp)</span>
+      <input type="radio" name="v" value="base" bind:group={variant} id="v-base" />
+      <span>base (raw ramp)</span>
     </label>
   </div>
 
@@ -127,15 +153,16 @@
   <div class="space-y-8">
     {#each rows as row}
       <div>
-        <div class="mb-2 flex items-baseline justify-between">
+        <div class="mb-2 flex items-baseline justify-between gap-4">
           <h2 class="text-lg font-semibold capitalize">{row.role}</h2>
-          <span class="text-xs opacity-70">showing: <code>--color-{row.role}-[shade]{variant === 'base' ? '' : `-${variant}`}</code></span>
+          <span class="text-xs opacity-70">
+            Showing: <code>--color-{row.role}-[shade]{variant === 'base' ? '' : `-${variant}`}</code>
+          </span>
         </div>
 
-        <div class="grid gap-3"
-             style="grid-template-columns: 100px repeat({SHADES.length}, minmax(90px, 1fr));">
+        <div class="grid gap-3" style="grid-template-columns: {gridTemplate}">
           <!-- header row -->
-          <div class="text-xs font-medium opacity-70">Shade</div>
+          <div class="text-xs font-medium opacity-70 self-center">Shade</div>
           {#each SHADES as s}
             <div class="text-xs font-medium text-center">{s}</div>
           {/each}
@@ -143,18 +170,34 @@
           <!-- swatches row -->
           <div class="text-xs opacity-70 self-center">Swatch</div>
           {#each row.swatches as s}
-            <div class="rounded border border-[var(--border-default-color)] p-3 text-center"
-                 style="background: {s.css}; color: {s.text === 'white' ? 'white' : 'black'}">
+            <button
+              type="button"
+              class="rounded border text-center leading-tight p-3 focus:outline-none focus:ring-2"
+              style="
+                background: {s.css};
+                color: {s.text === 'white' ? 'white' : 'black'};
+                border-color: var(--border-default-color, rgba(0,0,0,.12));
+              "
+              title="Click to copy HEX"
+              on:click={() => copy(s.hex)}
+            >
               <div class="text-sm font-semibold">{row.role}</div>
               <div class="text-[10px] opacity-80">{s.hex}</div>
               <div class="text-[10px] opacity-80">CR {s.cr} ({s.text})</div>
-            </div>
+            </button>
           {/each}
 
           <!-- var names row -->
           <div class="text-xs opacity-70 self-center">Var</div>
           {#each row.swatches as s}
-            <div class="text-[10px] font-mono text-center break-all opacity-80">{s.varName}</div>
+            <button
+              type="button"
+              class="text-[10px] font-mono text-center break-all opacity-80 px-2 py-1 rounded hover:bg-[rgba(0,0,0,.05)]"
+              on:click={() => copy(s.varName)}
+              title="Click to copy var"
+            >
+              {s.varName}
+            </button>
           {/each}
         </div>
       </div>
@@ -164,6 +207,8 @@
 
 <style>
   code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+  /* optional nicer focus */
+  button:focus-visible { outline: none; }
 </style>
 
 

@@ -1,229 +1,222 @@
 <script lang="ts">
-  import Tooltip from '$lib/components/feedback/Tooltip/Tooltip.svelte';
+  import { onMount } from 'svelte';
+  import { browser } from '$app/environment';
   import { setTheme } from '@clothesline/themes';
-  import { Github, Laptop, Tablet, Smartphone, AlignLeft, AlignCenter, AlignRight, Sun, Moon, Clipboard } from 'lucide-svelte';
+  import Tooltip from '$lib/components/feedback/Tooltip/Tooltip.svelte';
+  import { Github, Laptop, Tablet, Smartphone, Sun, Moon, Clipboard } from 'lucide-svelte';
 
+  export let title: string = '';
   export let code = '';
   export const language: 'svelte' | 'ts' | 'html' | 'css' = 'svelte';
   export let githubUrl = '';
-  export let showCode = true;
+  export let startTab: 'preview' | 'code' = 'preview';
 
+  let tab: 'preview' | 'code' = startTab;
   let viewport: 'desktop' | 'tablet' | 'mobile' = 'desktop';
   let alignment: 'left' | 'center' | 'right' = 'center';
+  let mode: 'light' | 'dark' = 'light';
 
-  // theme toggling
-  let mode: 'light' | 'dark' = (document.documentElement.getAttribute('data-mode') as any) || 'light';
+  onMount(() => {
+    if (!browser) return;
+    const m = document.documentElement.getAttribute('data-mode');
+    mode = (m === 'dark' || m === 'light') ? (m as any) : 'light';
+  });
+
   function toggleMode() {
+    if (!browser) return;
     mode = mode === 'light' ? 'dark' : 'light';
-    const theme = document.documentElement.getAttribute('data-theme') || 'clothesline';
-    const visionAttr = document.documentElement.getAttribute('data-vision');
-    const allowed = ['protanopia','deuteranopia','tritanopia','monochromacy'];
-    const vision = allowed.includes(visionAttr as string) ? (visionAttr as any) : undefined;
-    setTheme(theme, mode, vision);
+    const html = document.documentElement;
+    const theme = html.getAttribute('data-theme') || 'clothesline';
+    const va = html.getAttribute('data-vision');
+    const allowed = ['protanopia','deuteranopia','tritanopia','monochromacy'] as const;
+    const vision = (allowed as readonly string[]).includes(va || '') ? (va as any) : undefined;
+    setTheme({ theme, mode, vision });
   }
 
-  function copyCode() {
-    navigator.clipboard.writeText(code);
+  async function copyCode() {
+    if (!browser || !code) return;
+    try { await navigator.clipboard.writeText(code); } catch {}
   }
 
   const viewportClasses = {
     desktop: 'w-full max-w-[960px]',
-    tablet: 'w-[640px]',
-    mobile: 'w-[360px]'
+    tablet: 'w-[680px]',
+    mobile: 'w-[380px]'
   } as const;
 
-  $: alignStyle =
-    alignment === 'left'
-      ? 'margin-left:0;margin-right:auto;'
-      : alignment === 'center'
-      ? 'margin-left:auto;margin-right:auto;'
-      : 'margin-left:auto;margin-right:0;';
+  $: justify =
+    alignment === 'left' ? 'justify-start' :
+    alignment === 'right' ? 'justify-end' : 'justify-center';
 </script>
 
-<div class="component-preview rounded-xl border shadow-sm">
-  <!-- Toolbar -->
-  <div class="toolbar flex items-center justify-between gap-2 px-4 py-2 border-b">
-    <div class="flex items-center gap-3">
+<div class="pg">
+  <div class="pg__hdr">
+    <!-- Left -->
+    <div class="pg__hdr-left">
+      {#if title}<div class="pg__title">{title}</div>{/if}
       {#if githubUrl}
-        <Tooltip text="Edit on GitHub" position="bottom">
-          <a href={githubUrl} target="_blank" rel="noopener noreferrer" class="icon-link" aria-label="Open on GitHub">
-            <Github size={18} />
+        <Tooltip text="Open on GitHub" position="bottom">
+          <a class="btn icon" href={githubUrl} target="_blank" rel="noopener noreferrer" aria-label="GitHub">
+            <Github size={16} />
           </a>
         </Tooltip>
       {/if}
     </div>
 
-    <div class="flex items-center gap-1">
-      <Tooltip text="Desktop" position="bottom">
-        <button class:active={viewport==='desktop'} on:click={() => (viewport = 'desktop')} aria-label="Desktop">
-          <Laptop size={18} />
-        </button>
-      </Tooltip>
-      <Tooltip text="Tablet" position="bottom">
-        <button class:active={viewport==='tablet'} on:click={() => (viewport = 'tablet')} aria-label="Tablet">
-          <Tablet size={18} />
-        </button>
-      </Tooltip>
-      <Tooltip text="Mobile" position="bottom">
-        <button class:active={viewport==='mobile'} on:click={() => (viewport = 'mobile')} aria-label="Mobile">
-          <Smartphone size={18} />
-        </button>
-      </Tooltip>
+    <!-- Center -->
+    <div class="pg__hdr-center">
+      <div class="seg">
+        <button class:active={viewport==='desktop'} on:click={() => viewport='desktop'} aria-label="Desktop"><Laptop size={14}/></button>
+        <button class:active={viewport==='tablet'}  on:click={() => viewport='tablet'}  aria-label="Tablet"><Tablet size={14}/></button>
+        <button class:active={viewport==='mobile'}  on:click={() => viewport='mobile'}  aria-label="Mobile"><Smartphone size={14}/></button>
+      </div>
+      <div class="seg">
+        <button class:active={alignment==='left'}   on:click={() => alignment='left'}   aria-label="Align left">L</button>
+        <button class:active={alignment==='center'} on:click={() => alignment='center'} aria-label="Align center">C</button>
+        <button class:active={alignment==='right'}  on:click={() => alignment='right'}  aria-label="Align right">R</button>
+      </div>
+    </div>
 
-      <Tooltip text={`Switch to ${mode === 'light' ? 'dark' : 'light'} mode`} position="bottom">
-        <button on:click={toggleMode} aria-label="Toggle light/dark" class="ml-2">
-          {#if mode === 'light'} <Moon size={18} /> {:else} <Sun size={18} /> {/if}
-        </button>
-      </Tooltip>
+    <!-- Right -->
+    <div class="pg__hdr-right">
+      <button class="btn icon" on:click={toggleMode} aria-label="Toggle light/dark">
+        {#if mode==='light'}<Moon size={16}/>{:else}<Sun size={16}/>{/if}
+      </button>
 
-      <Tooltip text="Left align" position="bottom">
-        <button class:active={alignment==='left'} on:click={() => (alignment = 'left')} aria-label="Left align">
-          <AlignLeft size={18} />
-        </button>
-      </Tooltip>
-      <Tooltip text="Center align" position="bottom">
-        <button class:active={alignment==='center'} on:click={() => (alignment = 'center')} aria-label="Center align">
-          <AlignCenter size={18} />
-        </button>
-      </Tooltip>
-      <Tooltip text="Right align" position="bottom">
-        <button class:active={alignment==='right'} on:click={() => (alignment = 'right')} aria-label="Right align">
-          <AlignRight size={18} />
-        </button>
-      </Tooltip>
+      {#if code}
+        <div class="tabs" role="tablist" aria-label="Preview/code tabs">
+          <button role="tab" aria-selected={tab==='preview'} class:active={tab==='preview'} on:click={() => tab='preview'}>Preview</button>
+          <button role="tab" aria-selected={tab==='code'}    class:active={tab==='code'}    on:click={() => tab='code'}>Code</button>
+        </div>
+        <Tooltip text="Copy code" position="bottom">
+          <button class="btn icon" on:click={copyCode} aria-label="Copy code"><Clipboard size={16}/></button>
+        </Tooltip>
+      {/if}
     </div>
   </div>
 
-  <!-- Preview body -->
-  <div class="preview-body px-4 py-8">
-    <div class={`${viewportClasses[viewport]} max-w-full`} style={alignStyle}>
-      <slot />
+  {#if tab === 'preview'}
+    <div class="pg__canvas">
+      <div class={`pg__stage ${justify}`}>
+        <div class={`pg__device ${viewportClasses[viewport]} max-w-full`}>
+          <slot />
+        </div>
+      </div>
     </div>
-  </div>
-
-  {#if showCode && code}
-    <div class="code-header flex items-center justify-end px-4 py-2 border-t">
-      <Tooltip text="Copy code" position="bottom">
-        <button on:click={copyCode} aria-label="Copy code" class="icon-btn">
-          <Clipboard size={18} />
-        </button>
-      </Tooltip>
-    </div>
-    <div class="code-block px-4 pb-4">
-      <pre><code class="code-content">{code}</code></pre>
+  {:else}
+    <div class="pg__code">
+      <pre><code class="pg__code-content">{code}</code></pre>
     </div>
   {/if}
 </div>
 
 <style>
-  /* ---------- Preview palette (light defaults) ---------- */
-  .component-preview {
-    --preview-bg: var(--color-surface-50);
-    --preview-fg: var(--base-font-color, var(--color-surface-950));
-    --preview-border: var(--color-surface-300);
-    --preview-header-bg: var(--color-surface-100);
+  /* ===== Palette (token-driven) ===== */
+  .pg {
+    --pg-fg-strong: var(--on-surface-strong, var(--color-surface-950));
+    --pg-fg:        var(--on-surface, var(--color-surface-900));
+    --pg-muted:     var(--on-surface-subtle, var(--color-surface-600));
+    --pg-border:    var(--color-surface-300);
+    --pg-header:    var(--color-surface-100);
+    --pg-bg:        var(--color-surface-50);
 
-    /* form fields inside preview */
-    --field-bg: var(--color-surface-50);
-    --field-fg: var(--base-font-color, var(--color-surface-950));
-    --field-border: var(--color-surface-300);
-    --field-placeholder: var(--text-muted, var(--color-surface-600));
+    /* Vision-aware accents for states */
+    --pg-accent:    var(--color-secondary-500-vis, var(--color-secondary-500));
+    --pg-info:      var(--color-info-500-vis, var(--color-info-500));
 
-    /* code area */
-    --code-bg: var(--color-surface-950);
-    --code-fg: var(--color-surface-50);
-    --code-border: var(--color-surface-800);
-
-    background: var(--preview-bg);
-    color: var(--preview-fg);
-    border-color: var(--preview-border);
-    border-radius: var(--radius-lg, 0.75rem);
-    box-shadow: var(--shadow-md, 0 1px 2px rgba(0,0,0,.06));
+    border: 1px solid var(--pg-border);
+    border-radius: var(--radius-xl, 12px);
+    background: var(--pg-bg);
+    color: var(--pg-fg);
     overflow: clip;
+    box-shadow: var(--shadow-sm, 0 1px 2px rgba(0,0,0,.08));
   }
 
-  /* Dark overrides (scoped) */
-  :global(html[data-mode="dark"]) .component-preview {
-    --preview-bg: var(--color-surface-900);
-    --preview-fg: var(--base-font-color-dark, var(--color-surface-50));
-    --preview-border: var(--color-surface-700);
-    --preview-header-bg: var(--color-surface-800);
-
-    --field-bg: var(--color-surface-900);
-    --field-fg: var(--base-font-color-dark, var(--color-surface-50));
-    --field-border: var(--color-surface-700);
-    --field-placeholder: var(--text-muted, var(--color-surface-400));
-
-    --code-bg: var(--color-surface-950);
-    --code-fg: var(--color-surface-100);
-    --code-border: var(--color-surface-800);
+  :global(html[data-mode="dark"]) .pg {
+    --pg-fg-strong: var(--on-surface-strong, var(--color-surface-50));
+    --pg-fg:        var(--on-surface, var(--color-surface-100));
+    --pg-muted:     var(--on-surface-subtle, var(--color-surface-400));
+    --pg-border:    var(--color-surface-700);
+    --pg-header:    var(--color-surface-800);
+    --pg-bg:        var(--color-surface-900);
   }
 
-  /* Sections */
-  .toolbar {
-    background: var(--preview-header-bg);
-    border-color: var(--preview-border);
-    border-top-left-radius: var(--radius-lg, 0.75rem);
-    border-top-right-radius: var(--radius-lg, 0.75rem);
-  }
-  .preview-body {
-    background: var(--preview-bg);
-    color: var(--preview-fg);
-    min-height: var(--preview-body-min-h, 6rem);
-    overflow: hidden;
-  }
-
-  /* Controls */
-  button {
-    display: inline-flex;
+  /* ===== Header (L/C/R) ===== */
+  .pg__hdr {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
     align-items: center;
-    justify-content: center;
-    padding: .375rem;
-    border-radius: var(--radius-md, .5rem);
-    transition: background .15s ease, opacity .15s ease, color .15s ease;
-    color: var(--preview-fg);
-    opacity: .85;
+    gap: .5rem;
+    padding: .5rem .75rem;
+    background: var(--pg-header);
+    border-bottom: 1px solid var(--pg-border);
+    color: var(--pg-fg-strong);
   }
-  button:hover { opacity: 1; background: color-mix(in oklab, var(--preview-fg) 8%, transparent); }
-  button.active { background: color-mix(in oklab, var(--preview-fg) 14%, transparent); }
+  .pg__hdr-left, .pg__hdr-center, .pg__hdr-right { display:flex; align-items:center; gap:.5rem; }
+  .pg__hdr-left { justify-content:flex-start; }
+  .pg__hdr-center { justify-content:center; gap:.75rem; }
+  .pg__hdr-right { justify-content:flex-end; gap:.375rem; }
+  .pg__title { font-weight: 700; font-size: .95rem; letter-spacing: .01em; color: var(--pg-fg-strong); }
 
-  .icon-link { color: inherit; opacity: .8; }
-  .icon-link:hover { opacity: 1; }
+  /* ===== Buttons (no opacity fades; high contrast) ===== */
+  .btn { border:0; background:transparent; color: var(--pg-fg-strong); cursor:pointer; border-radius:.5rem; }
+  .btn.icon { width:28px; height:28px; display:inline-flex; align-items:center; justify-content:center; }
+  .btn:hover { background: color-mix(in oklab, var(--pg-fg-strong) 10%, transparent); }
+  .btn:focus-visible { outline: 2px solid var(--pg-info); outline-offset: 2px; }
 
-  .icon-btn { color: inherit; opacity: .85; }
-  .icon-btn:hover { opacity: 1; }
+  /* Segmented control */
+  .seg { display:inline-flex; border:1px solid var(--pg-border); border-radius:.6rem; overflow:hidden; background: color-mix(in oklab, var(--pg-header) 96%, transparent); }
+  .seg button { padding:.35rem .5rem; font-size:.8rem; line-height:1; color: var(--pg-fg-strong); }
+  .seg button:hover { background: color-mix(in oklab, var(--pg-fg-strong) 10%, transparent); }
+  .seg button.active {
+    background: color-mix(in oklab, var(--pg-accent) 22%, transparent);
+    box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--pg-accent) 40%, transparent);
+  }
+  .seg button:focus-visible { outline: 2px solid var(--pg-info); outline-offset: 2px; }
 
-  /* Code area */
-  .code-header { background: var(--preview-header-bg); border-color: var(--preview-border); }
-  .code-block { background: var(--code-bg); color: var(--code-fg); }
-  .code-content {
-    display: block;
-    border: 1px solid var(--code-border);
-    border-radius: var(--radius-md, .5rem);
+  /* Tabs */
+  .tabs { display:inline-flex; border:1px solid var(--pg-border); border-radius:.6rem; overflow:hidden; }
+  .tabs button { padding:.35rem .6rem; font-size:.8rem; color: var(--pg-fg-strong); background: transparent; }
+  .tabs button:hover { background: color-mix(in oklab, var(--pg-fg-strong) 10%, transparent); }
+  .tabs button.active {
+    background: color-mix(in oklab, var(--pg-info) 22%, transparent);
+    box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--pg-info) 40%, transparent);
+  }
+  .tabs button:focus-visible { outline: 2px solid var(--pg-info); outline-offset: 2px; }
+
+  /* ===== Canvas / Stage ===== */
+  .pg__canvas {
+    padding: 1.25rem;
+    background:
+      radial-gradient(circle at 8px 8px, color-mix(in oklab, var(--pg-fg-strong) 6%, transparent) 1px, transparent 1px) 0 0 / 16px 16px,
+      var(--pg-bg);
+  }
+  .pg__stage { display:flex; align-items:flex-start; min-height: 7rem; }
+
+  .pg__device {
+    background: var(--color-surface-50);
+    color: var(--pg-fg);
+    border: 1px solid var(--pg-border);
+    border-radius: 14px;
+    padding: 1rem;
+    box-shadow: 0 1px 2px rgba(0,0,0,.06), 0 8px 24px rgba(0,0,0,.08);
+  }
+  :global(html[data-mode="dark"]) .pg__device {
+    background: var(--color-surface-850, var(--color-surface-800)); /* a touch lighter than page bg for separation */
+    border-color: var(--color-surface-650, var(--color-surface-700));
+    box-shadow: 0 1px 2px rgba(0,0,0,.35), 0 8px 24px rgba(0,0,0,.40);
+  }
+
+  /* ===== Code ===== */
+  .pg__code { background: var(--color-surface-950); color: var(--color-surface-50); padding: .75rem; border-top: 1px solid var(--pg-border); }
+  .pg__code-content {
+    display:block; white-space: pre-wrap;
+    border: 1px solid var(--color-surface-800);
+    border-radius: .6rem;
     padding: .75rem;
     font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, Consolas, monospace);
-    font-size: .875rem;
-    line-height: 1.5;
-    white-space: pre-wrap;
+    font-size: .875rem; line-height: 1.45;
   }
-
-  /* ---- Form field safety inside preview (fixes dark-mode unreadable inputs) ---- */
-  .preview-body input,
-  .preview-body textarea,
-  .preview-body select {
-    background: var(--field-bg);
-    color: var(--field-fg);
-    border: 1px solid var(--field-border);
-    border-radius: var(--radius-md, .5rem);
-    padding: .5rem .75rem;
-  }
-  .preview-body input::placeholder,
-  .preview-body textarea::placeholder {
-    color: var(--field-placeholder);
-  }
-
-  /* Tooltip layer */
-  :global(.cl-tooltip) { z-index: 60; }
 </style>
 
 
