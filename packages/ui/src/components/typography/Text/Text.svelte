@@ -47,7 +47,7 @@
 
   const weightMap = { normal: 400, medium: 500, semibold: 600, bold: 700 } as const;
   $: resolvedWeight = typeof weight === 'number' ? weight : weight ? weightMap[weight] : null;
-  $: lineClamp = clamp && clamp > 0 ? clamp : null;
+  $: lineClamp = typeof clamp === 'number' && clamp > 0 ? clamp : null;
 </script>
 
 <svelte:element

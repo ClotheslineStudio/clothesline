@@ -1,5 +1,6 @@
 <!-- packages/ui/src/components/typography/Paragraph/Paragraph.svelte -->
 <script context="module" lang="ts">
+  // Define the Tone type for paragraph tone options
   export type Tone =
     | 'default'
     | 'muted'

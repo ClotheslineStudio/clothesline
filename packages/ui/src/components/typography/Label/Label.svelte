@@ -11,7 +11,7 @@
 </script>
 
 <script lang="ts">
-  import { Text } from "../index.ts";
+  import Text from "../Text/Text.svelte";
 
   // Your props (kept for compatibility)
   export let forId: string | undefined = undefined;
