@@ -1,18 +1,11 @@
-// packages/tokens/utils/generateRamps.ts
 /**
  * ===============================================================
- * Clothesline Tokens — generateRamps.ts
+ * Clothesline Tokens — generateRamps.ts (updated)
  * ===============================================================
  * Purpose:
- *   Generate smooth, perceptually balanced OKLCH color ramps
- *   for light and dark themes. Uses your OKLCH seed as the
- *   centerpoint (500) and builds gradients around it.
- *
- * Goals:
- *   1. Keep ramps inside sRGB gamut.
- *   2. Preserve hue constancy across steps.
- *   3. Keep 500 == exact seed color.
- *   4. Support neutral/surface detection via chroma.
+ *   Generate smooth, perceptually balanced OKLCH color ramps.
+ *   Prevents pure white/black clipping and supports adaptive
+ *   range + future accessibility variants.
  */
 
 import { snapToGamut } from "./snapToGamut.js";
@@ -23,7 +16,7 @@ export { rampNames as RAMP_STEPS } from "../colors/oklch.js";
 export type Step = (typeof rampNames)[number];
 
 /* ===========================================================
-   Baseline lightness & chroma shapes
+   Baseline shape references
    =========================================================== */
 
 const L_PLAN: Record<Step, number> = {
@@ -49,42 +42,49 @@ const NEAR_ZERO = 0.0005;
 const NEUTRAL_THRESHOLD = 0.03;
 
 /* ===========================================================
-   Helpers
+   Utility helpers
    =========================================================== */
 
 function clamp01(x: number) {
   return Math.max(0, Math.min(1, x));
 }
 
+/** Adaptive clamp that prevents 0 or 1 */
+function safeClamp(l: number, seedL = 0.64) {
+  // narrower range for extreme seeds so ramps stay visible
+  const range = 0.75;
+  const min = Math.max(0.04, seedL - range / 2);
+  const max = Math.min(0.96, seedL + range / 2);
+  return Math.min(max, Math.max(min, l));
+}
+
+/** Adjusts contrast ( >1 = more contrast, <1 = lower ) */
+export function adjustContrast(seed: OklchColor, factor = 1.1): OklchColor {
+  let l = 0.5 + (seed.l - 0.5) * factor;
+  return { ...seed, l: safeClamp(l), c: seed.c * factor };
+}
+
+/** Limit chroma depending on lightness to stay inside sRGB */
 function limitChromaByLightness(L: number, C: number): number {
   const C_limit =
     L > 0.90 ? 0.04 :
-    L > 0.80 ? 0.05 :
-    L > 0.70 ? 0.09 :
-    0.16;
+    L > 0.80 ? 0.06 :
+    L > 0.70 ? 0.10 :
+    L > 0.50 ? 0.14 :
+    0.18;
   return Math.min(Math.max(0, C), C_limit);
 }
 
-function lockHueIfUseful(snapped: OklchColor, L: number, baseHue: number): OklchColor {
-  if (L <= 0.80) return { ...snapped, h: baseHue };
-  return snapped;
-}
-
-/** optional small lift for dark-mode */
+/** Optional small lift for dark-mode */
 export function adjustForDark(color: OklchColor): OklchColor {
   return { ...color, l: Math.min(1, color.l * 1.05), c: color.c * 1.08 };
 }
 
 /* ===========================================================
-   Main generator (seed-anchored)
+   Main generator
    =========================================================== */
 
-/**
- * Generate a smooth, gamut-safe ramp around a seed color.
- * Step 500 == exact seed.
- */
 export function generateRampFromSeed(seed: OklchColor): Record<Step, string> {
-  console.log('DEBUG incoming seed →', seed);
   const baseL = seed.l ?? 0.64;
   const baseC = seed.c ?? 0.12;
   const baseH = seed.h ?? 0;
@@ -98,28 +98,33 @@ export function generateRampFromSeed(seed: OklchColor): Record<Step, string> {
   const LmidPlan = lPlan[500];
   const CrefPeak = 0.15;
 
-  const out = {} as Record<Step, string>;
+  // compression factors: if baseL is near edges, reduce positive/negative range
+  const headroomUp = 1 - baseL;
+  const headroomDown = baseL;
+  const compressUp = Math.min(1, headroomUp / 0.36);   // 0.36 ≈ (1 - 0.64)
+  const compressDown = Math.min(1, headroomDown / 0.36);
+
+  const out: Record<Step, string> = {};
 
   for (const step of rampNames) {
-    // lock exact seed on 500
     if (step === 500) {
-      out[step] = toOklchCss({ mode: "oklch", l: baseL, c: baseC, h: baseH });
+      out[step] = toOklchCss(seed);
       continue;
     }
 
-    // Lightness shape centered on seed
+    // Lightness delta, but scaled adaptively
     const Ldelta = lPlan[step] - LmidPlan;
-    const L = clamp01(baseL + Ldelta * 0.95);
+    const scaledDelta = Ldelta >= 0 ? Ldelta * compressUp : Ldelta * compressDown;
+    const Lraw = baseL + scaledDelta;
+    const L = safeClamp(Lraw, baseL);
 
     // Chroma shape scaled to seed
     const cScale = CrefPeak > 0 ? baseC / CrefPeak : 0;
     const Craw = cRef[step] * cScale;
     const C = limitChromaByLightness(L, Craw);
 
-    // Compose + gamut-safe + hue-locked
     let col: OklchColor = { mode: "oklch", l: L, c: C, h: baseH };
     col = snapToGamut(col, "srgb");
-    col = lockHueIfUseful(col, L, baseH);
 
     out[step] = toOklchCss(col);
   }
@@ -127,10 +132,24 @@ export function generateRampFromSeed(seed: OklchColor): Record<Step, string> {
   return out;
 }
 
+
+/* ===========================================================
+   Placeholder for future vision-mode transforms
+   =========================================================== */
+
+export function simulateVision(color: OklchColor, type: 'deuteranopia'|'protanopia'|'tritanopia'|'mono'): OklchColor {
+  // basic grayscale fallback for now; full matrix in figma build
+  if (type === 'mono') {
+    return { ...color, c: 0 };
+  }
+  return color;
+}
+
 /* ===========================================================
    Back-compat export
    =========================================================== */
 export const generateColorRamps = generateRampFromSeed;
+
 
 
 
