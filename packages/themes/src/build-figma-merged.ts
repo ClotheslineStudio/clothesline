@@ -183,20 +183,20 @@ async function run() {
     file[`${theme.name}.dark`]  = buildThemeModeSet(theme, 'dark');
   }
 
-  file.$themes = THEMES.flatMap(t => ([
-    {
-      name: t.name,
-      mode: 'Light',
-      group: t.name.replace(/(^|\s)\S/g, s => s.toUpperCase()),
-      selectedTokenSets: { global: 'enabled', [`${t.name}.light`]: 'enabled' }
-    },
-    {
-      name: t.name,
-      mode: 'Dark',
-      group: t.name.replace(/(^|\s)\S/g, s => s.toUpperCase()),
-      selectedTokenSets: { global: 'enabled', [`${t.name}.dark`]: 'enabled' }
-    }
-  ]));
+  file.$themes = THEMES.flatMap(t => [
+  {
+    name: t.name,
+    group: t.name.replace(/(^|\s)\S/g, s => s.toUpperCase()),
+    mode: "Light",
+    selectedTokenSets: { global: "enabled", [`${t.name}.light`]: "enabled" }
+  },
+  {
+    name: t.name,
+    group: t.name.replace(/(^|\s)\S/g, s => s.toUpperCase()),
+    mode: "Dark",
+    selectedTokenSets: { global: "enabled", [`${t.name}.dark`]: "enabled" }
+  }
+]);
 
   const distFile = path.join(outDist, MERGED);
   const repoFile = path.join(outRepo, MERGED);
