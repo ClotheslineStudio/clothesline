@@ -11,7 +11,10 @@ import fs from 'fs-extra';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
-import { generateColorRampFromSeed, rampNames } from '@clothesline/tokens/colors';
+import { generateRampFromSeed, RAMP_STEPS as rampNames } from '../../tokens/utils/generateRamps.js';
+
+
+
 import { baseTokens } from '@clothesline/tokens';
 
 import type { ThemeConfig } from './types.ts';
@@ -285,10 +288,10 @@ function buildThemeModeSet(theme: ThemeConfig, mode: ThemeMode) {
     const src: any = (theme as any).roles?.[role] ?? (theme as any)[role] ?? (theme as any).colors?.[role] ?? null;
     const seed = coerceToOklch(src);
     if (!seed) continue;
-    let ramp = generateColorRampFromSeed(seed) as Record<Step,string>;
+    let ramp = generateRampFromSeed(seed) as Record<Step,string>;
     if (mode === 'dark') ramp = flipRampForDark(ramp);
     set.color[role] = Object.fromEntries(
-      rampNames.map(step => [step, { $type:'color', $value: ramp[step] }])
+      rampNames.map((step: Step) => [step, { $type:'color', $value: ramp[step] }])
     );
   }
   return set;

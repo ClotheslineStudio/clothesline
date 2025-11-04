@@ -32,7 +32,7 @@ const ROLES = [
 ] as const;
 type RoleName = typeof ROLES[number];
 
-import { rampFormatsFromSeed, rampNames } from '@clothesline/tokens/colors';
+import { generateRampFromSeed, RAMP_STEPS as rampNames } from '../../tokens/utils/generateRamps.js';
 
 /** Coerce various config shapes into an OKLCH seed. (Copied from build.ts pattern) */
 type Step = (typeof rampNames)[number];
@@ -58,6 +58,7 @@ function flipFormatsForDark(formats: Record<string, Record<Step, string>>) {
 
 function getRoleSeed(theme: ThemeConfig, mode: ThemeMode, role: RoleName): OklchColor | null {
   const node: any =
+    (theme as any).seeds?.[role] ??
     (theme as any).roles?.[role] ??
     (theme as any)[role] ??
     (theme as any).colors?.[role] ??
@@ -127,7 +128,8 @@ async function writeFormats(theme: ThemeConfig) {
     for (const role of ROLES) {
       const seed = getRoleSeed(theme, mode, role);
       if (!seed) continue;
-      const fmts = rampFormatsFromSeed(seed) as Record<string, Record<Step, string>>;
+      const ramp = generateRampFromSeed(seed);
+      const fmts = { hex: ramp } as Record<string, Record<Step, string>>;
       out[mode][role] = mode === 'dark' ? flipFormatsForDark(fmts) : fmts;
     }
   }

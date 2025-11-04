@@ -4,7 +4,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 
 // Colors
-import { generateColorRampFromSeed, rampNames } from '@clothesline/tokens/colors';
+import { generateRampFromSeed, RAMP_STEPS as rampNames } from '../../tokens/utils/generateRamps.js';
 
 import type { ThemeConfig } from './types.ts';
 import type { OklchColor } from '../../tokens/utils/colorEngine.js';
@@ -68,8 +68,9 @@ function coerceToOklch(input: any, fallbackHue = 0): OklchColor | null {
   return null;
 }
 
-function getRoleSeed(theme: ThemeConfig, role: RoleName): OklchColor | null {
+function getRoleSeed(theme: ThemeConfig, mode: ThemeMode, role: RoleName): OklchColor | null {
   const node: any =
+    (theme as any).seeds?.[role] ??
     (theme as any).roles?.[role] ??
     (theme as any)[role] ??
     (theme as any).colors?.[role] ??
@@ -108,9 +109,9 @@ function buildFile() {
     for (const mode of ['light','dark'] as ThemeMode[]) {
       const set: any = { color: {} };
       for (const role of ROLES) {
-        const seed = getRoleSeed(theme, role);
+        const seed = getRoleSeed(theme, mode, role);
         if (!seed) continue;
-        let ramp = generateColorRampFromSeed(seed) as Record<Step,string>;
+        let ramp = generateRampFromSeed(seed) as Record<Step,string>;
         if (mode === 'dark') ramp = flipRampForDark(ramp);
         set.color[role] = Object.fromEntries(
           rampNames.map(step => [step, { $type:'color', $value: ramp[step] }])

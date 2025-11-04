@@ -84,9 +84,10 @@ export function adjustForDark(color: OklchColor): OklchColor {
  * Step 500 == exact seed.
  */
 export function generateRampFromSeed(seed: OklchColor): Record<Step, string> {
-  const baseL = typeof seed.l === "number" ? seed.l : 0.64;
-  const baseC = typeof seed.c === "number" ? seed.c : 0.12;
-  const baseH = typeof seed.h === "number" ? seed.h : 0;
+  console.log('DEBUG incoming seed →', seed);
+  const baseL = seed.l ?? 0.64;
+  const baseC = seed.c ?? 0.12;
+  const baseH = seed.h ?? 0;
 
   const isSurface = baseC <= NEAR_ZERO;
   const isNeutral = !isSurface && baseC < NEUTRAL_THRESHOLD;
