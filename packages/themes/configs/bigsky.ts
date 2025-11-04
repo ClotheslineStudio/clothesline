@@ -1,65 +1,80 @@
 // packages/themes/configs/bigsky.ts
 import type { ThemeConfig } from 'src/types.js';
 
-const roles = {
-  primary:   { hue: 230, chroma: 0.14 }, // clear-sky blue
-  secondary: { hue: 180, chroma: 0.10 }, // blue-green
-  tertiary:  { hue:  60, chroma: 0.08 }, // sunlight yellow
-  success:   { hue: 140, chroma: 0.09 },
-  warning:   { hue:  50, chroma: 0.10 },
-  error:     { hue:  10, chroma: 0.09 },
-  info:      { hue: 200, chroma: 0.11 },
-  accent:    { hue: 280, chroma: 0.12 }, // wildflower purple
-  neutral:   { hue: 240, chroma: 0.03 },
-  surface:   { hue: 210, chroma: 0.01 }  // snowy blue‑white
+/**
+ * Big Sky — calibrated OKLCH seeds.
+ * Each value is a measured color (no computed averages).
+ */
+const seeds = {
+  primary:   { l: 0.6981, c: 0.1714, h: 243.77 },
+  secondary: { l: 0.8201, c: 0.0494, h: 235.03 },
+  tertiary:  { l: 0.4514, c: 0.0593, h: 228.99 },
+  accent:    { l: 0.7512, c: 0.1647, h: 68.12  },
+  success:   { l: 0.6990, c: 0.1292, h: 144.87 },
+  warning:   { l: 0.8028, c: 0.1654, h: 82.04  },
+  error:     { l: 0.5793, c: 0.1601, h: 29.71  },
+  info:      { l: 0.6789, c: 0.1001, h: 220.58 },
+  neutral:   { l: 0.3797, c: 0.0608, h: 59.6   },
+  surface:   {
+    light: { l: 0.9093, c: 0.0205, h: 243.43 },
+    dark:  { l: 0.4514, c: 0.0593, h: 228.99 }
+  }
 } as const;
 
 /**
- * Big Sky — base palette plus optional mode guidance.
- * - No baked-in contrast/vision variants. Those are runtime via attributes + modes.css.
- * - You can still define presets (one-click states) and tiny deltas (variable overrides) here.
+ * Roles — minimal legacy support for {hue, chroma}.
+ */
+const roles = {
+  primary:   { hue: seeds.primary.h,   chroma: seeds.primary.c },
+  secondary: { hue: seeds.secondary.h, chroma: seeds.secondary.c },
+  tertiary:  { hue: seeds.tertiary.h,  chroma: seeds.tertiary.c },
+  accent:    { hue: seeds.accent.h,    chroma: seeds.accent.c },
+  success:   { hue: seeds.success.h,   chroma: seeds.success.c },
+  warning:   { hue: seeds.warning.h,   chroma: seeds.warning.c },
+  error:     { hue: seeds.error.h,     chroma: seeds.error.c },
+  info:      { hue: seeds.info.h,      chroma: seeds.info.c },
+  neutral:   { hue: seeds.neutral.h,   chroma: seeds.neutral.c },
+  surface:   { hue: seeds.surface.light.h, chroma: seeds.surface.light.c }
+} as const;
+
+/**
+ * Big Sky — full ThemeConfig (with both seeds + roles)
  */
 export const bigSkyTheme: ThemeConfig = {
   name: 'bigsky',
+  seeds,  // ← THIS was missing
   roles,
 
   modes: {
-    // Default starting state when someone picks this theme
     defaults: {
-      mode: 'light',         // light/dark palettes are both emitted; this is just the default
+      mode: 'light',
       vision: 'none',
       contrast: 'normal',
       typescale: 1.0,
       ui: [],
       motor: [],
-      focus: true            // opt-in stronger :focus-visible by default (nice for demos)
+      focus: true
     },
 
-    // Optional one-click presets for your builder
     presets: {
-      // Good “accessibility-first” preset
       accessible: { contrast: 'high', typescale: 1.1, ui: ['simplified'], motor: ['kbd'] },
-      // A reading-focused preset
       reading:    { reading: 'dyslexia', typescale: 1.08, motion: 'reduced', focus: true },
-      // A dark showcase preset
       night:      { mode: 'dark', contrast: 'normal', dev: ['grid'] }
     },
 
-    // Optional tiny CSS var/utility deltas (keep these minimal!)
     deltas: {
       contrast: {
-        high: { vars: { '--focus-ring': 'oklch(82% 0.25 230)' } },
-        // custom: documentElement.style.setProperty('--contrast-factor', n) at runtime
+        high: { vars: { '--focus-ring': 'oklch(82% 0.25 230)' } }
       },
-      // Example: if you want mono to slightly raise neutral separation in this theme only
       vision: {
         mono: { vars: { '--neutral-boost': 0.02 }, note: 'Used by generator to widen neutral steps' }
       },
-      // Keyboard mode: stronger outlines in this theme
       motor: {
-        kbd: { selectors: [":focus-visible"], note: 'See modes.css for the actual outline rule' }
+        kbd: { selectors: [':focus-visible'], note: 'See modes.css for the actual outline rule' }
       }
     }
   }
 };
+
+export default bigSkyTheme;
 
