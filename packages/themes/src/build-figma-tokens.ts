@@ -69,16 +69,44 @@ function coerceToOklch(input: any, fallbackHue = 0): OklchColor | null {
 }
 
 function getRoleSeed(theme: ThemeConfig, mode: ThemeMode, role: RoleName): OklchColor | null {
-  const node: any =
+  // Always prefer explicit OKLCH seeds first
+  const seedNode: any =
     (theme as any).seeds?.[role] ??
     (theme as any).roles?.[role] ??
     (theme as any)[role] ??
     (theme as any).colors?.[role] ??
     null;
-  const seed = coerceToOklch(node);
-  if (!seed) console.warn(`[figma] No seed for role "${role}" in "${(theme as any).name}".`);
-  return seed;
+
+  if (!seedNode) return null;
+
+  // true OKLCH seed
+  if (typeof seedNode.l === 'number' && typeof seedNode.c === 'number' && typeof seedNode.h === 'number') {
+    return { mode: 'oklch', l: seedNode.l, c: seedNode.c, h: seedNode.h };
+  }
+
+  // fallback {hue, chroma}
+  if (typeof seedNode.hue === 'number') {
+    const h = seedNode.hue;
+    const c = typeof seedNode.chroma === 'number' ? seedNode.chroma : 0.12;
+    const l = (theme as any).seeds?.[role]?.l ?? 0.64; // uses seed’s L if available
+    return { mode: 'oklch', l, c, h };
+  }
+
+  // string color
+  if (typeof seedNode === 'string') {
+    const o = toOklch(seedNode);
+    if (o && typeof o.l === 'number') return { mode: 'oklch', l: o.l, c: o.c, h: o.h };
+  }
+
+  // structured light/dark object
+  if (typeof seedNode === 'object') {
+    const pick = seedNode[mode] ?? seedNode.light ?? seedNode.dark;
+    if (pick) return getRoleSeed({ seeds: { [role]: pick } } as any, mode, role);
+  }
+
+  return null;
 }
+
 
 const THEMES: ThemeConfig[] = [
   clotheslineTheme,
