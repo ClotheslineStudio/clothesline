@@ -1,25 +1,48 @@
 // packages/themes/configs/timberline.ts
-import type { ThemeConfig } from '../src/types.ts';
+import type { ThemeConfig } from 'src/types.js';
 
-const roles = {
-  primary:   { hue: 145, chroma: 0.13 }, // canopy green
-  secondary: { hue: 120, chroma: 0.12 }, // pine
-  tertiary:  { hue:  90, chroma: 0.08 }, // lichen
-  success:   { hue: 135, chroma: 0.14 },
-  warning:   { hue:  55, chroma: 0.08 },
-  error:     { hue:  15, chroma: 0.08 },
-  info:      { hue: 200, chroma: 0.07 },
-  accent:    { hue: 300, chroma: 0.10 }, // foxglove
-  neutral:   { hue:  90, chroma: 0.02 }, // mossy neutral
-  surface:   { hue:  60, chroma: 0.01 }  // warm bark-leaning surface
+/**
+ * Timberline — calibrated OKLCH seeds.
+ * Each value is a measured color (no computed averages).
+ */
+const seeds = {
+  primary:   { l: 0.4501, c: 0.0904, h: 149.62 },
+  secondary: { l: 0.7996, c: 0.0293, h: 191.12 },
+  tertiary:  { l: 0.5497, c: 0.0301, h: 251.85  },
+  accent:    { l: 0.3999, c: 0.0499, h: 58.59  },
+  success:   { l: 0.6803, c: 0.1098, h: 139.96 },
+  warning:   { l: 0.782025, c: 0.161871, h: 98.5584  },
+  error:     { l: 0.5501, c: 0.13, h: 35.32  },
+  info:      { l: 0.6508, c: 0.0798, h: 219.81 },
+  neutral:   { l: 0.8797, c: 0.0203, h: 100.62   },
+  surface:   {
+    light: { l: 0.9195, c: 0.0198, h: 181.08 },
+    dark:  { l: 0.2991, c: 0.039, h: 182 }
+  }
 } as const;
 
 /**
- * Timberline — nature-forward greens with warm surfaces.
- * One config; modes are runtime via data-* attributes.
+ * Roles — minimal legacy support for {hue, chroma}.
+ */
+const roles = {
+  primary:   { hue: seeds.primary.h,   chroma: seeds.primary.c },
+  secondary: { hue: seeds.secondary.h, chroma: seeds.secondary.c },
+  tertiary:  { hue: seeds.tertiary.h,  chroma: seeds.tertiary.c },
+  accent:    { hue: seeds.accent.h,    chroma: seeds.accent.c },
+  success:   { hue: seeds.success.h,   chroma: seeds.success.c },
+  warning:   { hue: seeds.warning.h,   chroma: seeds.warning.c },
+  error:     { hue: seeds.error.h,     chroma: seeds.error.c },
+  info:      { hue: seeds.info.h,      chroma: seeds.info.c },
+  neutral:   { hue: seeds.neutral.h,   chroma: seeds.neutral.c },
+  surface:   { hue: seeds.surface.light.h, chroma: seeds.surface.light.c }
+} as const;
+
+/**
+ * Timberline — full ThemeConfig (with both seeds + roles)
  */
 export const timberlineTheme: ThemeConfig = {
   name: 'timberline',
+  seeds,  // ← THIS was missing
   roles,
 
   modes: {
@@ -28,28 +51,30 @@ export const timberlineTheme: ThemeConfig = {
       vision: 'none',
       contrast: 'normal',
       typescale: 1.0,
-      focus: true,
       ui: [],
-      motor: []
+      motor: [],
+      focus: true
     },
 
-    // Optional one-click presets for the Theme Builder
     presets: {
-      accessible: { contrast: 'high', typescale: 1.08, ui: ['simplified'], motor: ['kbd'] },
-      reading:    { reading: 'dyslexia', typescale: 1.06, motion: 'reduced', focus: true },
-      night:      { mode: 'dark', contrast: 'normal' }
+      accessible: { contrast: 'high', typescale: 1.1, ui: ['simplified'], motor: ['kbd'] },
+      reading:    { reading: 'dyslexia', typescale: 1.08, motion: 'reduced', focus: true },
+      night:      { mode: 'dark', contrast: 'normal', dev: ['grid'] }
     },
 
-    // Tiny, theme-specific tweaks (keep minimal)
     deltas: {
       contrast: {
-        high: { vars: { '--focus-ring': 'oklch(82% 0.24 145)' } } // greenish ring that still pops
+        high: { vars: { '--focus-ring': 'oklch(82% 0.25 230)' } }
+      },
+      vision: {
+        mono: { vars: { '--neutral-boost': 0.02 }, note: 'Used by generator to widen neutral steps' }
       },
       motor: {
-        kbd: { selectors: [':focus-visible'], note: 'Stronger outline handled in modes.css' }
+        kbd: { selectors: [':focus-visible'], note: 'See modes.css for the actual outline rule' }
       }
-      // Add vision-specific tweaks later if desired (e.g., mono neutral widening)
     }
   }
 };
+
+export default timberlineTheme;
 
