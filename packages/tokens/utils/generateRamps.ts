@@ -88,49 +88,40 @@ export function generateRampFromSeed(seed: OklchColor): Record<Step, string> {
   const baseL = seed.l ?? 0.64;
   const baseC = seed.c ?? 0.12;
   const baseH = seed.h ?? 0;
-
-  const isSurface = baseC <= NEAR_ZERO;
-  const isNeutral = !isSurface && baseC < NEUTRAL_THRESHOLD;
-
-  const lPlan = isSurface ? L_PLAN_SURFACE : L_PLAN;
-  const cRef = isSurface ? C_CAPS_NEUTRAL : (isNeutral ? C_CAPS_NEUTRAL : C_SHAPE_PUNCH);
-
-  const LmidPlan = lPlan[500];
-  const CrefPeak = 0.15;
-
-  // compression factors: if baseL is near edges, reduce positive/negative range
-  const headroomUp = 1 - baseL;
-  const headroomDown = baseL;
-  const compressUp = Math.min(1, headroomUp / 0.36);   // 0.36 ≈ (1 - 0.64)
-  const compressDown = Math.min(1, headroomDown / 0.36);
-
   const out: Record<Step, string> = {};
 
-  for (const step of rampNames) {
+  // how far we let L wander from the seed
+  const upRange = Math.min(0.4, 1 - baseL);     // how much lighter
+  const downRange = Math.min(0.4, baseL);       // how much darker
+
+  // shape curve (–1 → +1) mapped to your 11 steps
+  const curve = [-1.0, -0.8, -0.6, -0.4, -0.2, 0, 0.2, 0.4, 0.6, 0.8, 1.0];
+
+  const Cpeak = Math.max(0.03, baseC); // preserve some chroma for low-C seeds
+
+  rampNames.forEach((step, i) => {
     if (step === 500) {
       out[step] = toOklchCss(seed);
-      continue;
+      return;
     }
 
-    // Lightness delta, but scaled adaptively
-    const Ldelta = lPlan[step] - LmidPlan;
-    const scaledDelta = Ldelta >= 0 ? Ldelta * compressUp : Ldelta * compressDown;
-    const Lraw = baseL + scaledDelta;
-    const L = safeClamp(Lraw, baseL);
+    // map -1..1 to 0..1 lightness
+    const t = curve[i];
+    const lShift = t > 0 ? t * upRange : t * downRange;
+    const l = clamp01(baseL + lShift);
 
-    // Chroma shape scaled to seed
-    const cScale = CrefPeak > 0 ? baseC / CrefPeak : 0;
-    const Craw = cRef[step] * cScale;
-    const C = limitChromaByLightness(L, Craw);
+    // chroma tapers off toward ends of ramp
+    const c = Cpeak * (1 - Math.pow(Math.abs(t), 1.5));
 
-    let col: OklchColor = { mode: "oklch", l: L, c: C, h: baseH };
+    let col: OklchColor = { mode: "oklch", l, c, h: baseH };
     col = snapToGamut(col, "srgb");
-
     out[step] = toOklchCss(col);
-  }
+  });
 
   return out;
 }
+
+
 
 
 /* ===========================================================
