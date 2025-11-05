@@ -90,38 +90,40 @@ export function generateRampFromSeed(seed: OklchColor): Record<Step, string> {
   const baseH = seed.h ?? 0;
   const out: Record<Step, string> = {};
 
-  // define overall range (how far light/dark we go)
-  const upRange = Math.min(0.45, 1 - baseL);   // how much lighter  (e.g. up to ~+0.4)
-  const downRange = Math.min(0.45, baseL);     // how much darker  (e.g. down to ~-0.4)
+  // dynamic range — let dark seeds climb higher, light seeds fall lower
+  const upRange = clamp01(0.55 - baseL * 0.25);   // lighter reach
+  const downRange = clamp01(0.55 - (1 - baseL) * 0.25); // darker reach
 
-  const steps = rampNames.length; // usually 11
-
-  // cosine ease for perceptual smoothness
+  const steps = rampNames.length;
   const ease = (x: number) => 0.5 - 0.5 * Math.cos(Math.PI * x);
 
   for (let i = 0; i < steps; i++) {
     const step = rampNames[i];
-    const t = i / (steps - 1);  // 0 → 1
+    const t = i / (steps - 1);
 
-    // Lightness curve — symmetric around seed
-    const l = clamp01(
+    // perceptual lightness curve
+    const l = safeClamp(
       t < 0.5
-        ? baseL - downRange * ease(1 - 2 * t) // darker half
-        : baseL + upRange * ease(2 * t - 1)   // lighter half
+        ? baseL - downRange * ease(1 - 2 * t)
+        : baseL + upRange * ease(2 * t - 1),
+      baseL
     );
 
-    // Chroma curve — soft bell with slight mid bump
-    // instead of your existing cFalloff line:
-const chromaFalloff = Math.exp(-3.5 * Math.pow(t - 0.5, 2));
+    // smoother chroma bell with stronger light end
+    const chromaFalloff = Math.exp(-3.5 * Math.pow(t - 0.5, 2));
+    const lightBoost = 1 + 0.45 * (1 - Math.exp(-6 * Math.pow(1 - t, 2)));
+    const targetC = baseC * chromaFalloff * lightBoost;
 
-// new light-end lift
-const lightBoost = 1 + 0.4 * (1 - Math.exp(-6 * Math.pow(1 - t, 2))); // boosts upper half
+    // relaxed chroma limiter
+    const cLimit =
+      l > 0.93 ? 0.07 :
+      l > 0.85 ? 0.10 :
+      l > 0.75 ? 0.13 :
+      l > 0.60 ? 0.16 :
+      l > 0.45 ? 0.18 :
+      0.20;
 
-const cTarget = baseC * chromaFalloff * lightBoost;
-
-// clamp to stay in gamut and realistic
-const c = limitChromaByLightness(l, Math.min(cTarget, baseC * 1.1));
-
+    const c = Math.min(targetC, cLimit);
 
     let col: OklchColor = { mode: "oklch", l, c, h: baseH };
     col = snapToGamut(col, "srgb");
@@ -130,6 +132,7 @@ const c = limitChromaByLightness(l, Math.min(cTarget, baseC * 1.1));
 
   return out;
 }
+
 
 
 
