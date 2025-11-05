@@ -95,28 +95,24 @@ export function generateRampFromSeed(seed: OklchColor): Record<Step, string> {
   const downRange = Math.min(0.4, baseL);       // how much darker
 
   // shape curve (–1 → +1) mapped to your 11 steps
-  const curve = [-1.0, -0.8, -0.6, -0.4, -0.2, 0, 0.2, 0.4, 0.6, 0.8, 1.0];
+ // Replace the ramp loop with this smoother curve version:
+const ease = (x: number) => 0.5 - 0.5 * Math.cos(Math.PI * x); // cosine ease
 
-  const Cpeak = Math.max(0.03, baseC); // preserve some chroma for low-C seeds
+rampNames.forEach((step, i) => {
+  const t = i / (rampNames.length - 1); // 0 → 1
+  const up = baseL + upRange * (1 - ease(t));
+  const down = baseL - downRange * ease(t);
+  const l = i < rampNames.indexOf(500) ? down : up;
+  
+  // bell-shaped chroma taper (Gaussian-ish)
+  const cFalloff = Math.exp(-3.5 * Math.pow(t - 0.5, 2));
+  const c = limitChromaByLightness(l, baseC * cFalloff * 1.05);
 
-  rampNames.forEach((step, i) => {
-    if (step === 500) {
-      out[step] = toOklchCss(seed);
-      return;
-    }
+  let col: OklchColor = { mode: 'oklch', l: safeClamp(l, baseL), c, h: baseH };
+  col = snapToGamut(col, 'srgb');
+  out[step] = toOklchCss(col);
+});
 
-    // map -1..1 to 0..1 lightness
-    const t = curve[i];
-    const lShift = t > 0 ? t * upRange : t * downRange;
-    const l = clamp01(baseL + lShift);
-
-    // chroma tapers off toward ends of ramp
-    const c = Cpeak * (1 - Math.pow(Math.abs(t), 1.5));
-
-    let col: OklchColor = { mode: "oklch", l, c, h: baseH };
-    col = snapToGamut(col, "srgb");
-    out[step] = toOklchCss(col);
-  });
 
   return out;
 }
