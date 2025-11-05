@@ -99,7 +99,7 @@ export function generateRampFromSeed(seed: OklchColor): Record<Step, string> {
 
   for (let i = 0; i < steps; i++) {
     const step = rampNames[i];
-    const t = i / (steps - 1);
+    const t = 1 - i / (steps - 1);  // reversed so 50 = lightest, 950 = darkest
 
     // perceptual lightness curve
     const l = safeClamp(
@@ -132,6 +132,7 @@ export function generateRampFromSeed(seed: OklchColor): Record<Step, string> {
 
   return out;
 }
+
 
 
 
