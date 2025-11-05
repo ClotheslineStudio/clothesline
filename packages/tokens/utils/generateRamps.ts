@@ -91,26 +91,28 @@ export function generateRampFromSeed(seed: OklchColor): Record<Step, string> {
   const out: Record<Step, string> = {};
 
   const steps = rampNames.length;
-  const midIndex = Math.floor(steps / 2); // guarantees 500 stays anchored
+  const midIndex = Math.floor(steps / 2);
 
-  // ranges – wider toward light for dark seeds, balanced for mids
+  // ranges – allow more distance toward light for dark seeds
   const upRange = Math.min(0.55, 1 - baseL * 0.6);
   const downRange = Math.min(0.55, baseL * 0.9);
 
-  const ease = (x: number) => 0.5 - 0.5 * Math.cos(Math.PI * x);
+  // slightly steeper ease for better separation near ends
+  const ease = (x: number) =>
+    x < 0.5
+      ? 0.5 * Math.pow(2 * x, 1.6)
+      : 1 - 0.5 * Math.pow(2 * (1 - x), 1.6);
 
   for (let i = 0; i < steps; i++) {
-  // reverse index so 50 → light, 950 → dark
-  const step = rampNames[i];
-  const j = steps - 1 - i; // reversed index for curve math
-
+    // reverse so 50 = light, 950 = dark
+    const j = steps - 1 - i;
+    const step = rampNames[i];
 
     if (j === midIndex) {
       out[step] = toOklchCss(snapToGamut(seed, "srgb"));
-      continue; // keep exact seed at 500
+      continue;
     }
 
-    // normalized position around the midpoint
     const t = (j - midIndex) / midIndex; // -1 → 1
     const sign = Math.sign(t);
     const amt = Math.abs(t);
@@ -119,18 +121,19 @@ export function generateRampFromSeed(seed: OklchColor): Record<Step, string> {
     const deltaL = ease(amt) * (sign > 0 ? upRange : -downRange);
     const l = safeClamp(baseL + deltaL, baseL);
 
-    // keep more color near light end
-    const lightBias = l > baseL ? 1 + 0.6 * (l - baseL) : 1;
-    const darkBias  = l < baseL ? 1 - 0.2 * (baseL - l) : 1;
-    const cTarget   = baseC * lightBias * darkBias;
+    // chroma behaviour
+    const chromaFalloff = Math.exp(-3.2 * Math.pow(amt, 1.3));
+    const lightBias = l > baseL ? 1 + 0.55 * (l - baseL) : 1;
+    const darkBias  = l < baseL ? 1 - 0.25 * (baseL - l) : 1;
+    const cTarget   = baseC * chromaFalloff * lightBias * darkBias;
 
-    // relaxed chroma limiter – lets pale tones stay tinted
+    // relaxed limiter – keep hue visible even at high L
     const cLimit =
-      l > 0.95 ? 0.10 :
-      l > 0.90 ? 0.12 :
-      l > 0.80 ? 0.14 :
-      l > 0.65 ? 0.16 :
-      l > 0.50 ? 0.18 :
+      l > 0.95 ? 0.12 :
+      l > 0.90 ? 0.14 :
+      l > 0.80 ? 0.16 :
+      l > 0.65 ? 0.18 :
+      l > 0.50 ? 0.19 :
       0.20;
 
     const c = Math.min(cTarget, cLimit);
@@ -141,6 +144,7 @@ export function generateRampFromSeed(seed: OklchColor): Record<Step, string> {
 
   return out;
 }
+
 
 
 
