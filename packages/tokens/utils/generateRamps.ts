@@ -90,32 +90,38 @@ export function generateRampFromSeed(seed: OklchColor): Record<Step, string> {
   const baseH = seed.h ?? 0;
   const out: Record<Step, string> = {};
 
-  // how far we let L wander from the seed
-  const upRange = Math.min(0.4, 1 - baseL);     // how much lighter
-  const downRange = Math.min(0.4, baseL);       // how much darker
+  // define overall range (how far light/dark we go)
+  const upRange = Math.min(0.45, 1 - baseL);   // how much lighter  (e.g. up to ~+0.4)
+  const downRange = Math.min(0.45, baseL);     // how much darker  (e.g. down to ~-0.4)
 
-  // shape curve (–1 → +1) mapped to your 11 steps
- // Replace the ramp loop with this smoother curve version:
-const ease = (x: number) => 0.5 - 0.5 * Math.cos(Math.PI * x); // cosine ease
+  const steps = rampNames.length; // usually 11
 
-rampNames.forEach((step, i) => {
-  const t = i / (rampNames.length - 1); // 0 → 1
-  const up = baseL + upRange * (1 - ease(t));
-  const down = baseL - downRange * ease(t);
-  const l = i < rampNames.indexOf(500) ? down : up;
-  
-  // bell-shaped chroma taper (Gaussian-ish)
-  const cFalloff = Math.exp(-3.5 * Math.pow(t - 0.5, 2));
-  const c = limitChromaByLightness(l, baseC * cFalloff * 1.05);
+  // cosine ease for perceptual smoothness
+  const ease = (x: number) => 0.5 - 0.5 * Math.cos(Math.PI * x);
 
-  let col: OklchColor = { mode: 'oklch', l: safeClamp(l, baseL), c, h: baseH };
-  col = snapToGamut(col, 'srgb');
-  out[step] = toOklchCss(col);
-});
+  for (let i = 0; i < steps; i++) {
+    const step = rampNames[i];
+    const t = i / (steps - 1);  // 0 → 1
 
+    // Lightness curve — symmetric around seed
+    const l = clamp01(
+      t < 0.5
+        ? baseL - downRange * ease(1 - 2 * t) // darker half
+        : baseL + upRange * ease(2 * t - 1)   // lighter half
+    );
+
+    // Chroma curve — soft bell with slight mid bump
+    const cFalloff = Math.exp(-3.5 * Math.pow(t - 0.5, 2));
+    const c = limitChromaByLightness(l, baseC * (0.9 + 0.3 * cFalloff));
+
+    let col: OklchColor = { mode: "oklch", l, c, h: baseH };
+    col = snapToGamut(col, "srgb");
+    out[step] = toOklchCss(col);
+  }
 
   return out;
 }
+
 
 
 
