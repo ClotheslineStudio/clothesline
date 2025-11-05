@@ -1,3 +1,5 @@
+import { interpolate } from 'culori/fn';
+
 import { snapToGamut } from "./snapToGamut.js";
 import type { OklchColor } from "./colorEngine.js";
 import { toOklchCss } from "./toCssColor.js";
@@ -7,76 +9,57 @@ export type Step = (typeof rampNames)[number];
 
 /**
  * ===============================================================
- * OKLCH Balanced Ramp Generator
+ * Skeleton-style OKLCH ramp generator (pure OKLCH, no chroma.js)
  * ===============================================================
- * Grounded in perceptual best practices:
- *  - Constant hue (tiny optional drift for warmth/coolness balance)
- *  - Smooth exponential lightness curve (~0.98 → 0.10)
- *  - Chroma peaks mid-ramp, tapered at both extremes
- *  - Clamp to sRGB gamut safely via snapToGamut()
+ * Mimics Skeleton's seedColor logic:
+ *   - brightens and darkens seed color to create anchor points
+ *   - interpolates 11 OKLCH samples between light→mid→dark
+ *   - clamps to sRGB gamut for web-safe export
  * ===============================================================
  */
-
-/** Target normalized lightness plan (perceptual spacing, 50→950) */
-const L_TARGET: Record<Step, number> = {
-  50: 0.97, 100: 0.92, 200: 0.84, 300: 0.74, 400: 0.64,
-  500: 0.54, 600: 0.44, 700: 0.34, 800: 0.24, 900: 0.15, 950: 0.08
-};
 
 /**
- * Chroma curve — near 0 at ends, peak around midrange.
- * Keeps color lively but avoids muddy mids.
+ * Adjust lightness and chroma while keeping hue stable.
  */
-function chromaForStep(baseC: number, step: Step): number {
-  const position = rampNames.indexOf(step) / (rampNames.length - 1);
-  // bell-shaped curve: low on ends, strong in middle
-  const bell = Math.exp(-3.5 * Math.pow(position - 0.5, 2));
-  const bias = position < 0.5
-    ? 0.5 + 0.5 * position // gentle lift in lights
-    : 1 - 0.3 * (position - 0.5) * 2; // slight taper in darks
-  const c = baseC * bell * bias * 1.15;
-  return Math.max(0, c);
+function adjustLCH(
+  color: OklchColor,
+  { lDelta = 0, cMult = 1 }: { lDelta?: number; cMult?: number }
+): OklchColor {
+  const l = Math.max(0.03, Math.min(0.98, color.l + lDelta));
+  const c = Math.max(0, color.c * cMult);
+  return { mode: "oklch", l, c, h: color.h };
 }
 
 /**
- * Optional hue drift — helps certain hues (yellows, blues) avoid dirtiness.
- * Subtle 1–2° shifts through ramp are perceptually invisible but keep tone natural.
- */
-function hueForStep(baseH: number, step: Step): number {
-  const position = rampNames.indexOf(step) / (rampNames.length - 1);
-  // shift slightly cooler (negative) in lights, warmer (+) in darks
-  return baseH + (position - 0.5) * 2.0;
-}
-
-/**
- * Main generator — produces smooth, perceptually even OKLCH ramps.
+ * Main generator: produces Skeleton-like OKLCH ramps.
  */
 export function generateRampFromSeed(seed: OklchColor): Record<Step, string> {
-  const baseL = seed.l ?? 0.5;
-  const baseC = seed.c ?? 0.1;
-  const baseH = seed.h ?? 0;
+  const base: OklchColor = {
+    mode: "oklch",
+    l: seed.l ?? 0.5,
+    c: seed.c ?? 0.1,
+    h: seed.h ?? 0,
+  };
 
+  // Equivalent to Skeleton’s seedColor brighten/darken(2.5)
+  const light = adjustLCH(base, { lDelta: +0.32, cMult: 0.65 }); // brighten
+  const dark  = adjustLCH(base, { lDelta: -0.35, cMult: 0.7 });  // darken
+
+  // Interpolate through [light → mid → dark] in OKLCH
+  const interpolateOKLCH = interpolate([light, base, dark], "oklch");
   const out: Record<Step, string> = {};
-  const mid = L_TARGET[500];
-  const diff = baseL - mid;
-  const scale = 1 + (baseL - 0.45) * 0.5; // subtle scaling for high/low seeds
 
-  for (const step of rampNames) {
-    // adjust lightness shape so that 500 aligns with seed.l
-    let L = baseL + (L_TARGET[step] - mid) * scale;
-    L = Math.min(0.985, Math.max(0.05, L));
-
-    // apply chroma & hue logic
-    const C = chromaForStep(baseC, step);
-    const H = hueForStep(baseH, step);
-
-    // snap into gamut
-    const col = snapToGamut({ mode: "oklch", l: L, c: C, h: H }, "srgb");
-    out[step] = toOklchCss(col);
+  // Even spacing for 11 shades (50–950)
+  for (let i = 0; i < rampNames.length; i++) {
+    const t = i / (rampNames.length - 1); // normalized 0–1
+    const raw = interpolateOKLCH(t) as OklchColor;
+    const snapped = snapToGamut(raw, "srgb");
+    out[rampNames[i]] = toOklchCss(snapped);
   }
 
   return out;
 }
+
 
 
 
