@@ -90,48 +90,58 @@ export function generateRampFromSeed(seed: OklchColor): Record<Step, string> {
   const baseH = seed.h ?? 0;
   const out: Record<Step, string> = {};
 
-  // dynamic range — let dark seeds climb higher, light seeds fall lower
-  const upRange = clamp01(0.55 - baseL * 0.25);   // lighter reach
-  const downRange = clamp01(0.55 - (1 - baseL) * 0.25); // darker reach
-
   const steps = rampNames.length;
+  const midIndex = Math.floor(steps / 2); // guarantees 500 stays anchored
+
+  // ranges – wider toward light for dark seeds, balanced for mids
+  const upRange = Math.min(0.55, 1 - baseL * 0.6);
+  const downRange = Math.min(0.55, baseL * 0.9);
+
   const ease = (x: number) => 0.5 - 0.5 * Math.cos(Math.PI * x);
 
   for (let i = 0; i < steps; i++) {
-    const step = rampNames[i];
-    const t = 1 - i / (steps - 1);  // reversed so 50 = lightest, 950 = darkest
+  // reverse index so 50 → light, 950 → dark
+  const step = rampNames[i];
+  const j = steps - 1 - i; // reversed index for curve math
 
-    // perceptual lightness curve
-    const l = safeClamp(
-      t < 0.5
-        ? baseL - downRange * ease(1 - 2 * t)
-        : baseL + upRange * ease(2 * t - 1),
-      baseL
-    );
 
-    // smoother chroma bell with stronger light end
-    const chromaFalloff = Math.exp(-3.5 * Math.pow(t - 0.5, 2));
-    const lightBoost = 1 + 0.45 * (1 - Math.exp(-6 * Math.pow(1 - t, 2)));
-    const targetC = baseC * chromaFalloff * lightBoost;
+    if (j === midIndex) {
+      out[step] = toOklchCss(snapToGamut(seed, "srgb"));
+      continue; // keep exact seed at 500
+    }
 
-    // relaxed chroma limiter
+    // normalized position around the midpoint
+    const t = (j - midIndex) / midIndex; // -1 → 1
+    const sign = Math.sign(t);
+    const amt = Math.abs(t);
+
+    // perceptual lightness curve anchored on seed
+    const deltaL = ease(amt) * (sign > 0 ? upRange : -downRange);
+    const l = safeClamp(baseL + deltaL, baseL);
+
+    // keep more color near light end
+    const lightBias = l > baseL ? 1 + 0.6 * (l - baseL) : 1;
+    const darkBias  = l < baseL ? 1 - 0.2 * (baseL - l) : 1;
+    const cTarget   = baseC * lightBias * darkBias;
+
+    // relaxed chroma limiter – lets pale tones stay tinted
     const cLimit =
-      l > 0.93 ? 0.07 :
-      l > 0.85 ? 0.10 :
-      l > 0.75 ? 0.13 :
-      l > 0.60 ? 0.16 :
-      l > 0.45 ? 0.18 :
+      l > 0.95 ? 0.10 :
+      l > 0.90 ? 0.12 :
+      l > 0.80 ? 0.14 :
+      l > 0.65 ? 0.16 :
+      l > 0.50 ? 0.18 :
       0.20;
 
-    const c = Math.min(targetC, cLimit);
+    const c = Math.min(cTarget, cLimit);
 
-    let col: OklchColor = { mode: "oklch", l, c, h: baseH };
-    col = snapToGamut(col, "srgb");
+    const col: OklchColor = snapToGamut({ mode: "oklch", l, c, h: baseH }, "srgb");
     out[step] = toOklchCss(col);
   }
 
   return out;
 }
+
 
 
 
