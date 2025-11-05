@@ -93,50 +93,43 @@ export function generateRampFromSeed(seed: OklchColor): Record<Step, string> {
   const steps = rampNames.length;
   const midIndex = Math.floor(steps / 2);
 
-  // ranges – allow more distance toward light for dark seeds
-  const upRange = Math.min(0.55, 1 - baseL * 0.6);
-  const downRange = Math.min(0.55, baseL * 0.9);
+  // moderate ranges
+  const upRange = Math.min(0.40, 1 - baseL * 0.8);
+  const downRange = Math.min(0.40, baseL * 0.8);
 
-  // slightly steeper ease for better separation near ends
-  const ease = (x: number) =>
-    x < 0.5
-      ? 0.5 * Math.pow(2 * x, 1.6)
-      : 1 - 0.5 * Math.pow(2 * (1 - x), 1.6);
+  const ease = (x: number) => 0.5 - 0.5 * Math.cos(Math.PI * x);
 
   for (let i = 0; i < steps; i++) {
-    // reverse so 50 = light, 950 = dark
-    const j = steps - 1 - i;
     const step = rampNames[i];
+    const j = steps - 1 - i; // reverse so 50 = lightest
+    const t = (j - midIndex) / midIndex; // -1 → 1
+    const sign = Math.sign(t);
+    const amt = Math.abs(t);
 
+    // anchor 500 exactly
     if (j === midIndex) {
       out[step] = toOklchCss(snapToGamut(seed, "srgb"));
       continue;
     }
 
-    const t = (j - midIndex) / midIndex; // -1 → 1
-    const sign = Math.sign(t);
-    const amt = Math.abs(t);
-
-    // perceptual lightness curve anchored on seed
+    // smooth lightness delta
     const deltaL = ease(amt) * (sign > 0 ? upRange : -downRange);
     const l = safeClamp(baseL + deltaL, baseL);
 
-    // chroma behaviour
-    const chromaFalloff = Math.exp(-3.2 * Math.pow(amt, 1.3));
-    const lightBias = l > baseL ? 1 + 0.55 * (l - baseL) : 1;
-    const darkBias  = l < baseL ? 1 - 0.25 * (baseL - l) : 1;
-    const cTarget   = baseC * chromaFalloff * lightBias * darkBias;
+    // bell chroma, gentle light boost
+    const chromaFalloff = Math.exp(-3.0 * Math.pow(amt, 1.2));
+    const lightBoost = l > baseL ? 1 + 0.3 * (l - baseL) : 1;
+    const targetC = baseC * chromaFalloff * lightBoost;
 
-    // relaxed limiter – keep hue visible even at high L
+    // conservative chroma cap
     const cLimit =
-      l > 0.95 ? 0.12 :
-      l > 0.90 ? 0.14 :
-      l > 0.80 ? 0.16 :
-      l > 0.65 ? 0.18 :
-      l > 0.50 ? 0.19 :
-      0.20;
+      l > 0.92 ? 0.08 :
+      l > 0.85 ? 0.10 :
+      l > 0.75 ? 0.12 :
+      l > 0.60 ? 0.14 :
+      0.16;
 
-    const c = Math.min(cTarget, cLimit);
+    const c = Math.min(targetC, cLimit);
 
     const col: OklchColor = snapToGamut({ mode: "oklch", l, c, h: baseH }, "srgb");
     out[step] = toOklchCss(col);
@@ -144,6 +137,7 @@ export function generateRampFromSeed(seed: OklchColor): Record<Step, string> {
 
   return out;
 }
+
 
 
 
