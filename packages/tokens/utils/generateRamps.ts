@@ -1,13 +1,3 @@
-/**
- * ===============================================================
- * Clothesline Tokens — generateRamps.ts (updated)
- * ===============================================================
- * Purpose:
- *   Generate smooth, perceptually balanced OKLCH color ramps.
- *   Prevents pure white/black clipping and supports adaptive
- *   range + future accessibility variants.
- */
-
 import { snapToGamut } from "./snapToGamut.js";
 import type { OklchColor } from "./colorEngine.js";
 import { toOklchCss } from "./toCssColor.js";
@@ -15,154 +5,74 @@ import { rampNames } from "../colors/oklch.js";
 export { rampNames as RAMP_STEPS } from "../colors/oklch.js";
 export type Step = (typeof rampNames)[number];
 
-/* ===========================================================
-   Baseline shape references
-   =========================================================== */
+/**
+ * ===============================================================
+ * Skeleton-style OKLCH ramp generator
+ * ===============================================================
+ * Based on Skeleton's measured Timberline ramps:
+ *   - Fixed lightness targets (non-symmetric sigmoid)
+ *   - Nearly constant chroma until deep shadows
+ *   - Optional subtle hue drift in shadows
+ * ===============================================================
+ */
 
 const L_PLAN: Record<Step, number> = {
-  50: 0.985, 100: 0.960, 200: 0.900, 300: 0.800, 400: 0.720,
-  500: 0.640, 600: 0.560, 700: 0.480, 800: 0.400, 900: 0.320, 950: 0.260
+  50: 0.84, 100: 0.76, 200: 0.69, 300: 0.61, 400: 0.53,
+  500: 0.45, 600: 0.39, 700: 0.32, 800: 0.25, 900: 0.18, 950: 0.06
 };
 
-const L_PLAN_SURFACE: Record<Step, number> = {
-  ...L_PLAN, 50: 0.992, 100: 0.968
-};
-
-const C_SHAPE_PUNCH: Record<Step, number> = {
-  50: 0.04, 100: 0.06, 200: 0.09, 300: 0.12, 400: 0.14,
-  500: 0.15, 600: 0.14, 700: 0.12, 800: 0.10, 900: 0.08, 950: 0.06
-};
-
-const C_CAPS_NEUTRAL: Record<Step, number> = {
-  50: 0.000, 100: 0.000, 200: 0.003, 300: 0.006, 400: 0.008,
-  500: 0.012, 600: 0.012, 700: 0.010, 800: 0.008, 900: 0.006, 950: 0.006
-};
-
-const NEAR_ZERO = 0.0005;
-const NEUTRAL_THRESHOLD = 0.03;
-
-/* ===========================================================
-   Utility helpers
-   =========================================================== */
-
-function clamp01(x: number) {
-  return Math.max(0, Math.min(1, x));
+/**
+ * Chroma stays flat through midrange (to about 500–600),
+ * then falls toward zero linearly.
+ */
+function chromaShape(baseC: number, step: Step): number {
+  const ratio =
+    step <= 500 ? 1 :
+    step === 600 ? 0.9 :
+    step === 700 ? 0.7 :
+    step === 800 ? 0.45 :
+    step === 900 ? 0.25 :
+    step === 950 ? 0.0 : 1;
+  return baseC * ratio;
 }
 
-/** Adaptive clamp that prevents 0 or 1 */
-function safeClamp(l: number, seedL = 0.64) {
-  // narrower range for extreme seeds so ramps stay visible
-  const range = 0.75;
-  const min = Math.max(0.04, seedL - range / 2);
-  const max = Math.min(0.96, seedL + range / 2);
-  return Math.min(max, Math.max(min, l));
+/**
+ * Optional hue drift: slightly cooler in shadows.
+ */
+function hueShift(baseH: number, step: Step): number {
+  if (step <= 500) return baseH;
+  const delta =
+    step === 600 ? 0.5 :
+    step === 700 ? 0.8 :
+    step === 800 ? 1.0 :
+    step === 900 ? 1.2 :
+    step === 950 ? 1.5 :
+    0;
+  return baseH + delta;
 }
 
-/** Adjusts contrast ( >1 = more contrast, <1 = lower ) */
-export function adjustContrast(seed: OklchColor, factor = 1.1): OklchColor {
-  let l = 0.5 + (seed.l - 0.5) * factor;
-  return { ...seed, l: safeClamp(l), c: seed.c * factor };
-}
-
-/** Limit chroma depending on lightness to stay inside sRGB */
-function limitChromaByLightness(L: number, C: number): number {
-  const C_limit =
-    L > 0.90 ? 0.04 :
-    L > 0.80 ? 0.06 :
-    L > 0.70 ? 0.10 :
-    L > 0.50 ? 0.14 :
-    0.18;
-  return Math.min(Math.max(0, C), C_limit);
-}
-
-/** Optional small lift for dark-mode */
-export function adjustForDark(color: OklchColor): OklchColor {
-  return { ...color, l: Math.min(1, color.l * 1.05), c: color.c * 1.08 };
-}
-
-/* ===========================================================
-   Main generator
-   =========================================================== */
-
+/**
+ * Main generator — matches Skeleton ramp behavior.
+ */
 export function generateRampFromSeed(seed: OklchColor): Record<Step, string> {
-  const baseL = seed.l ?? 0.64;
-  const baseC = seed.c ?? 0.12;
-  const baseH = seed.h ?? 0;
+  const baseL = seed.l ?? 0.45;
+  const baseC = seed.c ?? 0.09;
+  const baseH = seed.h ?? 150;
   const out: Record<Step, string> = {};
 
-  const steps = rampNames.length;
-  const midIndex = Math.floor(steps / 2);
+  for (const step of rampNames) {
+    const l = L_PLAN[step];
+    const c = chromaShape(baseC, step);
+    const h = hueShift(baseH, step);
 
-  // moderate ranges
-  const upRange = Math.min(0.40, 1 - baseL * 0.8);
-  const downRange = Math.min(0.40, baseL * 0.8);
-
-  const ease = (x: number) => 0.5 - 0.5 * Math.cos(Math.PI * x);
-
-  for (let i = 0; i < steps; i++) {
-    const step = rampNames[i];
-    const j = steps - 1 - i; // reverse so 50 = lightest
-    const t = (j - midIndex) / midIndex; // -1 → 1
-    const sign = Math.sign(t);
-    const amt = Math.abs(t);
-
-    // anchor 500 exactly
-    if (j === midIndex) {
-      out[step] = toOklchCss(snapToGamut(seed, "srgb"));
-      continue;
-    }
-
-    // smooth lightness delta
-    const deltaL = ease(amt) * (sign > 0 ? upRange : -downRange);
-    const l = safeClamp(baseL + deltaL, baseL);
-
-    // bell chroma, gentle light boost
-    const chromaFalloff = Math.exp(-3.0 * Math.pow(amt, 1.2));
-    const lightBoost = l > baseL ? 1 + 0.3 * (l - baseL) : 1;
-    const targetC = baseC * chromaFalloff * lightBoost;
-
-    // conservative chroma cap
-    const cLimit =
-      l > 0.92 ? 0.08 :
-      l > 0.85 ? 0.10 :
-      l > 0.75 ? 0.12 :
-      l > 0.60 ? 0.14 :
-      0.16;
-
-    const c = Math.min(targetC, cLimit);
-
-    const col: OklchColor = snapToGamut({ mode: "oklch", l, c, h: baseH }, "srgb");
+    let col: OklchColor = { mode: "oklch", l, c, h };
+    col = snapToGamut(col, "srgb");
     out[step] = toOklchCss(col);
   }
 
   return out;
 }
 
-
-
-
-
-
-
-
-
-
-/* ===========================================================
-   Placeholder for future vision-mode transforms
-   =========================================================== */
-
-export function simulateVision(color: OklchColor, type: 'deuteranopia'|'protanopia'|'tritanopia'|'mono'): OklchColor {
-  // basic grayscale fallback for now; full matrix in figma build
-  if (type === 'mono') {
-    return { ...color, c: 0 };
-  }
-  return color;
-}
-
-/* ===========================================================
-   Back-compat export
-   =========================================================== */
-export const generateColorRamps = generateRampFromSeed;
 
 
 
