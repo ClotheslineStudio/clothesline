@@ -111,8 +111,17 @@ export function generateRampFromSeed(seed: OklchColor): Record<Step, string> {
     );
 
     // Chroma curve — soft bell with slight mid bump
-    const cFalloff = Math.exp(-3.5 * Math.pow(t - 0.5, 2));
-    const c = limitChromaByLightness(l, baseC * (0.9 + 0.3 * cFalloff));
+    // instead of your existing cFalloff line:
+const chromaFalloff = Math.exp(-3.5 * Math.pow(t - 0.5, 2));
+
+// new light-end lift
+const lightBoost = 1 + 0.4 * (1 - Math.exp(-6 * Math.pow(1 - t, 2))); // boosts upper half
+
+const cTarget = baseC * chromaFalloff * lightBoost;
+
+// clamp to stay in gamut and realistic
+const c = limitChromaByLightness(l, Math.min(cTarget, baseC * 1.1));
+
 
     let col: OklchColor = { mode: "oklch", l, c, h: baseH };
     col = snapToGamut(col, "srgb");
