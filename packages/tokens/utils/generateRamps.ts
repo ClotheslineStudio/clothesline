@@ -55,23 +55,58 @@ function hueShift(baseH: number, step: Step): number {
  * Main generator — matches Skeleton ramp behavior.
  */
 export function generateRampFromSeed(seed: OklchColor): Record<Step, string> {
-  const baseL = seed.l ?? 0.45;
-  const baseC = seed.c ?? 0.09;
-  const baseH = seed.h ?? 150;
+  const baseL = seed.l ?? 0.5;
+  const baseC = seed.c ?? 0.1;
+  const baseH = seed.h ?? 0;
   const out: Record<Step, string> = {};
 
-  for (const step of rampNames) {
-    const l = L_PLAN[step];
-    const c = chromaShape(baseC, step);
-    const h = hueShift(baseH, step);
+  // Skeleton shape normalized around 0.45 midpoint
+  const L_PLAN: Record<Step, number> = {
+    50: 0.84, 100: 0.76, 200: 0.69, 300: 0.61, 400: 0.53,
+    500: 0.45, 600: 0.39, 700: 0.32, 800: 0.25, 900: 0.18, 950: 0.06
+  };
 
-    let col: OklchColor = { mode: "oklch", l, c, h };
-    col = snapToGamut(col, "srgb");
+  // compute delta between shape midpoint and this seed
+  const anchor = L_PLAN[500];
+  const diff = baseL - anchor;
+  const scale = Math.min(1.1, Math.max(0.7, 0.9 + (baseL - 0.45) * 0.8));
+
+  for (const step of rampNames) {
+    let l = L_PLAN[step];
+    // shift + scale so 500 == baseL
+    l = baseL + (l - anchor) * scale;
+
+    // clamp safely
+    l = Math.min(0.98, Math.max(0.02, l));
+
+    // chroma taper (same as before)
+    const ratio =
+      step <= 500 ? 1 :
+      step === 600 ? 0.9 :
+      step === 700 ? 0.7 :
+      step === 800 ? 0.45 :
+      step === 900 ? 0.25 :
+      step === 950 ? 0.0 : 1;
+    const c = baseC * ratio;
+
+    // subtle hue drift
+    const hShift =
+      step <= 500 ? 0 :
+      step === 600 ? 0.5 :
+      step === 700 ? 0.8 :
+      step === 800 ? 1.0 :
+      step === 900 ? 1.2 :
+      step === 950 ? 1.5 : 0;
+
+    const h = baseH + hShift;
+
+    const col = snapToGamut({ mode: "oklch", l, c, h }, "srgb");
     out[step] = toOklchCss(col);
   }
 
   return out;
 }
+
 
 
 
