@@ -12,6 +12,8 @@ import type { ThemeConfig } from "./types.ts";
 import type { OklchColor } from "../../tokens/utils/colorEngine.js";
 import { toOklch } from "../../tokens/utils/colorEngine.js";
 import { generateRampFromSeed } from "../../tokens/utils/generateRamps.js";
+import { renderVision } from "./utils/renderVision.js";
+
 
 // Theme configs
 import { clotheslineTheme } from "../configs/clothesline.ts";
@@ -170,7 +172,9 @@ ${roleVars(theme, "dark")}
 ${tokens}
 ${onVars("dark")}
 }`;
-  return `${light}\n\n${dark}\n`;
+  const vision = renderVision();
+return `${light}\n\n${dark}\n\n${vision}\n`;
+
 }
 
 // ============================================================================
