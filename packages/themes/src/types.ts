@@ -209,9 +209,23 @@ export interface ModeDefaults extends Required<Pick<ModeState, 'mode'>> {
  *  ThemeConfig: now with modes (presets + deltas). Legacy fields kept optional.
  *  ────────────────────────────────────────────────────────────────────────── */
 
+/** ──────────────────────────────────────────────────────────────────────────
+ *  ThemeConfig: now with seeds (OKLCH source-of-truth) + modes + legacy roles
+ *  ────────────────────────────────────────────────────────────────────────── */
+
 export interface ThemeConfig {
   /** e.g., 'clothesline' */
   name: string;
+
+  /**
+   * True measured OKLCH seeds used to generate ramps.
+   * Optional but preferred over `roles`.
+   */
+  seeds?: Record<
+    SemanticColorRole,
+    | { l: number; c: number; h: number }
+    | { light: { l: number; c: number; h: number }; dark: { l: number; c: number; h: number } }
+  >;
 
   /** Purpose-driven role palette inputs used to generate ramps/tokens */
   roles: { [role in SemanticColorRole]: RoleConfig };
@@ -226,9 +240,9 @@ export interface ThemeConfig {
     defaults?: ModeDefaults;
   };
 
-  /** @deprecated kept for back‑compat with older builds */
+  /** @deprecated kept for back-compat with older builds */
   contrast?: ContrastMode;
-  /** @deprecated kept for back‑compat with older builds */
+  /** @deprecated kept for back-compat with older builds */
   vision?: VisionMode;
 }
 

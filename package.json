@@ -1,5 +1,11 @@
 {
-	"devDependencies": {
-		"@sveltejs/vite-plugin-svelte": "^6.2.1"
-	}
+  "devDependencies": {
+    "@sveltejs/vite-plugin-svelte": "^6.2.1"
+  },
+  "scripts": {
+    "build": "pnpm -r run build",
+    "build:themes": "pnpm --filter @clothesline/themes run build:all",
+    "build:tokens": "pnpm --filter @clothesline/tokens run build",
+    "build:all": "pnpm run build:tokens && pnpm run build:themes"
+  }
 }
