@@ -1,15 +1,16 @@
 import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
 
-/** @type {import('@sveltejs/kit').Config} */
+/** @type {import('@sveltejs/vite-plugin-svelte').SvelteConfig} */
 const config = {
-  extensions: ['.svelte'],
   preprocess: vitePreprocess(),
+
   compilerOptions: {
-    css: 'injected',
-  }
+    css: 'injected', // or false if you prefer external CSS
+  },
 };
 
 export default config;
+
 
 
 

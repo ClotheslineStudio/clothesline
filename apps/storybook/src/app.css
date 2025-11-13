@@ -1,0 +1,6 @@
+@import "tailwindcss";
+@plugin "@tailwindcss/vite";
+
+/* === Theme Imports via alias === */
+@import "@clothesline/themes/clothesline.css";
+@import "@clothesline/themes/modes.css";
