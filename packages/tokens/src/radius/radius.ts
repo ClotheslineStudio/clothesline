@@ -1,31 +1,73 @@
 /**
  * Border radius tokens for the Clothesline UI system.
- * Includes scale-based values and semantic aliases for components and accessibility.
+ * radiusScale: atomic values (raw)
+ * radiusSemantic: usage-based mappings (names → scale keys)
  */
 
-export const radiusTokens = {
-  // Scale
-  '--radius-none': '0px',
-  '--radius-xs': '0.125rem',   // 2px
-  '--radius-sm': '0.25rem',    // 4px
-  '--radius-md': '0.375rem',   // 6px
-  '--radius-lg': '0.5rem',     // 8px
-  '--radius-xl': '0.75rem',    // 12px
-  '--radius-2xl': '1rem',      // 16px
-  '--radius-3xl': '1.5rem',    // 24px
-  '--radius-full': '9999px',   // round/pill
+export type RadiusScaleKey =
+  | '0'
+  | '1'
+  | '2'
+  | '3'
+  | '4'
+  | '6'
+  | '8'
+  | '12'
+  | 'full';
 
-  // Semantic tokens (usage-based)
-  '--radius-base': 'var(--radius-md)',         // General use
-  '--radius-container': 'var(--radius-lg)',    // Panels, modals
-  '--radius-interactive': 'var(--radius-sm)',  // Buttons, inputs
-  '--radius-avatar': 'var(--radius-full)',     // Default = round
-  '--radius-badge': 'var(--radius-full)',      // Small badges/pills
-  '--radius-card': 'var(--radius-lg)',         // Cards and elevated blocks
-  '--radius-tooltip': 'var(--radius-sm)',      // Tooltips and micro surfaces
-
-  // Accessibility-focused
-  '--radius-focus-ring': '2px',                // Focus outline shape
-  '--radius-touch-target': 'var(--radius-lg)', // Roundedness for large tap areas
+export const radiusScale: Record<RadiusScaleKey, string> = {
+  '0': '0rem',
+  '1': '0.125rem',   // 2px
+  '2': '0.25rem',    // 4px
+  '3': '0.375rem',   // 6px
+  '4': '0.5rem',     // 8px
+  '6': '0.75rem',    // 12px
+  '8': '1rem',       // 16px
+  '12': '1.5rem',    // 24px
+  'full': '9999rem'  // pill / circle
 };
+
+export type RadiusSemanticKey =
+  | 'sm'
+  | 'md'
+  | 'lg'
+  | 'xl'
+  | 'full'
+  | 'base'
+  | 'container'
+  | 'interactive'
+  | 'avatar'
+  | 'badge'
+  | 'card'
+  | 'tooltip'
+  | 'focusRing'
+  | 'touchTarget';
+
+export const radiusSemantic: Record<RadiusSemanticKey, RadiusScaleKey> = {
+  // general scale
+  sm: '2',        // 4px
+  md: '4',        // 8px
+  lg: '6',        // 12px
+  xl: '8',        // 16px
+  full: 'full',
+
+  // usage based
+  base: '4',        // default rounding
+  container: '6',   // modals, surfaces
+  interactive: '3', // buttons, inputs
+  avatar: 'full',
+  badge: 'full',
+  card: '6',
+  tooltip: '2',
+
+  // accessibility
+  focusRing: '1',     // 2px → good for outlines
+  touchTarget: '8'    // larger rounding for big tap areas
+};
+
+export const radiusTokens = {
+  scale: radiusScale,
+  semantic: radiusSemantic,
+};
+
 

@@ -1,16 +1,37 @@
 /**
  * index.ts
  * Master export of all design tokens for the Clothesline system.
- * This file combines all token categories into a single object.
+ * Combines all primitives + component-level tokens + utilities.
  */
 
-// 🔁 Local imports so you can use the tokens in this file
+/* ---------------------------------------------
+   PRIMITIVE TOKENS
+---------------------------------------------- */
 import { backgroundTokens } from './backgrounds/backgrounds.ts';
 import { borderTokens } from './borders/borders.ts';
 import { radiusTokens } from './radius/radius.ts';
 import { scalingTokens } from './scaling/scaling.ts';
 import { spacingTokens } from './spacing/spacing.ts';
 import { typographyTokens } from './typography/typography.ts';
+import { sizeTokens } from './sizes/sizes.ts';
+import { opacityTokens } from './primitives/opacity.ts';
+import { zIndexTokens } from './primitives/z-index.ts';
+
+// Named exports for primitives
+export { backgroundTokens } from './backgrounds/backgrounds.ts';
+export { borderTokens } from './borders/borders.ts';
+export { radiusTokens } from './radius/radius.ts';
+export { scalingTokens } from './scaling/scaling.ts';
+export { spacingTokens } from './spacing/spacing.ts';
+export { typographyTokens } from './typography/typography.ts';
+export { sizeTokens } from './sizes/sizes.ts';
+export { opacityTokens } from './primitives/opacity.ts';
+export { zIndexTokens } from './primitives/z-index.ts';
+
+
+/* ---------------------------------------------
+   COMPONENT TOKENS
+---------------------------------------------- */
 import { avatarTokens } from './components/avatar.ts';
 import { buttonTokens } from './components/button.ts';
 import { dividerTokens } from './components/divider.ts';
@@ -29,14 +50,7 @@ import { timelineTokens } from './components/timeline.ts';
 import { switchTokens } from './components/switch.ts';
 import { iconTokens } from './components/icons.ts';
 
-
-// ✅ Named exports for others to import individually
-export { backgroundTokens } from './backgrounds/backgrounds.ts';
-export { borderTokens } from './borders/borders.ts';
-export { radiusTokens } from './radius/radius.ts';
-export { scalingTokens } from './scaling/scaling.ts';
-export { spacingTokens } from './spacing/spacing.ts';
-export { typographyTokens } from './typography/typography.ts';
+// Named exports for components
 export { avatarTokens } from './components/avatar.ts';
 export { buttonTokens } from './components/button.ts';
 export { dividerTokens } from './components/divider.ts';
@@ -55,14 +69,23 @@ export { timelineTokens } from './components/timeline.ts';
 export { switchTokens } from './components/switch.ts';
 export { iconTokens } from './components/icons.ts';
 
-// ✅ Grouped export for convenience
+
+/* ---------------------------------------------
+   BASE TOKENS (for theme builder)
+---------------------------------------------- */
 export const baseTokens = {
+  // primitives
   ...backgroundTokens,
   ...borderTokens,
   ...radiusTokens,
   ...scalingTokens,
   ...spacingTokens,
   ...typographyTokens,
+  ...sizeTokens,
+  ...opacityTokens,
+  ...zIndexTokens,
+
+  // components
   ...avatarTokens,
   ...buttonTokens,
   ...dividerTokens,

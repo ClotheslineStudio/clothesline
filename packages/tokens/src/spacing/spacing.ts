@@ -1,49 +1,101 @@
 /**
  * Spacing tokens for the Clothesline UI system.
- * Based on a consistent step scale, plus semantic tokens for layout patterns,
- * component gaps, and accessibility-aware spacing adjustments.
+ *
+ * - `spacingScale` is the atomic step scale (raw values only).
+ * - `spacingSemantic` defines semantic spacing/gaps that reference the scale.
+ *
+ * Build step is responsible for turning these into CSS custom properties like:
+ *   --spacing-0, --spacing-1, --spacing-md, --gap-base, etc.
  */
 
-export const spacingTokens = {
-  // Base scale (atomic values)
-  '--spacing-0': '0rem',
-  '--spacing-1': '0.125rem',   // 2px
-  '--spacing-2': '0.25rem',    // 4px
-  '--spacing-3': '0.5rem',     // 8px
-  '--spacing-4': '0.75rem',    // 12px
-  '--spacing-5': '1rem',       // 16px
-  '--spacing-6': '1.25rem',    // 20px
-  '--spacing-7': '1.5rem',     // 24px
-  '--spacing-8': '2rem',       // 32px
-  '--spacing-9': '2.5rem',     // 40px
-  '--spacing-10': '3rem',      // 48px
-  '--spacing-12': '4rem',      // 64px
-  '--spacing-16': '6rem',      // 96px
-  '--spacing-20': '8rem',      // 128px
-  '--spacing-24': '12rem',     // 192px
+export type SpacingScaleKey =
+  | '0'
+  | '1'
+  | '2'
+  | '3'
+  | '4'
+  | '5'
+  | '6'
+  | '7'
+  | '8'
+  | '9'
+  | '10'
+  | '12'
+  | '16'
+  | '20'
+  | '24';
 
-  // Semantic layout spacing
-  '--spacing': 'var(--spacing-3)',           // default UI element spacing
-  '--spacing-sm': 'var(--spacing-2)',
-  '--spacing-md': 'var(--spacing-4)',
-  '--spacing-lg': 'var(--spacing-6)',
-  '--spacing-xl': 'var(--spacing-8)',
+export const spacingScale: Record<SpacingScaleKey, string> = {
+  '0': '0rem',
+  '1': '0.125rem', // 2px
+  '2': '0.25rem',  // 4px
+  '3': '0.5rem',   // 8px
+  '4': '0.75rem',  // 12px
+  '5': '1rem',     // 16px
+  '6': '1.25rem',  // 20px
+  '7': '1.5rem',   // 24px
+  '8': '2rem',     // 32px
+  '9': '2.5rem',   // 40px
+  '10': '3rem',    // 48px
+  '12': '4rem',    // 64px
+  '16': '6rem',    // 96px
+  '20': '8rem',    // 128px
+  '24': '12rem',   // 192px
+};
+
+export type SpacingSemanticKey =
+  // generic spacing scale
+  | 'base'
+  | 'sm'
+  | 'md'
+  | 'lg'
+  | 'xl'
+  // layout patterns
+  | 'stack'
+  | 'gridGap'
+  | 'form'
+  | 'nav'
+  | 'section'
+  // accessibility / density
+  | 'touch'
+  | 'compact'
+  | 'comfy'
+  // motion / density gaps
+  | 'gap-small'
+  | 'gap-base'
+  | 'gap-large';
+
+export const spacingSemantic: Record<SpacingSemanticKey, SpacingScaleKey> = {
+  // Semantic layout spacing (mapped to the base scale)
+  base: '3', // default UI element spacing
+  sm: '2',
+  md: '4',
+  lg: '6',
+  xl: '8',
 
   // Semantic layout patterns
-  '--stack-spacing': 'var(--spacing-5)',     // vertical spacing in stacked layout
-  '--grid-gap': 'var(--spacing-4)',          // default grid gap
-  '--form-spacing': 'var(--spacing-4)',      // input group spacing
-  '--nav-spacing': 'var(--spacing-3)',       // space between nav links
-  '--section-spacing': 'var(--spacing-8)',   // top/bottom layout spacing
+  stack: '5',   // vertical spacing in stacked layout
+  gridGap: '4', // default grid gap
+  form: '4',    // input group spacing
+  nav: '3',     // space between nav links
+  section: '8', // top/bottom layout spacing
 
   // Accessibility / density overrides
-  '--spacing-touch': 'var(--spacing-5)',     // larger spacing for tap targets
-  '--spacing-compact': 'var(--spacing-2)',   // dense layouts
-  '--spacing-comfy': 'var(--spacing-6)',     // relaxed UIs
+  touch: '5',   // larger spacing for tap targets
+  compact: '2', // dense layouts
+  comfy: '6',   // relaxed UIs
 
-  // Motion/density-aware scale (paired with --density-scaling)
-  '--gap-small': 'var(--spacing-2)',
-  '--gap-base': 'var(--spacing-3)',
-  '--gap-large': 'var(--spacing-6)',
+  // Motion/density-aware gaps
+  'gap-small': '2',
+  'gap-base': '3',
+  'gap-large': '6',
+};
+
+/**
+ * Export in a single object if your build step expects that.
+ */
+export const spacingTokens = {
+  scale: spacingScale,
+  semantic: spacingSemantic,
 };
 
