@@ -1,25 +1,49 @@
-// packages/themes/configs/night-market.ts
-import type { ThemeConfig } from '../src/types.ts';
-
-const roles = {
-  primary:   { hue:  30, chroma: 0.14 }, // lantern orange
-  secondary: { hue: 270, chroma: 0.14 }, // neon purple
-  tertiary:  { hue: 120, chroma: 0.12 }, // market stall green
-  success:   { hue: 135, chroma: 0.10 },
-  warning:   { hue:  45, chroma: 0.12 },
-  error:     { hue:  10, chroma: 0.12 },
-  info:      { hue: 210, chroma: 0.10 },
-  accent:    { hue:  20, chroma: 0.18 }, // chili red
-  neutral:   { hue: 270, chroma: 0.03 }, // stone night
-  surface:   { hue: 240, chroma: 0.01 }  // foggy midnight
-} as const;
+import type { ThemeConfig } from 'src/types.js';
 
 /**
- * Night Market — vibrant, high-contrast festival palette.
- * Combines warm lantern light, neon purple signage, and pops of green and red.
+ * Night Market — calibrated OKLCH seeds.
+ * Vibrant, festival-inspired colors with warm lanterns + neon purples.
+ */
+const seeds = {
+  primary:   { l: 0.70,  c: 0.14,  h: 30   },  // lantern orange
+  secondary: { l: 0.72,  c: 0.14,  h: 270  },  // neon purple
+  tertiary:  { l: 0.63,  c: 0.12,  h: 120  },  // stall green
+  accent:    { l: 0.68,  c: 0.18,  h: 20   },  // chili red
+  success:   { l: 0.68,  c: 0.10,  h: 135  },
+  warning:   { l: 0.78,  c: 0.12,  h: 45   },
+  error:     { l: 0.58,  c: 0.12,  h: 10   },
+  info:      { l: 0.70,  c: 0.10,  h: 210  },
+  neutral:   { l: 0.42,  c: 0.03,  h: 270  },  // stone night
+  surface: {
+    light: { l: 0.93, c: 0.01, h: 240 },    // foggy midnight
+    dark:  { l: 0.23, c: 0.02, h: 240 }
+  }
+} as const;
+
+
+/**
+ * Roles — derived for legacy compatibility
+ */
+const roles = {
+  primary:   { hue: seeds.primary.h,   chroma: seeds.primary.c },
+  secondary: { hue: seeds.secondary.h, chroma: seeds.secondary.c },
+  tertiary:  { hue: seeds.tertiary.h,  chroma: seeds.tertiary.c },
+  accent:    { hue: seeds.accent.h,    chroma: seeds.accent.c },
+  success:   { hue: seeds.success.h,   chroma: seeds.success.c },
+  warning:   { hue: seeds.warning.h,   chroma: seeds.warning.c },
+  error:     { hue: seeds.error.h,     chroma: seeds.error.c },
+  info:      { hue: seeds.info.h,      chroma: seeds.info.c },
+  neutral:   { hue: seeds.neutral.h,   chroma: seeds.neutral.c },
+  surface:   { hue: seeds.surface.light.h, chroma: seeds.surface.light.c }
+} as const;
+
+
+/**
+ * Night Market — full ThemeConfig
  */
 export const nightMarketTheme: ThemeConfig = {
   name: 'night-market',
+  seeds,
   roles,
 
   modes: {
@@ -28,9 +52,9 @@ export const nightMarketTheme: ThemeConfig = {
       vision: 'none',
       contrast: 'normal',
       typescale: 1.0,
-      focus: true,
       ui: [],
-      motor: []
+      motor: [],
+      focus: true
     },
 
     presets: {
@@ -41,12 +65,15 @@ export const nightMarketTheme: ThemeConfig = {
 
     deltas: {
       contrast: {
-        high: { vars: { '--focus-ring': 'oklch(85% 0.24 30)' } } // orange-ish focus ring
+        high: { vars: { '--focus-ring': 'oklch(85% 0.24 30)' } }
       },
       motor: {
-        kbd: { selectors: [':focus-visible'], note: 'Stronger outline handled in modes.css' }
+        kbd: { selectors: [':focus-visible'], note: 'Stronger outline defined in modes.css' }
       }
     }
   }
 };
+
+export default nightMarketTheme;
+
 
