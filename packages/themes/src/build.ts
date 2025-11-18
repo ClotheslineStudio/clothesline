@@ -78,6 +78,28 @@ const ROLES = [
 type RoleName = typeof ROLES[number];
 
 function getRoleSeed(theme: ThemeConfig, mode: ThemeMode, role: RoleName): OklchColor | null {
+  // -------------------------------------------------------------
+  // 1. Special handling for "surface" role with light/dark seeds
+  // -------------------------------------------------------------
+  const seedGroup = (theme as any).seeds?.[role];
+
+  // seeds.surface = { light: {...}, dark: {...} }
+  if (role === "surface" && seedGroup && typeof seedGroup === "object") {
+    const surfaceSeed = mode === "light" ? seedGroup.light : seedGroup.dark;
+
+    if (surfaceSeed && typeof surfaceSeed.l === "number") {
+      return {
+        mode: "oklch",
+        l: surfaceSeed.l,
+        c: surfaceSeed.c,
+        h: surfaceSeed.h,
+      };
+    }
+  }
+
+  // -------------------------------------------------------------
+  // 2. Standard theme roles or seeds
+  // -------------------------------------------------------------
   const seedNode: any =
     (theme as any).seeds?.[role] ??
     (theme as any).roles?.[role] ??
@@ -87,17 +109,24 @@ function getRoleSeed(theme: ThemeConfig, mode: ThemeMode, role: RoleName): Oklch
 
   if (!seedNode) return null;
 
+  // seedNode = { l, c, h }
   if (typeof seedNode.l === "number" && typeof seedNode.c === "number" && typeof seedNode.h === "number") {
     return { mode: "oklch", l: seedNode.l, c: seedNode.c, h: seedNode.h };
   }
 
+  // seedNode = { hue, chroma }
   if (typeof seedNode.hue === "number") {
     const h = seedNode.hue;
     const c = typeof seedNode.chroma === "number" ? seedNode.chroma : 0.12;
-    const l = (theme as any).seeds?.[role]?.l ?? 0.64;
+    const l =
+      (theme as any).seeds?.[role]?.l ??
+      (theme as any).seeds?.[role]?.light?.l ?? // fallback support
+      0.64;
+
     return { mode: "oklch", l, c, h };
   }
 
+  // seedNode = "#hex" or "oklch(...)" string
   if (typeof seedNode === "string") {
     const o = toOklch(seedNode);
     if (o && typeof o.l === "number") return { mode: "oklch", l: o.l, c: o.c, h: o.h };
@@ -106,20 +135,33 @@ function getRoleSeed(theme: ThemeConfig, mode: ThemeMode, role: RoleName): Oklch
   return null;
 }
 
+
 // ============================================================================
 // 3. Build all ramps from seeds
 // ============================================================================
 function rampsForTheme(theme: ThemeConfig, mode: ThemeMode): Record<string, Record<Step, string>> {
   const result: Record<string, Record<Step, string>> = {};
+
   for (const role of ROLES) {
     const seed = getRoleSeed(theme, mode, role);
     if (!seed) continue;
 
     const ramp = generateRampFromSeed(seed);
-    result[role] = mode === "dark" ? flipRampForDark(ramp) : ramp;
+
+    if (role === "surface") {
+      // Surface ramp is identical in both modes
+      result[role] = ramp;
+    } else {
+      // Other roles flip in dark mode
+      result[role] = mode === "dark"
+        ? flipRampForDark(ramp)
+        : ramp;
+    }
   }
+
   return result;
 }
+
 
 // ============================================================================
 // 4. Compose CSS variables
