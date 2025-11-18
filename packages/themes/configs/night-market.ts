@@ -14,10 +14,7 @@ const seeds = {
   error:     { l: 0.58,  c: 0.12,  h: 10   },
   info:      { l: 0.70,  c: 0.10,  h: 210  },
   neutral:   { l: 0.42,  c: 0.03,  h: 270  },  // stone night
-  surface: {
-    light: { l: 0.93, c: 0.01, h: 240 },    // foggy midnight
-    dark:  { l: 0.23, c: 0.02, h: 240 }
-  }
+  surface:   { l: 0.58,  c: 0.03,  h: 240 }
 } as const;
 
 
@@ -34,7 +31,7 @@ const roles = {
   error:     { hue: seeds.error.h,     chroma: seeds.error.c },
   info:      { hue: seeds.info.h,      chroma: seeds.info.c },
   neutral:   { hue: seeds.neutral.h,   chroma: seeds.neutral.c },
-  surface:   { hue: seeds.surface.light.h, chroma: seeds.surface.light.c }
+  surface:   { hue: seeds.surface.h, chroma: seeds.surface.c }
 } as const;
 
 

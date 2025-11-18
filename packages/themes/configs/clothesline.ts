@@ -1,34 +1,64 @@
 // packages/themes/configs/clothesline.ts
-import type { ThemeConfig } from '../src/types.js';
+import type { ThemeConfig } from 'src/types.js';
 
-// packages/themes/configs/clothesline.ts
-const roles = {
-  // Brand/status (vivid)
-  primary:   { hue: 270,   chroma: 0.10 },
-  secondary: { hue: 220,   chroma: 0.11 },
-  tertiary:  { hue: 180,   chroma: 0.10 },
-  success:   { hue: 145,   chroma: 0.11 },
-  warning:   { hue:  75,   chroma: 0.11 },
-  error:     { hue:  25,   chroma: 0.11 },
-  info:      { hue: 200,   chroma: 0.11 },
+/**
+ * Clothesline — unified OKLCH seeds.
+ * Clean, neutral UI surfaces; balanced, accessible brand colors.
+ */
+const seeds = {
+  // Brand/status vivid colors (balanced chroma)
+  primary:   { l: 0.62, c: 0.10, h: 270 },
+  secondary: { l: 0.64, c: 0.11, h: 220 },
+  tertiary:  { l: 0.60, c: 0.10, h: 180 },
 
-  // Poppy accent (your request)
-  accent:    { hue: 43.26, chroma: 0.1882 }, // punchy sunset orange
+  success:   { l: 0.66, c: 0.11, h: 145 },
+  warning:   { l: 0.75, c: 0.11, h: 75  },
+  error:     { l: 0.58, c: 0.11, h: 25  },
+  info:      { l: 0.68, c: 0.11, h: 200 },
 
-  // Cool, *not beige* backgrounds
-  neutral:   { hue: 255,   chroma: 0.010 }, // cool gray track (UI chrome)
-  surface:   { hue: 255,   chroma: 0.000 }, // pure achromatic (paper)
+  // Accent pop
+  accent:    { l: 0.70, c: 0.19, h: 43.26 },
+
+  // Neutral UI chrome tint (slightly cool)
+  neutral:   { l: 0.55, c: 0.015, h: 255 },
+
+  /**
+   * SURFACE (flat, universal)
+   * Generates a full ramp from near-black → near-white.
+   * Low-chroma neutral keeps backgrounds clean and paper-like.
+   */
+  surface:   { l: 0.58, c: 0.03, h: 255 }
 } as const;
 
 
 /**
- * Clothesline — base palette + stackable modes
- * - Only one theme config; modes are applied at runtime via data-* attributes.
- * - Presets are one-click states for the Theme Builder.
- * - Deltas are tiny per-theme tweaks (keep minimal).
+ * Roles — legacy support for hue/chroma pairing
+ * (kept for your builder’s backwards compatibility)
+ */
+const roles = {
+  primary:   { hue: seeds.primary.h,   chroma: seeds.primary.c },
+  secondary: { hue: seeds.secondary.h, chroma: seeds.secondary.c },
+  tertiary:  { hue: seeds.tertiary.h,  chroma: seeds.tertiary.c },
+
+  success:   { hue: seeds.success.h,   chroma: seeds.success.c },
+  warning:   { hue: seeds.warning.h,   chroma: seeds.warning.c },
+  error:     { hue: seeds.error.h,     chroma: seeds.error.c },
+  info:      { hue: seeds.info.h,      chroma: seeds.info.c },
+
+  accent:    { hue: seeds.accent.h,    chroma: seeds.accent.c },
+
+  neutral:   { hue: seeds.neutral.h,   chroma: seeds.neutral.c },
+  surface:   { hue: seeds.surface.h,   chroma: seeds.surface.c }
+} as const;
+
+
+/**
+ * Clothesline — full ThemeConfig
+ * identical structure to copper-sun, milkyway, etc.
  */
 export const clotheslineTheme: ThemeConfig = {
   name: 'clothesline',
+  seeds,
   roles,
 
   modes: {
@@ -37,31 +67,30 @@ export const clotheslineTheme: ThemeConfig = {
       vision: 'none',
       contrast: 'normal',
       typescale: 1.0,
-      focus: true,
       ui: [],
-      motor: []
+      motor: [],
+      focus: true
     },
 
     presets: {
-      // A11y-forward baseline
       accessible: { contrast: 'high', typescale: 1.08, ui: ['simplified'], motor: ['kbd'] },
-      // Reading comfort
       reading:    { reading: 'dyslexia', typescale: 1.06, motion: 'reduced', focus: true },
-      // Dark demo
       night:      { mode: 'dark', contrast: 'normal' }
     },
 
     deltas: {
       contrast: {
         high: { vars: { '--focus-ring': 'oklch(82% 0.25 230)' } }
-        // custom contrast reads --contrast-factor from setTheme(); no static vars needed
       },
       motor: {
-        kbd: { selectors: [':focus-visible'], note: 'Stronger outlines via modes.css' }
+        kbd: { selectors: [':focus-visible'], note: 'See modes.css for the actual outline rule' }
       }
-      // vision mono etc. can be added later if you want theme-specific tweaks
     }
   }
 };
+
+export default clotheslineTheme;
+
+
 
 

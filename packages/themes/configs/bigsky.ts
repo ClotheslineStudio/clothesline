@@ -15,7 +15,7 @@ const seeds = {
   error:     { l: 0.5793, c: 0.1601, h: 29.71  },
   info:      { l: 0.6789, c: 0.1001, h: 220.58 },
   neutral:   { l: 0.3797, c: 0.0608, h: 59.6   },
-  surface:   { l: 0.52, c: 0.03, h: 250 }
+  surface: { l: 0.58, c: 0.03, h: 236 }
 } as const;
 
 /**
