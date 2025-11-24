@@ -1,4 +1,3 @@
-<!-- packages/ui/src/components/typography/Label/Label.svelte -->
 <script context="module" lang="ts">
   export type Tone =
     | 'default'
@@ -11,7 +10,7 @@
 </script>
 
 <script lang="ts">
-  import Text from "../Text/Text.svelte";
+  import { Text } from "../Text/Text.svelte";
 
   // Your props (kept for compatibility)
   export let forId: string | undefined = undefined;

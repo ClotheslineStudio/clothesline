@@ -4,5 +4,5 @@ export const spinnerTokens = {
   'spinner-size-lg': '2rem',
   'spinner-thickness': '2px',
   'spinner-track': 'color-mix(in oklab, var(--on-surface) 15%, transparent)',
-  'spinner-indicator': 'var(--color-primary-500-vis)',
+  'spinner-indicator': 'var(--color-primary-500)',
 };

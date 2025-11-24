@@ -28,13 +28,15 @@
     "configs"
   ],
   "scripts": {
-    "build": "tsx src/build.ts",
-    "build:watch": "chokidar \"src/**/*.{ts,json}\" \"configs/**/*.{ts,json}\" -c \"pnpm build\"",
-    "build:formats": "tsx src/build-formats.ts",
-    "build:figma": "tsx src/build-figma-tokens.ts",
-    "build:figma:merged": "tsx src/build-figma-merged.ts",
-     "build:all": "pnpm run build && pnpm run build:formats && pnpm run build:figma && pnpm run build:figma:merged"
-  },
+  "build": "tsx src/build.ts",
+  "build:watch": "chokidar \"src/**/*.{ts,json}\" \"configs/**/*.{ts,json}\" -c \"pnpm build\"",
+  "build:formats": "tsx src/build-formats.ts",
+  "build:figma": "tsx src/build-figma-tokens.ts",
+  "build:figma:merged": "tsx src/build-figma-merged.ts",
+  "build:figma:single": "tsx src/build-figma-single.ts",
+  "build:all": "pnpm run build && pnpm run build:formats"
+},
+
   "devDependencies": {
     "@clothesline/tokens": "workspace:*",
     "@types/fs-extra": "^11.0.4",

@@ -111,7 +111,7 @@
     --toc-bg:      var(--color-surface-50,    #ffffff);
     --toc-tint:    color-mix(in oklab, var(--toc-orange) 12%, transparent);
     --toc-blue-tint: color-mix(in oklab, var(--toc-blue) 16%, transparent);
-    --toc-focus:   var(--color-info-500, #2eaadf);
+    --toc-focus:   var(--color-info-900, #2eaadf);
     position: relative;
   }
 

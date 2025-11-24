@@ -1,74 +1,29 @@
 <script lang="ts">
-  import type { SvelteComponent } from 'svelte';
-
   export let type: 'button' | 'submit' | 'reset' = 'button';
   export let variant: 'solid' | 'outline' | 'ghost' | 'link' = 'solid';
   export let size: 'sm' | 'md' | 'lg' = 'md';
-  export let color: 'primary' | 'secondary' | 'success' | 'warning' | 'error' | 'info' | 'neutral' = 'primary';
-  export let disabled: boolean = false;
-  export let loading: boolean = false;
+  export let color:
+    | 'primary'
+    | 'secondary'
+    | 'success'
+    | 'warning'
+    | 'error'
+    | 'info'
+    | 'neutral' = 'primary';
+
+  export let disabled = false;
+  export let loading = false;
 
   export let href: string | undefined;
   export let target: string | undefined;
   export let rel: string | undefined;
   export let ariaLabel: string | undefined;
 
-  /**
-   * Compute inline CSS variables for this button instance.
-   * Uses theme tokens: --button-*, --on-*, --on-surface-*
-   */
-  function computeStyleVars() {
-    // role ramp helpers
-    const base = `var(--color-${color}-500-vis)`;
-    const hover = `var(--color-${color}-600-vis)`;
-    const border = `1px solid var(--color-${color}-600-vis)`;
+  const baseClass = 'cl-button';
 
-    // defaults (solid)
-    let bg = base;
-    let fg = `var(--on-${color}, var(--button-text))`; // ✅ on-color
-    let bgHover = hover;
-    let borderColor = border;
-    let deco = 'none';
-
-    if (variant === 'outline') {
-      bg = 'transparent';
-      fg = 'var(--on-surface-strong)';
-      bgHover = `var(--color-${color}-100-vis)`;
-      borderColor = `1px solid var(--color-${color}-400-vis)`;
-    } else if (variant === 'ghost') {
-      bg = 'transparent';
-      fg = 'var(--on-surface-strong)';
-      bgHover = `var(--color-${color}-100-vis)`;
-      borderColor = '1px solid transparent';
-    } else if (variant === 'link') {
-      bg = 'transparent';
-      fg = `var(--color-${color}-600-vis)`;
-      bgHover = 'transparent';
-      borderColor = '1px solid transparent';
-      deco = 'underline';
-    }
-
-    // sizing
-    const sizes = {
-      sm: { px: 'var(--spacing-3)', py: 'var(--spacing-1)', fs: 'var(--text-sm)', gap: 'var(--spacing-1)' },
-      md: { px: 'var(--spacing-4)', py: 'var(--spacing-2)', fs: 'var(--text-base)', gap: 'var(--spacing-2)' },
-      lg: { px: 'var(--spacing-5)', py: 'var(--spacing-3)', fs: 'var(--text-lg)', gap: 'var(--spacing-2)' }
-    };
-    const { px, py, fs, gap } = sizes[size];
-
-    return `
-      --cl-btn-bg: ${bg};
-      --cl-btn-bg-hover: ${bgHover};
-      --cl-btn-fg: ${fg};
-      --cl-btn-border: ${borderColor};
-      --cl-btn-deco: ${deco};
-
-      --cl-btn-px: ${px};
-      --cl-btn-py: ${py};
-      --cl-btn-fs: ${fs};
-      --cl-btn-gap: ${gap};
-    `;
-  }
+  $: colorClass = `${baseClass}--color-${color}`;
+  $: variantClass = `${baseClass}--variant-${variant}`;
+  $: sizeClass = `${baseClass}--size-${size}`;
 </script>
 
 <svelte:element
@@ -80,8 +35,7 @@
   aria-label={ariaLabel}
   aria-disabled={disabled || loading}
   aria-busy={loading}
-  class="cl-button"
-  style={computeStyleVars()}
+  class={`${baseClass} ${colorClass} ${variantClass} ${sizeClass}`}
   disabled={href ? undefined : disabled}
 >
   <slot name="icon-left" />
@@ -90,46 +44,200 @@
 </svelte:element>
 
 <style>
+  /* Base button, all variants */
   .cl-button {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: var(--cl-btn-gap);
+    gap: var(--spacing-2);
 
-    font-size: var(--cl-btn-fs);
-    font-weight: 500;
-    text-decoration: var(--cl-btn-deco);
+    font-family: var(--type-button-family, var(--type-family-body));
+    font-weight: var(--type-button-weight, var(--type-weight-semibold));
+    text-transform: var(--type-button-transform, none);
+    font-size: var(--type-button-size, var(--type-scale-sm));
+    line-height: var(--type-button-leading, var(--type-leading-normal));
+    letter-spacing: var(--type-button-tracking, var(--type-tracking-normal));
 
-    padding: var(--cl-btn-py) var(--cl-btn-px);
-    border-radius: var(--button-radius, var(--radius-interactive));
-    box-shadow: var(--button-shadow);
+    padding: var(--spacing-2) var(--spacing-4);
+    border-radius: var(--radius-interactive);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 
-    color: var(--cl-btn-fg, var(--button-text));
-    background: var(--cl-btn-bg, var(--button-bg));
-    border: var(--cl-btn-border, var(--button-border));
+    /* solid primary as safe default */
+    background-color: var(--color-primary-500);
+    color: var(--on-primary);
+    border: 1px solid var(--color-primary-600);
 
-    transition: background 0.15s, color 0.15s, border-color 0.15s;
     cursor: pointer;
+    white-space: nowrap;
+
+    transition:
+      background-color var(--motion-duration-fast, 150ms)
+        var(--motion-ease, ease-in-out),
+      color var(--motion-duration-fast, 150ms)
+        var(--motion-ease, ease-in-out),
+      border-color var(--motion-duration-fast, 150ms)
+        var(--motion-ease, ease-in-out),
+      transform var(--motion-duration-fast, 150ms)
+        var(--motion-ease, ease-in-out);
   }
 
   .cl-button:hover:not([aria-disabled='true']) {
-    background: var(--cl-btn-bg-hover, var(--button-bg-hover));
+    background-color: var(--color-primary-600-vis);
   }
 
   .cl-button:focus-visible {
-    outline: 2px solid var(--focus-ring, var(--color-primary-500-vis));
-    outline-offset: 2px;
+    outline-width: var(--border-focus-width, var(--border-2));
+    outline-style: solid;
+    outline-color: var(--border-focus, var(--color-primary-500));
+    outline-offset: var(--ring-offset-width, 2px);
   }
 
-  /* Disabled state */
   .cl-button[aria-disabled='true'] {
     cursor: not-allowed;
-    background: var(--button-bg-disabled);
-    color: var(--button-text-disabled);
-    border: var(--button-border-disabled, 1px solid var(--color-surface-400));
+    background-color: var(--color-surface-300);
+    color: var(--on-surface-muted);
+    border: 1px solid var(--color-surface-400);
     text-decoration: none;
+    box-shadow: none;
+    opacity: var(--opacity-disabled, 0.4);
+  }
+
+  /* =========================
+     Sizes
+     ========================= */
+
+  .cl-button--size-sm {
+    padding: var(--spacing-1) var(--spacing-3);
+    font-size: var(--type-scale-sm);
+    gap: var(--spacing-1);
+  }
+
+  .cl-button--size-md {
+    padding: var(--spacing-2) var(--spacing-4);
+    font-size: var(--type-button-size, var(--type-scale-sm));
+    gap: var(--spacing-2);
+  }
+
+  .cl-button--size-lg {
+    padding: var(--spacing-3) var(--spacing-5);
+    font-size: var(--type-scale-lg);
+    gap: var(--spacing-2);
+  }
+
+  /* =========================
+     Color roles (solid base)
+     ========================= */
+
+  .cl-button--color-primary {
+    background-color: var(--color-primary-500);
+    border-color: var(--color-primary-600);
+    color: var(--on-primary);
+  }
+
+  .cl-button--color-secondary {
+    background-color: var(--color-secondary-500);
+    border-color: var(--color-secondary-600);
+    color: var(--on-secondary, var(--on-primary));
+  }
+
+  .cl-button--color-success {
+    background-color: var(--color-success-500);
+    border-color: var(--color-success-600);
+    color: var(--on-success, var(--on-primary));
+  }
+
+  .cl-button--color-warning {
+    background-color: var(--color-warning-500);
+    border-color: var(--color-warning-600);
+    color: var(--on-warning, var(--on-surface-strong));
+  }
+
+  .cl-button--color-error {
+    background-color: var(--color-error-500);
+    border-color: var(--color-error-600);
+    color: var(--on-error, var(--on-primary));
+  }
+
+  .cl-button--color-info {
+    background-color: var(--color-info-500);
+    border-color: var(--color-info-600);
+    color: var(--on-info, var(--on-primary));
+  }
+
+  .cl-button--color-neutral {
+    background-color: var(--color-surface-800);
+    border-color: var(--color-surface-900);
+    color: var(--color-surface-50);
+  }
+
+  .cl-button--color-primary:hover:not([aria-disabled='true']) {
+    background-color: var(--color-primary-600);
+  }
+  .cl-button--color-secondary:hover:not([aria-disabled='true']) {
+    background-color: var(--color-secondary-600);
+  }
+  .cl-button--color-success:hover:not([aria-disabled='true']) {
+    background-color: var(--color-success-600);
+  }
+  .cl-button--color-warning:hover:not([aria-disabled='true']) {
+    background-color: var(--color-warning-600);
+  }
+  .cl-button--color-error:hover:not([aria-disabled='true']) {
+    background-color: var(--color-error-600);
+  }
+  .cl-button--color-info:hover:not([aria-disabled='true']) {
+    background-color: var(--color-info-600);
+  }
+  .cl-button--color-neutral:hover:not([aria-disabled='true']) {
+    background-color: var(--color-surface-900);
+  }
+
+  /* =========================
+     Variants
+     ========================= */
+
+  /* solid = default */
+
+  .cl-button--variant-outline {
+    background-color: transparent;
+    color: var(--on-surface-strong);
+    border-color: var(--color-primary-400);
+  }
+
+  .cl-button--variant-outline:hover:not([aria-disabled='true']) {
+    background-color: var(--color-primary-100);
+  }
+
+  .cl-button--variant-ghost {
+    background-color: transparent;
+    color: var(--on-surface-strong);
+    border-color: transparent;
+    box-shadow: none;
+  }
+
+  .cl-button--variant-ghost:hover:not([aria-disabled='true']) {
+    background-color: var(--color-primary-100);
+  }
+
+  .cl-button--variant-link {
+    background-color: transparent;
+    color: var(--anchor-color, var(--color-primary-600));
+    text-decoration: var(--anchor-decoration, underline);
+    border-color: transparent;
+    box-shadow: none;
+    padding-inline: 0;
+    gap: var(--spacing-1);
+  }
+
+  .cl-button--variant-link:hover:not([aria-disabled='true']) {
+    text-decoration: var(--anchor-decoration-hover, none);
+    background-color: transparent;
   }
 </style>
+
+
+
+
 
 
 

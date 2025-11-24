@@ -10,7 +10,7 @@
 
   const field = (id: string, label: string) => `
 <Label forId="${id}">${label}</Label>
-<input id="${id}" class="px-3 py-2 rounded border border-[color:var(--color-surface-400)] bg-[color:var(--color-surface-50)] dark:bg-[color:var(--color-surface-900)]" />
+<input id="${id}" class="px-3 py-2 rounded border border-[color:var(--color-surface-400)] bg-[color:var(--color-surface-500)] dark:bg-[color:var(--color-surface-500)]" />
 `.trim();
 </script>
 
@@ -24,7 +24,7 @@
       <div class="space-y-2">
         <Label forId="email">Email</Label>
         <input id="email" type="email" placeholder="you@site.com"
-          class="px-3 py-2 rounded border border-[color:var(--color-surface-400)] bg-[color:var(--color-surface-50)] dark:bg-[color:var(--color-surface-900)]" />
+          class="px-3 py-2 rounded border border-[color:var(--color-surface-200)] bg-[color:var(--color-surface-50)] dark:bg-[color:var(--color-surface-900)]" />
       </div>
     </ComponentPreview>
   </div>

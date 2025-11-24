@@ -40,7 +40,7 @@
     { title: 'Table', path: '/data/table' },
     { title: 'Timeline', path: '/data/timeline' },
     { title: 'Alert', path: '/feedback/alert' },
-    { title: 'Badge', path: '/feedback/badge' },
+    { title: 'Badge', path: '/core/badge' },
     { title: 'ProgressBar', path: '/feedback/progressbar' },
     { title: 'Spinner', path: '/feedback/spinner' },
     { title: 'Toast', path: '/feedback/toast' },

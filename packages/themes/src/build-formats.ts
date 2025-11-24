@@ -22,7 +22,7 @@ import { milkywayTheme }     from '../configs/milkyway.ts';
 import { bigSkyTheme }       from '../configs/bigsky.ts';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const distDir   = path.resolve(__dirname, '../dist');
+const distDir   = path.resolve(__dirname, '../dist/formats');
 
 type ThemeMode = 'light' | 'dark';
 const ROLES = [

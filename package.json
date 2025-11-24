@@ -6,6 +6,8 @@
     "build": "pnpm -r run build",
     "build:themes": "pnpm --filter @clothesline/themes run build:all",
     "build:tokens": "pnpm --filter @clothesline/tokens run build",
-    "build:all": "pnpm run build:tokens && pnpm run build:themes"
+    "build:all": "pnpm run build:tokens && pnpm run build:themes",
+    "build:figma": "pnpm --filter @clothesline/themes run build:figma:single"
+
   }
 }

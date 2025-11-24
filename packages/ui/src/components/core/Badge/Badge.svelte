@@ -1,7 +1,6 @@
 <script>
   /**
    * Badge component for displaying status, labels, or counts
-   * @component
    */
 
   /** @type {'primary' | 'secondary' | 'tertiary' | 'success' | 'warning' | 'error' | 'info' | 'accent' | 'neutral'} */

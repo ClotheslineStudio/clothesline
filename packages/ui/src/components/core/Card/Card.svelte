@@ -1,22 +1,22 @@
-<script lang="ts">
+<script>
   /** Polymorphic element tag */
-  export let as: string = 'div';
+  export let as = 'div';
 
   /** Background/foreground palette */
-  export let tone: 'surface' | 'primary' | 'neutral' = 'surface';
+  export let tone = 'surface';
 
   /** Padding scale */
-  export let padding: 'none' | 'sm' | 'md' | 'lg' = 'md';
+  export let padding = 'md';
 
   /** Shadow elevation */
-  export let shadow: 'none' | 'sm' | 'md' | 'lg' = 'md';
+  export let shadow = 'md';
 
   /** Toggles */
-  export let rounded: boolean = true;
-  export let border: boolean = true;
+  export let rounded = true;
+  export let border = true;
 
   /** Extra classes */
-  export let className: string = '';
+  export let className = '';
 </script>
 
 <svelte:element

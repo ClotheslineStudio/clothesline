@@ -4,102 +4,53 @@
   import ChevronRight from 'lucide-svelte/icons/chevron-right';
 
   export let routes: { title: string; path: string }[] = [];
-  export let stickyTop = 64; // px offset under header (tweak to your AppBar height)
 
-  const STORAGE_KEY = 'cl_sidebar_state';
-
-  // Group + sort routes by first path segment
-  const groupedRoutes = derived(page, ($page) => {
+  // Group by first segment
+  const grouped = derived(page, () => {
     const map = new Map<string, { title: string; path: string }[]>();
-    for (const { title, path } of routes) {
-      const [group] = path.replace(/^\//, '').split('/');
-      const section = group ? group[0].toUpperCase() + group.slice(1) : 'Misc';
+
+    for (const r of routes) {
+      const seg = r.path.replace(/^\//, '').split('/')[0] || 'Misc';
+      const section = seg.toUpperCase();
+
       if (!map.has(section)) map.set(section, []);
-      map.get(section)!.push({ title, path });
+      map.get(section)!.push(r);
     }
-    // sort items inside each group
-    for (const [k, arr] of map.entries()) {
-      arr.sort((a, b) => a.title.localeCompare(b.title));
-      map.set(k, arr);
-    }
-    // stable order for groups
-    return new Map([...map.entries()].sort((a, b) => a[0].localeCompare(b[0])));
+
+    return map;
   });
 
-  // Collapsed state per section
+  // Collapsed state
   let collapsed: Record<string, boolean> = {};
-
-  // Restore persisted state
-  if (typeof localStorage !== 'undefined') {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) collapsed = JSON.parse(raw);
-    } catch {}
-  }
-
-  // Ensure keys exist; open the section that contains the current path
-  $: {
-    const currentPath = get(page).url.pathname;
-    for (const section of Array.from(get(groupedRoutes).keys())) {
-      if (collapsed[section] === undefined) {
-        collapsed[section] = true;
-      }
-      const items = get(groupedRoutes).get(section) || [];
-      if (items.some((it) => it.path === currentPath)) {
-        collapsed[section] = false; // auto-open current section
-      }
-    }
-  }
-
-  // Persist on change
-  $: typeof localStorage !== 'undefined' && localStorage.setItem(STORAGE_KEY, JSON.stringify(collapsed));
 
   function toggle(section: string) {
     collapsed[section] = !collapsed[section];
   }
-
-  function isActive(path: string, current: string) {
-    return current === path;
-  }
 </script>
 
-<nav
-  class="sidebar"
-  style={`--sticky-top:${stickyTop}px`}
-  aria-label="Section navigation"
->
-  {#each Array.from($groupedRoutes.entries()) as [section, items]}
-    <section class="section">
-      <button
-        class="header"
-        on:click={() => toggle(section)}
-        aria-controls={`section-${section}`}
-        aria-expanded={!collapsed[section]}
-      >
+<nav class="sidebar">
+  {#each Array.from($grouped.entries()) as [section, items]}
+    <section class="group">
+      <button class="group-header" on:click={() => toggle(section)}>
         <ChevronRight
-          class="chevron"
-          style="transform: rotate({collapsed[section] ? 0 : 90}deg);"
-          aria-hidden="true"
+          class="chev"
+          style={`transform: rotate(${collapsed[section] ? 0 : 90}deg);`}
         />
-        <span class="header-text">{section}</span>
+        <span>{section}</span>
       </button>
 
       {#if !collapsed[section]}
-        <ul class="list" id={`section-${section}`}>
+        <ul class="list">
           {#each items as item}
-            {#key item.path}
-              <li>
-                <a
-                  href={item.path}
-                  class="link"
-                  class:active={isActive(item.path, $page.url.pathname)}
-                  aria-current={isActive(item.path, $page.url.pathname) ? 'page' : undefined}
-                >
-                  <span class="rail" aria-hidden="true"></span>
-                  <span class="label">{item.title}</span>
-                </a>
-              </li>
-            {/key}
+            <li>
+              <a
+                href={item.path}
+                class="link"
+                class:active={$page.url.pathname === item.path}
+              >
+                {item.title}
+              </a>
+            </li>
           {/each}
         </ul>
       {/if}
@@ -109,118 +60,73 @@
 
 <style>
   .sidebar {
-    /* theme-aware fallbacks */
-    --sb-bg: var(--color-surface-50, #fff);
-    --sb-border: var(--color-surface-300, #e6e6e6);
-    --sb-head: var(--on-surface-strong);
-    --sb-link: var(--on-surface);
-    --sb-muted: var(--on-surface-muted);
-    --sb-accent: var(--color-secondary-500-vis);
-    --sb-accent-50: var(--color-secondary-50);
-
-    position: sticky;
-    top: var(--sticky-top, 1004px);
-    align-self: start;
+    background: var(--sidebar-bg);
+    border-right: none;
+    padding: var(--spacing-8);
+    gap: var(--spacing-8);
     width: 16rem;
-    max-height: calc(100vh - var(--sticky-top, 100px));
-    overflow: auto;
-
-    padding: var(--spacing-5, 1.25rem);
-    background: var(--sb-bg);
-    border-right: 0px solid var(--sb-border);
-    border-radius: 0 0px 0px 0;
+    height: 100%;
+    overflow-y: auto;
+    font-family: var(--type-body-family);
   }
 
-  .section + .section { margin-top: var(--spacing-4, 1rem); }
-
-  .header {
-    width: 100%;
+  /* GROUP HEADER */
+  .group-header {
     display: flex;
     align-items: center;
-    gap: .375rem;
-    padding: .375rem 0;
-    font-weight: 700;
-    letter-spacing: .01em;
+    gap: var(--spacing-6);
+    width: 100%;
+    padding: var(--spacing-3) 0;
+    color: var(--sidebar-header-color);
+    font-weight: var(--type-weight-semibold);
     background: none;
     border: none;
-    color: var(--sb-head);
     cursor: pointer;
-    border-radius: 8px;
+    text-align: left;
   }
-  .header:focus-visible {
-    outline: 2px solid var(--color-info-500, #06b6d4);
-    outline-offset: 2px;
-  }
-  .header-text { font-size: .875rem; }
 
-  :global(.chevron) {
+  .group-header :global(.chev) {
     width: 1rem;
     height: 1rem;
     transition: transform 0.18s ease;
-    flex-shrink: 0;
+    color: var(--text-muted);
   }
 
+  /* LIST */
   .list {
-    margin: .25rem 0 .75rem;
-    padding: 0;
+    margin: var(--spacing-1) 0 var(--spacing-3);
+    padding: var(spacing-2) 0;
     list-style: none;
   }
 
   .link {
-    position: relative;
-    display: flex;
-    align-items: center;
-    gap: .5rem;
-    padding: .35rem .5rem .35rem .25rem;
-    color: var(--sb-link);
+    display: block;
+    padding: var(--spacing-2) 0;
+    padding-left: var(--spacing-4);
     text-decoration: none;
-    border-radius: 8px;
-    line-height: 1.15;
-  }
-  .link:hover {
-    background: color-mix(in oklab, var(--sb-accent-50) 55%, transparent);
-    text-decoration: none;
+    color: var(--sidebar-link-color);
+    border-radius: var(--radius-sm);
+    font-size: var(--type-scale-base);
   }
 
-  /* Left accent rail (hidden by default, visible on active) */
-  .link .rail {
-    width: 3px;
-    height: 1.1rem;
-    border-radius: 3px;
-    background: transparent;
-    translate: 0 1px;
+  .link:hover {
+    color: var(--base-font-color);
   }
 
   .link.active {
-    background: color-mix(in oklab, var(--sb-accent) 14%, transparent);
-    color: var(--sb-link);
-    font-weight: 700;
-  }
-  .link.active .rail {
-    background: var(--sb-accent);
-    box-shadow: 0 0 0 2px color-mix(in oklab, var(--sb-accent) 25%, transparent);
+    color: var(--base-font-color);
+    font-weight: var(--type-weight-medium);
   }
 
-  .link:focus-visible {
-    outline: 2px solid var(--color-info-500, #06b6d4);
-    outline-offset: 2px;
-  }
-
-  /* Subtle indent for items */
-  .label { padding-left: .25rem; }
-
-  /* Scrollbar (WebKit) */
-  .sidebar::-webkit-scrollbar { width: 10px; }
-  .sidebar::-webkit-scrollbar-thumb {
-    background: color-mix(in oklab, var(--sb-border) 80%, var(--sb-head));
-    border-radius: 999px;
-  }
-  .sidebar::-webkit-scrollbar-track { background: transparent; }
-
-  @media (max-width: 1024px) {
-    .sidebar { width: 100%; border-right: 0; border-bottom: 1px solid var(--sb-border); border-radius: 0; }
+  .group + .group {
+    margin-top: var(--spacing-3);
   }
 </style>
+
+
+
+
+
 
 
 
