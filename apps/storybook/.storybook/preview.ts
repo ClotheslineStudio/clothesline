@@ -1,14 +1,18 @@
-// ✅ Load Tailwind + local app.css (your internal structure)
+// Load Tailwind + all theme CSS (from src/app.css)
 import '../src/app.css';
 
-// ✅ Manually inject global Clothesline theme
-const link = document.createElement('link');
-link.rel = 'stylesheet';
-link.href = 'file:///C:/Users/travi/OneDrive/Documents/Development/GitHub%20-%20Business/clothesline/packages/themes/dist/clothesline.css';
-document.head.appendChild(link);
-
 export const parameters = {
-  layout: 'centered',
+  layout: 'fullscreen',
+  controls: { expanded: true },
 };
+
+// Apply default theme attributes so your tokens resolve
+const root = document.documentElement;
+root.setAttribute('data-theme', 'clothesline');
+root.setAttribute('data-mode', 'light');
+root.setAttribute('data-contrast', 'normal');
+
+// No decorators for now – keep it simple
+export const decorators = [];
 
 

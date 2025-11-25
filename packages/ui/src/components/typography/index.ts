@@ -2,7 +2,7 @@
  * Typography category barrel
  * Uncomment exports as components land.
  */
-export { default as Text } from './Text/Text.svelte';
+export * from './Text/index.ts';
 
 export { default as Heading } from './Heading/Heading.svelte';
 export { default as Paragraph } from './Paragraph/Paragraph.svelte';

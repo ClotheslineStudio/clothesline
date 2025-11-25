@@ -1,6 +1,63 @@
-@import "tailwindcss";
-@plugin "@tailwindcss/vite";
-
-/* === Theme Imports via alias === */
+/* =========================================================
+   CLOTHESLINE THEME IMPORTS
+   (via @clothesline/themes package exports)
+   ========================================================= */
 @import "@clothesline/themes/clothesline.css";
+@import "@clothesline/themes/timberline.css";
+@import "@clothesline/themes/retrograde.css";
+@import "@clothesline/themes/milkyway.css";
+@import "@clothesline/themes/copper-sun.css";
+@import "@clothesline/themes/tidal-glass.css";
+@import "@clothesline/themes/night-market.css";
+@import "@clothesline/themes/bigsky.css";
 @import "@clothesline/themes/modes.css";
+
+/* =========================================================
+   TAILWIND v4 ENTRY
+   ========================================================= */
+@import "tailwindcss";
+
+/* =========================================================
+   ROOT OVERRIDES (match your playground app)
+   ========================================================= */
+:root {
+  --divider-color: #cbd5e1;
+  --divider-thickness: 5px;
+  --divider-style: solid;
+}
+
+@layer base {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    color: var(--heading-font-color, var(--base-font-color));
+  }
+
+  p,
+  span,
+  li,
+  dt,
+  dd,
+  th,
+  td {
+    color: var(--body-font-color, var(--base-font-color));
+  }
+}
+
+@layer base {
+  body {
+    background: var(--color-surface-50, #f1f5f9);
+    color: var(--base-font-color, #0f172a);
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text",
+      "Segoe UI", sans-serif;
+  }
+
+  /* Storybook canvas wrapper */
+  #storybook-root,
+  .sb-show-main {
+    padding: 1.5rem;
+  }
+}
