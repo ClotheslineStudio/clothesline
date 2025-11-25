@@ -1,0 +1,18 @@
+  {
+    "name": "download",
+    "displayName": "Download",
+    "description": "Represents downloading or saving content from the cloud or web.",
+    "keywords": ["download", "save", "arrow-down", "cloud", "file"],
+    "categories": ["System", "Files"],
+    "variants": ["stroke", "filled", "duotone"],
+    "sizes": [24],
+    "version": "1.0.0",
+    "author": "Travis Peterson",
+    "changelog": [
+      {
+        "version": "1.0.0",
+        "changes": ["Initial release"],
+        "date": "2025-01-01"
+      }
+    ]
+  }

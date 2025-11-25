@@ -1,0 +1,18 @@
+  {
+    "name": "search",
+    "displayName": "Search",
+    "description": "Represents searching, finding, or querying content.",
+    "keywords": ["search", "find", "magnifying-glass", "lookup", "query"],
+    "categories": ["System", "Navigation"],
+    "variants": ["stroke", "filled", "duotone"],
+    "sizes": [24],
+    "version": "1.0.0",
+    "author": "Travis Peterson",
+    "changelog": [
+      {
+        "version": "1.0.0",
+        "changes": ["Initial release"],
+        "date": "2025-01-01"
+      }
+    ]
+  }

@@ -1,0 +1,18 @@
+  {
+    "name": "link",
+    "displayName": "Link",
+    "description": "Represents a hyperlink or connection between items.",
+    "keywords": ["link", "url", "chain", "hyperlink", "connect"],
+    "categories": ["System", "Navigation"],
+    "variants": ["stroke", "filled", "duotone"],
+    "sizes": [24],
+    "version": "1.0.0",
+    "author": "Travis Peterson",
+    "changelog": [
+      {
+        "version": "1.0.0",
+        "changes": ["Initial release"],
+        "date": "2025-01-01"
+      }
+    ]
+  }

@@ -1,0 +1,6 @@
+@import "tailwindcss";
+
+@source "./**/*.{svelte,ts,js}";               
+@source "../../packages/ui/src/**/*.{svelte,ts}";
+@source "../../packages/icons/src/**/*.{svelte,ts}";
+@source "../../packages/themes/src/**/*.{ts}";

@@ -1,0 +1,18 @@
+ {
+    "name": "tree-pine",
+    "displayName": "Tree Pine",
+    "description": "Represents an evergreen or pine tree, forests, or outdoor themes.",
+    "keywords": ["tree", "pine", "evergreen", "forest", "outdoors"],
+    "categories": ["Nature", "Outdoors"],
+    "variants": ["stroke", "filled", "duotone"],
+    "sizes": [24],
+    "version": "1.0.0",
+    "author": "Travis Peterson",
+    "changelog": [
+      {
+        "version": "1.0.0",
+        "changes": ["Initial release"],
+        "date": "2025-01-01"
+      }
+    ]
+  }

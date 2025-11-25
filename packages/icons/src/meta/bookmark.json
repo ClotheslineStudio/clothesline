@@ -1,0 +1,18 @@
+  {
+    "name": "bookmark",
+    "displayName": "Bookmark",
+    "description": "Represents saving or marking content for later reference.",
+    "keywords": ["bookmark", "favorite", "save", "mark", "reading", "flag"],
+    "categories": ["System", "Content"],
+    "variants": ["stroke", "filled", "duotone"],
+    "sizes": [24],
+    "version": "1.0.0",
+    "author": "Travis Peterson",
+    "changelog": [
+      {
+        "version": "1.0.0",
+        "changes": ["Initial release"],
+        "date": "2025-01-01"
+      }
+    ]
+  }

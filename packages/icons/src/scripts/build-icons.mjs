@@ -1,4 +1,3 @@
-// packages/icons/src/scripts/build-icons.mjs
 import fs from 'fs/promises';
 import path from 'path';
 import fg from 'fast-glob';
@@ -13,6 +12,7 @@ const PKG_ROOT = path.resolve(__dirname, '..', '..');
 const ICONS_DIR = path.join(PKG_ROOT, 'src', 'svg');
 const OUT_DIR   = path.join(PKG_ROOT, 'src', 'components');
 const INDEX_TS  = path.join(PKG_ROOT, 'src', 'index.ts');
+const META_DIR  = path.join(PKG_ROOT, 'src', 'meta');
 
 const STRIP_PREFIXES = ['icon-'];
 
@@ -152,7 +152,7 @@ function fixDuotoneOverlap(tone1Raw, tone2Raw, { eps = 0.02, tolerance = 0.2, de
 // Prefer content inside a property frame like id="Property 1=duotone"
 function extractFrame(inner, frameIdRegex = /Property\s*1\s*=\s*duotone/i) {
   const re = new RegExp(`<g[^>]*\\bid=(["'])([^"']*)\\1[^>]*>([\\s\\S]*?)<\\/g>`, 'gi');
-  let match; 
+  let match;
   while ((match = re.exec(inner))) {
     const id = match[2];
     if (frameIdRegex.test(id)) return match[3]; // inner HTML of the frame
@@ -221,6 +221,40 @@ function extractDuotone(inner) {
   };
 }
 
+// ---------- Metadata helpers ----------
+function defaultMeta(base, CompName, { hasStroke, hasFilled, hasDuotone }) {
+  const variants = [];
+  if (hasStroke) variants.push('stroke');
+  if (hasFilled) variants.push('filled');
+  if (hasDuotone) variants.push('duotone');
+
+  return {
+    name: base,             // "add-plus"
+    displayName: CompName,  // "AddPlus" (you can pretty this later if you want)
+    description: '',
+    keywords: [],
+    categories: [],
+    variants,
+    sizes: [24],
+    version: '0.1.0',
+    author: 'Clothesline Studio',
+    changelog: []
+  };
+}
+
+async function loadMeta(base, CompName, flags) {
+  const defaults = defaultMeta(base, CompName, flags);
+  const metaPath = path.join(META_DIR, `${base}.json`);
+
+  try {
+    const raw = await fs.readFile(metaPath, 'utf8');
+    const userMeta = JSON.parse(raw);
+    return { ...defaults, ...userMeta };
+  } catch (_err) {
+    console.warn(`⚠️ No metadata for ${base}, using defaults.`);
+    return defaults;
+  }
+}
 
 // ------------- Svelte template -------------
 function wrapSvelte({ strokeInner, filledInner, duoTone1, duoTone2, hasStroke, hasFilled, hasDuotone }) {
@@ -229,22 +263,51 @@ function wrapSvelte({ strokeInner, filledInner, duoTone1, duoTone2, hasStroke, h
   export let size: number | string = 24;
   export let strokeWidth: number | string | undefined = undefined;
   export let variant: 'stroke' | 'filled' | 'duotone' | 'animated' = 'stroke';
-  export let role: 'default' | 'muted' | 'primary' | 'success' | 'warning' | 'error' = 'default';
-  export let secondaryRole: 'default' | 'muted' | 'primary' | 'success' | 'warning' | 'error' = 'muted';
+
+  // semantic roles
+  export let role:
+    | 'default'
+    | 'muted'
+    | 'primary'
+    | 'success'
+    | 'warning'
+    | 'error'
+    | 'info' = 'default';
+
+  export let secondaryRole:
+    | 'default'
+    | 'muted'
+    | 'primary'
+    | 'success'
+    | 'warning'
+    | 'error'
+    | 'info' = 'muted';
+
   export let className: string = '';
   export let ariaLabel: string = 'icon';
   export let title: string | undefined = undefined;
 
   const colorByRole = {
-    default: 'var(--cl-icon)',
-    muted: 'var(--cl-icon-muted)',
-    primary: 'var(--cl-icon-primary)',
-    success: 'var(--cl-icon-success)',
-    warning: 'var(--cl-icon-warning)',
-    error: 'var(--cl-icon-error)'
+    default: 'var(--icon)',
+    muted: 'var(--icon-muted)',
+    primary: 'var(--icon-primary)',
+    success: 'var(--icon-success)',
+    warning: 'var(--icon-warning)',
+    error: 'var(--icon-error)',
+    info: 'var(--icon-info)'
   } as const;
 
-  $: effectiveStrokeWidth = strokeWidth ?? 'var(--cl-icon-stroke)';
+  const fillByRole = {
+    default: 'var(--icon-fill)',
+    muted: 'var(--icon-fill-muted)',
+    primary: 'var(--icon-fill-primary)',
+    success: 'var(--icon-fill-success)',
+    warning: 'var(--icon-fill-warning)',
+    error: 'var(--icon-fill-error)',
+    info: 'var(--icon-fill-info)'
+  } as const;
+
+  $: effectiveStrokeWidth = strokeWidth ?? 'var(--icon-stroke)';
 </script>
 
 <svg
@@ -255,8 +318,8 @@ function wrapSvelte({ strokeInner, filledInner, duoTone1, duoTone2, hasStroke, h
   fill="none"
   stroke="currentColor"
   stroke-width={effectiveStrokeWidth}
-  stroke-linecap="round"
-  stroke-linejoin="round"
+  stroke-linecap="var(--icon-stroke-linecap)"
+  stroke-linejoin="var(--icon-stroke-linejoin)"
   aria-label={ariaLabel}
   role="img"
   class={className}
@@ -267,27 +330,24 @@ function wrapSvelte({ strokeInner, filledInner, duoTone1, duoTone2, hasStroke, h
   {#if title}<title>{title}</title>{/if}
 
   {#if variant === 'filled' && ${hasFilled ? 'true' : 'false'}}
-    <g fill="currentColor" stroke="none">
+    <g fill="currentColor" stroke="none" style="color:{fillByRole[role]}">
       ${filledInner}
     </g>
 
-{:else if variant === 'duotone' && ${hasDuotone ? 'true' : 'false'}}
-  {#if ${Boolean(duoTone2 && duoTone2.trim()).toString()}}
-    <g class="tone2" style="color:{colorByRole[secondaryRole]}">
-      <g fill="currentColor" stroke="none">
-        ${duoTone2}
-      </g>
+  {:else if variant === 'duotone' && ${hasDuotone ? 'true' : 'false'}}
+    ${Boolean(duoTone2 && duoTone2.trim())
+      ? `<g class="tone2" fill="currentColor" stroke="none" style="color:var(--icon-duotone-2)">
+      ${duoTone2}
+    </g>`
+      : ''
+    }
+
+    <g class="tone1"
+       style="color:var(--icon-duotone-1); paint-order: stroke fill"
+       stroke="currentColor"
+       stroke-width={effectiveStrokeWidth}>
+      ${duoTone1}
     </g>
-  {/if}
-
-  <g class="tone1"
-     style="color:{colorByRole[role]}; paint-order: stroke fill"
-     stroke="currentColor"
-     stroke-width={effectiveStrokeWidth}>
-    ${duoTone1}
-  </g>
-
-
 
   {:else}
     <!-- Stroke (default/fallback) -->
@@ -348,7 +408,7 @@ export type IconName = keyof typeof iconRegistry;
   }
 
   const imports = [];
-  const exports = [];
+  const exportsArr = [];
   const registry = [];
 
   for (const [base, data] of map.entries()) {
@@ -380,15 +440,17 @@ export type IconName = keyof typeof iconRegistry;
 
     await fs.writeFile(outFile, svelte, 'utf8');
 
+    const meta = await loadMeta(base, Comp, { hasStroke, hasFilled, hasDuotone });
+
     imports.push(`import ${Comp} from './components/${Comp}.svelte';`);
-    exports.push(Comp);
-    registry.push(`  "${base}": ${Comp}`);
+    exportsArr.push(Comp);
+    registry.push(`  "${base}": { component: ${Comp}, meta: ${JSON.stringify(meta)} }`);
   }
 
   const index = `// AUTO-GENERATED. Do not edit by hand.
 ${imports.join('\n')}
 
-export { ${exports.join(', ')} };
+export { ${exportsArr.join(', ')} };
 
 export const iconRegistry = {
 ${registry.join(',\n')}
@@ -398,14 +460,11 @@ export type IconName = keyof typeof iconRegistry;
 `;
   await fs.writeFile(INDEX_TS, index, 'utf8');
 
-  console.log(`✅ Built ${map.size} icons → components (+ registry).`);
+  console.log(`✅ Built ${map.size} icons → components (+ registry with meta).`);
 }
 
 main().catch((e) => {
   console.error(e);
   process.exit(1);
 });
-
-
-
 

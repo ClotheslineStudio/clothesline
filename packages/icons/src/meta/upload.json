@@ -1,0 +1,18 @@
+ {
+    "name": "upload",
+    "displayName": "Upload",
+    "description": "Represents uploading or sending content to the cloud or a server.",
+    "keywords": ["upload", "send", "arrow-up", "cloud", "file"],
+    "categories": ["System", "Files"],
+    "variants": ["stroke", "filled", "duotone"],
+    "sizes": [24],
+    "version": "1.0.0",
+    "author": "Travis Peterson",
+    "changelog": [
+      {
+        "version": "1.0.0",
+        "changes": ["Initial release"],
+        "date": "2025-01-01"
+      }
+    ]
+  }

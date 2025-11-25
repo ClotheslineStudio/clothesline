@@ -3,22 +3,51 @@
   export let size: number | string = 24;
   export let strokeWidth: number | string | undefined = undefined;
   export let variant: 'stroke' | 'filled' | 'duotone' | 'animated' = 'stroke';
-  export let role: 'default' | 'muted' | 'primary' | 'success' | 'warning' | 'error' = 'default';
-  export let secondaryRole: 'default' | 'muted' | 'primary' | 'success' | 'warning' | 'error' = 'muted';
+
+  // semantic roles
+  export let role:
+    | 'default'
+    | 'muted'
+    | 'primary'
+    | 'success'
+    | 'warning'
+    | 'error'
+    | 'info' = 'default';
+
+  export let secondaryRole:
+    | 'default'
+    | 'muted'
+    | 'primary'
+    | 'success'
+    | 'warning'
+    | 'error'
+    | 'info' = 'muted';
+
   export let className: string = '';
   export let ariaLabel: string = 'icon';
   export let title: string | undefined = undefined;
 
   const colorByRole = {
-    default: 'var(--cl-icon)',
-    muted: 'var(--cl-icon-muted)',
-    primary: 'var(--cl-icon-primary)',
-    success: 'var(--cl-icon-success)',
-    warning: 'var(--cl-icon-warning)',
-    error: 'var(--cl-icon-error)'
+    default: 'var(--icon)',
+    muted: 'var(--icon-muted)',
+    primary: 'var(--icon-primary)',
+    success: 'var(--icon-success)',
+    warning: 'var(--icon-warning)',
+    error: 'var(--icon-error)',
+    info: 'var(--icon-info)'
   } as const;
 
-  $: effectiveStrokeWidth = strokeWidth ?? 'var(--cl-icon-stroke)';
+  const fillByRole = {
+    default: 'var(--icon-fill)',
+    muted: 'var(--icon-fill-muted)',
+    primary: 'var(--icon-fill-primary)',
+    success: 'var(--icon-fill-success)',
+    warning: 'var(--icon-fill-warning)',
+    error: 'var(--icon-fill-error)',
+    info: 'var(--icon-fill-info)'
+  } as const;
+
+  $: effectiveStrokeWidth = strokeWidth ?? 'var(--icon-stroke)';
 </script>
 
 <svg
@@ -29,8 +58,8 @@
   fill="none"
   stroke="currentColor"
   stroke-width={effectiveStrokeWidth}
-  stroke-linecap="round"
-  stroke-linejoin="round"
+  stroke-linecap="var(--icon-stroke-linecap)"
+  stroke-linejoin="var(--icon-stroke-linejoin)"
   aria-label={ariaLabel}
   role="img"
   class={className}
@@ -41,27 +70,21 @@
   {#if title}<title>{title}</title>{/if}
 
   {#if variant === 'filled' && true}
-    <g fill="currentColor" stroke="none">
+    <g fill="currentColor" stroke="none" style="color:{fillByRole[role]}">
       <g id="Property 1=filled"><path id="Union" fill="currentColor" fill-rule="evenodd" d="M15.435 4.122a3 3 0 0 1 4.242 4.242l-1.415 1.414h.001l-9.9 9.9-.003-.004a1.1 1.1 0 0 1-.352.2L3.93 21.266a1.1 1.1 0 0 1-1.396-1.396l1.39-4.078q.068-.196.2-.352l-.003-.004zm2.828 1.414a1 1 0 0 0-1.414 0L15.435 6.95l1.414 1.414 1.414-1.414a1 1 0 0 0 0-1.414" clip-rule="evenodd"/></g>
     </g>
 
-{:else if variant === 'duotone' && true}
-  {#if true}
-    <g class="tone2" style="color:{colorByRole[secondaryRole]}">
-      <g fill="currentColor" stroke="none">
-        <rect id="tone2" width="6" height="14" x="14.021" y="5.536" fill="currentColor" transform="rotate(45 14.02 5.536)"/>
-      </g>
+  {:else if variant === 'duotone' && true}
+    <g class="tone2" fill="currentColor" stroke="none" style="color:var(--icon-duotone-2)">
+      <rect id="tone2" width="6" height="14" x="14.021" y="5.536" fill="currentColor" transform="rotate(45 14.02 5.536)"/>
     </g>
-  {/if}
 
-  <g class="tone1"
-     style="color:{colorByRole[role]}; paint-order: stroke fill"
-     stroke="currentColor"
-     stroke-width={effectiveStrokeWidth}>
-    
-  </g>
-
-
+    <g class="tone1"
+       style="color:var(--icon-duotone-1); paint-order: stroke fill"
+       stroke="currentColor"
+       stroke-width={effectiveStrokeWidth}>
+      
+    </g>
 
   {:else}
     <!-- Stroke (default/fallback) -->

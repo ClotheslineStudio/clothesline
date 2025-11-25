@@ -1,0 +1,18 @@
+ {
+    "name": "paste",
+    "displayName": "Paste",
+    "description": "Represents pasting content from the clipboard.",
+    "keywords": ["paste", "clipboard", "insert", "document", "edit"],
+    "categories": ["System", "Actions"],
+    "variants": ["stroke", "filled", "duotone"],
+    "sizes": [24],
+    "version": "1.0.0",
+    "author": "Travis Peterson",
+    "changelog": [
+      {
+        "version": "1.0.0",
+        "changes": ["Initial release"],
+        "date": "2025-01-01"
+      }
+    ]
+  }

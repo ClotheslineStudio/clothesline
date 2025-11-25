@@ -1,0 +1,18 @@
+  {
+    "name": "cut",
+    "displayName": "Cut",
+    "description": "Represents cutting content or removing it while copying to the clipboard.",
+    "keywords": ["cut", "scissors", "remove", "clipboard", "edit"],
+    "categories": ["System", "Actions"],
+    "variants": ["stroke", "filled", "duotone"],
+    "sizes": [24],
+    "version": "1.0.0",
+    "author": "Travis Peterson",
+    "changelog": [
+      {
+        "version": "1.0.0",
+        "changes": ["Initial release"],
+        "date": "2025-01-01"
+      }
+    ]
+  }
