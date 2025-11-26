@@ -9,7 +9,8 @@ export * from './components/data/Timeline/index.js';
 
 // These were .ts — change to .js
 
-export * from './components/navigation/index.ts';
-export * from './components/layout/index.ts';
-export * from './components/core/index.ts';
-export * from './components/form/index.ts';
+export * from './components/navigation';
+export * from './components/layout';
+export * from './components/core';
+export * from './components/form';
+

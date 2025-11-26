@@ -1,34 +1,32 @@
 {
   "compilerOptions": {
-    // Output options
     "target": "ESNext",
-    "module": "NodeNext",
-    "moduleResolution": "NodeNext",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+
     "declaration": true,
     "emitDeclarationOnly": true,
     "outDir": "dist",
 
-    // Type system
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
     "resolveJsonModule": true,
     "allowSyntheticDefaultImports": true,
-    "verbatimModuleSyntax": true,
-    "allowImportingTsExtensions": true,
 
-    // Monorepo alias support
+    // IMPORTANT: remove these
+    // "verbatimModuleSyntax": true,
+    // "allowImportingTsExtensions": true,
+
+    // Path aliases should map to built output,
+    // not raw source for consumer apps
     "baseUrl": ".",
     "paths": {
-      "@clothesline/tokens": ["packages/tokens/src/index.ts"],
-      "@clothesline/tokens/*": ["packages/tokens/src/*"],
-      "@clothesline/themes": ["packages/themes/src/index.ts"],
-      "@clothesline/themes/*": ["packages/themes/src/*"],
-      "@clothesline/ui": ["packages/ui/src/index.ts"],
-      "@clothesline/ui/*": ["packages/ui/src/*"]
+      "@clothesline/tokens": ["packages/tokens/dist/index.d.ts"],
+      "@clothesline/themes": ["packages/themes/dist/index.d.ts"],
+      "@clothesline/ui": ["packages/ui/dist/index.d.ts"]
     }
   },
   "include": ["packages/**/*"],
   "exclude": ["node_modules", "dist", "**/*.test.ts"]
 }
-

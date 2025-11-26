@@ -4,8 +4,8 @@
   "compilerOptions": {
      "rootDir": "./src",  // Add this line
     // Enable modern module resolution for SvelteKit + ESM
-    "module": "NodeNext", 
-    "moduleResolution": "nodenext",
+    "module": "ESNext",
+"moduleResolution": "bundler",
 
     // Recognize Svelte types
     "types": ["svelte"],
