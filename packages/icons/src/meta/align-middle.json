@@ -1,0 +1,18 @@
+{
+    "name": "align-middle",
+    "displayName": "Align Middle",
+    "description": "Icon for middle vertical alignment of text or elements.",
+    "keywords": ["align", "middle", "vertical", "center", "alignment", "text"],
+    "categories": ["Editor", "Layout"],
+    "variants": ["stroke", "filled", "duotone"],
+    "sizes": [24],
+    "version": "1.0.0",
+    "author": "Travis Peterson",
+    "changelog": [
+        {
+            "version": "1.0.0",
+            "changes": ["Initial release"],
+            "date": "2025-01-01"
+        }
+    ]
+}

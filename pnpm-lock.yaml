@@ -375,7 +375,7 @@ importers:
   packages/icons:
     devDependencies:
       fast-glob:
-        specifier: ^3.3.2
+        specifier: ^3.3.3
         version: 3.3.3
       rimraf:
         specifier: ^6.0.1
@@ -383,6 +383,9 @@ importers:
       svgo:
         specifier: ^3.3.2
         version: 3.3.2
+      tsx:
+        specifier: ^4.20.3
+        version: 4.20.3
 
   packages/themes:
     devDependencies:

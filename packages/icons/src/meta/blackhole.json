@@ -1,0 +1,18 @@
+  {
+    "name": "blackhole",
+    "displayName": "Blackhole",
+    "description": "Represents saving or marking content for later reference.",
+    "keywords": ["blackhole", "space", "astronomy", "cosmos", "gravity", "event horizon"],
+    "categories": ["Nature", "Space"],
+    "variants": ["stroke", "filled", "duotone"],
+    "sizes": [24],
+    "version": "1.0.0",
+    "author": "Travis Peterson",
+    "changelog": [
+      {
+        "version": "1.0.0",
+        "changes": ["Initial release"],
+        "date": "2025-01-01"
+      }
+    ]
+  }

@@ -1,92 +1,61 @@
-<!-- AUTO-GENERATED. Do not edit by hand. -->
+<!-- AUTO-GENERATED. DO NOT EDIT. -->
 <script lang="ts">
-  export let size: number | string = 24;
-  export let strokeWidth: number | string | undefined = undefined;
-  export let variant: 'stroke' | 'filled' | 'duotone' | 'animated' = 'stroke';
+  // PUBLIC PROPS
+  export let size: number = 24;
+  export let absoluteStrokeWidth: boolean = false;
+  export let strokeWidth: number = 2;
 
-  // semantic roles
-  export let role:
-    | 'default'
-    | 'muted'
-    | 'primary'
-    | 'success'
-    | 'warning'
-    | 'error'
-    | 'info' = 'default';
+  export let primaryColor: string = "currentColor";
+  export let secondaryColor: string = "currentColor";
 
-  export let secondaryRole:
-    | 'default'
-    | 'muted'
-    | 'primary'
-    | 'success'
-    | 'warning'
-    | 'error'
-    | 'info' = 'muted';
+  export let variant: "stroke" | "filled" | "duotone" | "animated" = "stroke";
+  export let ariaLabel: string | undefined = undefined;
 
-  export let className: string = '';
-  export let ariaLabel: string = 'icon';
-  export let title: string | undefined = undefined;
+  // DERIVED
+  $: svgSize = typeof size === "number" ? size : parseFloat(size);
 
-  const colorByRole = {
-    default: 'var(--icon)',
-    muted: 'var(--icon-muted)',
-    primary: 'var(--icon-primary)',
-    success: 'var(--icon-success)',
-    warning: 'var(--icon-warning)',
-    error: 'var(--icon-error)',
-    info: 'var(--icon-info)'
-  } as const;
+  // Lucide-style stroke math
+  $: resolvedStroke =
+    absoluteStrokeWidth
+      ? strokeWidth
+      : (strokeWidth / 24) * svgSize;
 
-  const fillByRole = {
-    default: 'var(--icon-fill)',
-    muted: 'var(--icon-fill-muted)',
-    primary: 'var(--icon-fill-primary)',
-    success: 'var(--icon-fill-success)',
-    warning: 'var(--icon-fill-warning)',
-    error: 'var(--icon-fill-error)',
-    info: 'var(--icon-fill-info)'
-  } as const;
-
-  $: effectiveStrokeWidth = strokeWidth ?? 'var(--icon-stroke)';
+  const LINECAP = "round";
+  const LINEJOIN = "round";
 </script>
 
 <svg
   xmlns="http://www.w3.org/2000/svg"
+  width={svgSize}
+  height={svgSize}
   viewBox="0 0 24 24"
-  width={size}
-  height={size}
   fill="none"
-  stroke="currentColor"
-  stroke-width={effectiveStrokeWidth}
-  stroke-linecap="var(--icon-stroke-linecap)"
-  stroke-linejoin="var(--icon-stroke-linejoin)"
+  stroke-linecap={LINECAP}
+  stroke-linejoin={LINEJOIN}
   aria-label={ariaLabel}
-  role="img"
-  class={className}
-  style="color: {colorByRole[role]}"
+  aria-hidden={ariaLabel ? undefined : "true"}
   shape-rendering="geometricPrecision"
-  {...$$restProps}
 >
-  {#if title}<title>{title}</title>{/if}
-
-  {#if variant === 'filled' && true}
-    <g fill="currentColor" stroke="none" style="color:{fillByRole[role]}">
-      <g id="Property 1=fillled"><path fill="currentColor" id="Vector 144" d="M9 14V5a2 2 0 0 1 2-2h3.834a2 2 0 0 1 1.199.4l3.166 2.37A2 2 0 0 1 20 7.371V14a2 2 0 0 1-2 2h-7a2 2 0 0 1-2-2Z"/><path fill="currentColor" id="Vector 146" d="M6 8a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h7.071a.93.93 0 0 0 .929-.929"/><path fill="currentColor" id="Vector 145" d="M15 3v4.5a.5.5 0 0 0 .5.5H20"/></g>
+  {#if variant === "filled"}
+    <!-- FILLED -->
+    <g fill="currentColor" stroke="none" style={"color:" + primaryColor}>
+      <g id="Property 1=fillled"><g id="Vector"><path fill="currentColor" d="M3 19v-9a3 3 0 0 1 3-3 1 1 0 0 1 .103 1.995l-.206.01A1 1 0 0 0 5 10v9a1 1 0 0 0 1 1h6a1 1 0 0 0 .995-.898l.01-.204A1 1 0 0 1 15 19a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3"/><path fill="currentColor" d="M14.834 2c.648 0 1.28.21 1.799.599l3.166 2.37A3 3 0 0 1 21 7.372V14a3 3 0 0 1-3 3h-7a3 3 0 0 1-3-3V5a3 3 0 0 1 3-3z"/></g></g>
     </g>
 
-  {:else if variant === 'duotone' && false}
-    
+  {:else if variant === "duotone"}
+    <!-- DUOTONE BACKGROUND -->
+    <g fill="currentColor" stroke="none" style={"color:" + secondaryColor}>
+      <path id="tone2" d="M9 14V5a2 2 0 0 1 2-2h3.834a2 2 0 0 1 1.199.4l3.166 2.37A2 2 0 0 1 20 7.371V14a2 2 0 0 1-2 2h-7a2 2 0 0 1-2-2"/>
+    </g>
 
-    <g class="tone1"
-       style="color:var(--icon-duotone-1); paint-order: stroke fill"
-       stroke="currentColor"
-       stroke-width={effectiveStrokeWidth}>
-      
+    <!-- DUOTONE FOREGROUND -->
+    <g fill="none" stroke={primaryColor} stroke-width={resolvedStroke}>
+      <path id="tone1" d="m19.199 5.77.6-.8zM16.033 3.4l-.6.8zM6 9a1 1 0 0 0 0-2v2m9 10a1 1 0 1 0-2 0h2m-4-3v1h7v-2h-7zm9-2h1V7.371h-2V14zm-.801-8.23.6-.8-3.166-2.371-.6.8-.6.8L18.6 6.572zM14.834 3V2H11v2h3.834zM11 3V2a3 3 0 0 0-3 3h2a1 1 0 0 1 1-1zm5.033.4.6-.801A3 3 0 0 0 14.834 2v2a1 1 0 0 1 .6.2zM20 7.37h1a3 3 0 0 0-1.202-2.401l-.6.8-.599.8a1 1 0 0 1 .401.801zM18 16v1a3 3 0 0 0 3-3h-2a1 1 0 0 1-1 1zm-9-2H8a3 3 0 0 0 3 3v-2a1 1 0 0 1-1-1zm6-11h-1v4.5h2V3zm.5 5v1H20V7h-4.5zm-.5-.5h-1A1.5 1.5 0 0 0 15.5 9V7a.5.5 0 0 1 .5.5zM9 5H8v9h2V5zM6 21v1h6v-2H6zM6 8V7a3 3 0 0 0-3 3h2a1 1 0 0 1 1-1zm6 13v1a3 3 0 0 0 3-3h-2a1 1 0 0 1-1 1zm-8-2H3a3 3 0 0 0 3 3v-2a1 1 0 0 1-1-1zm0-9H3v9h2v-9z"/>
     </g>
 
   {:else}
-    <!-- Stroke (default/fallback) -->
-    <g stroke="currentColor" stroke-width={effectiveStrokeWidth}>
+    <!-- STROKE -->
+    <g fill="none" stroke={primaryColor} stroke-width={resolvedStroke}>
       <g id="Property 1=stroke"><path id="Vector 144" d="M9 14V5a2 2 0 0 1 2-2h3.834a2 2 0 0 1 1.199.4l3.166 2.37A2 2 0 0 1 20 7.371V14a2 2 0 0 1-2 2h-7a2 2 0 0 1-2-2Z"/><path id="Vector 146" d="M6 8a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h7.071a.93.93 0 0 0 .929-.929"/><path id="Vector 145" d="M15 3v4.5a.5.5 0 0 0 .5.5H20"/></g>
     </g>
   {/if}

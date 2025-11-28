@@ -102,6 +102,17 @@ function sanitizeFilledInner(inner) {
   return out;
 }
 
+// --- NEW ---
+// Duotone Tone2 Sanitizer: removes all fills so group <g fill="..."> controls color
+function sanitizeTone2(inner) {
+  return inner
+    // Remove fill="anything"
+    .replace(/\sfill=(["'])(?:(?!\1).)*\1/gi, '')
+    // Remove inline style fills
+    .replace(/style=(["'])(?:(?!\1).)*fill[^;"']+;?[^"']*\1/gi, '')
+    .trim();
+}
+
 // ---- Duotone overlap fix (stroke ring vs fill circle) ----
 function parseCircleAttrs(tag) {
   const get = (n) => {
@@ -257,107 +268,78 @@ async function loadMeta(base, CompName, flags) {
 }
 
 // ------------- Svelte template -------------
+// ------------- Svelte template -------------
 function wrapSvelte({ strokeInner, filledInner, duoTone1, duoTone2, hasStroke, hasFilled, hasDuotone }) {
-  return `<!-- AUTO-GENERATED. Do not edit by hand. -->
+  return `<!-- AUTO-GENERATED. DO NOT EDIT. -->
 <script lang="ts">
-  export let size: number | string = 24;
-  export let strokeWidth: number | string | undefined = undefined;
-  export let variant: 'stroke' | 'filled' | 'duotone' | 'animated' = 'stroke';
+  // PUBLIC PROPS
+  export let size: number = 24;
+  export let absoluteStrokeWidth: boolean = false;
+  export let strokeWidth: number = 2;
 
-  // semantic roles
-  export let role:
-    | 'default'
-    | 'muted'
-    | 'primary'
-    | 'success'
-    | 'warning'
-    | 'error'
-    | 'info' = 'default';
+  export let primaryColor: string = "currentColor";
+  export let secondaryColor: string = "currentColor";
 
-  export let secondaryRole:
-    | 'default'
-    | 'muted'
-    | 'primary'
-    | 'success'
-    | 'warning'
-    | 'error'
-    | 'info' = 'muted';
+  export let variant: "stroke" | "filled" | "duotone" | "animated" = "stroke";
+  export let ariaLabel: string | undefined = undefined;
 
-  export let className: string = '';
-  export let ariaLabel: string = 'icon';
-  export let title: string | undefined = undefined;
+  // DERIVED
+  $: svgSize = typeof size === "number" ? size : parseFloat(size);
 
-  const colorByRole = {
-    default: 'var(--icon)',
-    muted: 'var(--icon-muted)',
-    primary: 'var(--icon-primary)',
-    success: 'var(--icon-success)',
-    warning: 'var(--icon-warning)',
-    error: 'var(--icon-error)',
-    info: 'var(--icon-info)'
-  } as const;
+  // Lucide-style stroke math
+  $: resolvedStroke =
+    absoluteStrokeWidth
+      ? strokeWidth
+      : (strokeWidth / 24) * svgSize;
 
-  const fillByRole = {
-    default: 'var(--icon-fill)',
-    muted: 'var(--icon-fill-muted)',
-    primary: 'var(--icon-fill-primary)',
-    success: 'var(--icon-fill-success)',
-    warning: 'var(--icon-fill-warning)',
-    error: 'var(--icon-fill-error)',
-    info: 'var(--icon-fill-info)'
-  } as const;
-
-  $: effectiveStrokeWidth = strokeWidth ?? 'var(--icon-stroke)';
+  const LINECAP = "round";
+  const LINEJOIN = "round";
 </script>
 
 <svg
   xmlns="http://www.w3.org/2000/svg"
+  width={svgSize}
+  height={svgSize}
   viewBox="0 0 24 24"
-  width={size}
-  height={size}
   fill="none"
-  stroke="currentColor"
-  stroke-width={effectiveStrokeWidth}
-  stroke-linecap="var(--icon-stroke-linecap)"
-  stroke-linejoin="var(--icon-stroke-linejoin)"
+  stroke-linecap={LINECAP}
+  stroke-linejoin={LINEJOIN}
   aria-label={ariaLabel}
-  role="img"
-  class={className}
-  style="color: {colorByRole[role]}"
+  aria-hidden={ariaLabel ? undefined : "true"}
   shape-rendering="geometricPrecision"
-  {...$$restProps}
 >
-  {#if title}<title>{title}</title>{/if}
-
-  {#if variant === 'filled' && ${hasFilled ? 'true' : 'false'}}
-    <g fill="currentColor" stroke="none" style="color:{fillByRole[role]}">
-      ${filledInner}
+  {#if variant === "filled"${hasFilled ? '' : ' && false'}}
+    <!-- FILLED -->
+    <g fill="currentColor" stroke="none" style={"color:" + primaryColor}>
+      ${filledInner || ''}
     </g>
 
-  {:else if variant === 'duotone' && ${hasDuotone ? 'true' : 'false'}}
-    ${Boolean(duoTone2 && duoTone2.trim())
-      ? `<g class="tone2" fill="currentColor" stroke="none" style="color:var(--icon-duotone-2)">
+  {:else if variant === "duotone"${hasDuotone ? '' : ' && false'}}
+    <!-- DUOTONE BACKGROUND -->
+    ${duoTone2 && duoTone2.trim()
+      ? `<g fill="currentColor" stroke="none" style={"color:" + secondaryColor}>
       ${duoTone2}
     </g>`
-      : ''
-    }
+      : ''}
 
-    <g class="tone1"
-       style="color:var(--icon-duotone-1); paint-order: stroke fill"
-       stroke="currentColor"
-       stroke-width={effectiveStrokeWidth}>
-      ${duoTone1}
+    <!-- DUOTONE FOREGROUND -->
+    <g fill="none" stroke={primaryColor} stroke-width={resolvedStroke}>
+      ${duoTone1 || ''}
     </g>
 
   {:else}
-    <!-- Stroke (default/fallback) -->
-    <g stroke="currentColor" stroke-width={effectiveStrokeWidth}>
-      ${strokeInner}
+    <!-- STROKE -->
+    <g fill="none" stroke={primaryColor} stroke-width={resolvedStroke}>
+      ${strokeInner || ''}
     </g>
   {/if}
 </svg>
 `;
 }
+
+
+
+
 
 // ---------------- Main -----------------
 async function main() {
@@ -426,7 +408,9 @@ export type IconName = keyof typeof iconRegistry;
     const strokeInner = hasStroke ? data.stroke : sanitizeStrokeInner(data.filled || data.duotone?.tone1 || '');
     const filledInner = hasFilled ? data.filled : '';
     const duoTone1 = hasDuotone ? (data.duotone.tone1 || '') : '';
-    const duoTone2 = hasDuotone ? (data.duotone.tone2 || '') : '';
+    // --- NEW ---
+const duoTone2 = hasDuotone ? sanitizeTone2(data.duotone.tone2 || '') : '';
+
 
     const svelte = wrapSvelte({
       strokeInner,
