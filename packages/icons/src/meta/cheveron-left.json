@@ -1,0 +1,18 @@
+{
+  "name": "chevron-left",
+  "displayName": "Chevron Left",
+  "description": "Compact directional indicator for going back or moving left.",
+  "keywords": ["chevron", "left", "back", "previous", "navigate", "direction"],
+  "categories": ["System", "Navigation"],
+  "variants": ["stroke", "filled", "duotone"],
+  "sizes": [24],
+  "version": "1.0.0",
+  "author": "Travis Peterson",
+  "changelog": [
+    {
+      "version": "1.0.0",
+      "changes": ["Initial release"],
+      "date": "2025-01-01"
+    }
+  ]
+}

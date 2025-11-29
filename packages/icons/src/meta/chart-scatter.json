@@ -1,0 +1,18 @@
+{
+  "name": "chart-scatter",
+  "displayName": "Chart Scatter",
+  "description": "Represents scatter plots for correlations, distributions, or outliers.",
+  "keywords": ["chart", "scatter", "points", "distribution", "analytics", "data", "statistics"],
+  "categories": ["Data", "Charts"],
+  "variants": ["stroke", "filled", "duotone"],
+  "sizes": [24],
+  "version": "1.0.0",
+  "author": "Travis Peterson",
+  "changelog": [
+    {
+      "version": "1.0.0",
+      "changes": ["Initial release"],
+      "date": "2025-01-01"
+    }
+  ]
+}

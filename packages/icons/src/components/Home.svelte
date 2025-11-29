@@ -36,10 +36,10 @@
   aria-hidden={ariaLabel ? undefined : "true"}
   shape-rendering="geometricPrecision"
 >
-  {#if variant === "filled"}
+  {#if variant === "filled" && false}
     <!-- FILLED -->
     <g fill="currentColor" stroke="none" style={"color:" + primaryColor}>
-      <path fill="currentColor" d="M3 3h14M3 9h10M3 15h14M3 21h10"/>
+      
     </g>
 
   {:else if variant === "duotone" && false}
@@ -54,7 +54,7 @@
   {:else}
     <!-- STROKE -->
     <g fill="none" stroke={primaryColor} stroke-width={resolvedStroke}>
-      <path d="M3 3h14M3 9h10M3 15h14M3 21h10"/>
+      <path d="M9 21v-7a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v7M4 21h15a2 2 0 0 0 2-2v-8.682a2 2 0 0 0-.792-1.594l-7-5.308a2 2 0 0 0-2.416 0l-7 5.308A2 2 0 0 0 3 10.318V20a1 1 0 0 0 1 1Z"/>
     </g>
   {/if}
 </svg>

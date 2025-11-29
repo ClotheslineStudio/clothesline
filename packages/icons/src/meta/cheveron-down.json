@@ -1,0 +1,18 @@
+{
+  "name": "chevron-down",
+  "displayName": "Chevron Down",
+  "description": "Compact directional indicator for expanding content or scrolling down.",
+  "keywords": ["chevron", "down", "expand", "dropdown", "accordion", "direction"],
+  "categories": ["System", "Navigation"],
+  "variants": ["stroke", "filled", "duotone"],
+  "sizes": [24],
+  "version": "1.0.0",
+  "author": "Travis Peterson",
+  "changelog": [
+    {
+      "version": "1.0.0",
+      "changes": ["Initial release"],
+      "date": "2025-01-01"
+    }
+  ]
+}

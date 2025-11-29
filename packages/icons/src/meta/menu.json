@@ -1,0 +1,18 @@
+{
+  "name": "menu",
+  "displayName": "Menu",
+  "description": "Represents a list of navigation options or actions, typically the main app menu.",
+  "keywords": ["menu", "navigation", "hamburger", "list", "options", "sidebar"],
+  "categories": ["System", "Navigation"],
+  "variants": ["stroke", "filled", "duotone"],
+  "sizes": [24],
+  "version": "1.0.0",
+  "author": "Travis Peterson",
+  "changelog": [
+    {
+      "version": "1.0.0",
+      "changes": ["Initial release"],
+      "date": "2025-01-01"
+    }
+  ]
+}

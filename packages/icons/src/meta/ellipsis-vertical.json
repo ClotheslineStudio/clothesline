@@ -1,0 +1,18 @@
+{
+  "name": "ellipsis-vertical",
+  "displayName": "Ellipsis Vertical",
+  "description": "Represents additional options, context menus, or overflow actions in a vertical layout.",
+  "keywords": ["ellipsis", "more", "options", "overflow", "menu", "vertical"],
+  "categories": ["System", "Actions"],
+  "variants": ["stroke", "filled", "duotone"],
+  "sizes": [24],
+  "version": "1.0.0",
+  "author": "Travis Peterson",
+  "changelog": [
+    {
+      "version": "1.0.0",
+      "changes": ["Initial release"],
+      "date": "2025-01-01"
+    }
+  ]
+}

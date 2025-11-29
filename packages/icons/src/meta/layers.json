@@ -1,0 +1,18 @@
+{
+  "name": "layers",
+  "displayName": "Layers",
+  "description": "Represents stacked layers, levels, or grouped objects.",
+  "keywords": ["layers", "stack", "levels", "arrange", "group", "z-index"],
+  "categories": ["System", "Layout"],
+  "variants": ["stroke", "filled", "duotone"],
+  "sizes": [24],
+  "version": "1.0.0",
+  "author": "Travis Peterson",
+  "changelog": [
+    {
+      "version": "1.0.0",
+      "changes": ["Initial release"],
+      "date": "2025-01-01"
+    }
+  ]
+}
