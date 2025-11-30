@@ -9,9 +9,12 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const PKG_ROOT = path.resolve(__dirname, '..', '..');
 
+const DIST_DIR  = path.join(PKG_ROOT, 'dist');
 const ICONS_DIR = path.join(PKG_ROOT, 'src', 'svg');
 const OUT_DIR   = path.join(PKG_ROOT, 'src', 'components');
+
 const INDEX_TS  = path.join(PKG_ROOT, 'src', 'index.ts');
+const INDEX_JS  = path.join(DIST_DIR, 'index.js');
 const META_DIR  = path.join(PKG_ROOT, 'src', 'meta');
 
 const STRIP_PREFIXES = ['icon-'];
@@ -106,9 +109,7 @@ function sanitizeFilledInner(inner) {
 // Duotone Tone2 Sanitizer: removes all fills so group <g fill="..."> controls color
 function sanitizeTone2(inner) {
   return inner
-    // Remove fill="anything"
     .replace(/\sfill=(["'])(?:(?!\1).)*\1/gi, '')
-    // Remove inline style fills
     .replace(/style=(["'])(?:(?!\1).)*fill[^;"']+;?[^"']*\1/gi, '')
     .trim();
 }
@@ -155,7 +156,6 @@ function fixDuotoneOverlap(tone1Raw, tone2Raw, { eps = 0.02, tolerance = 0.2, de
       }
     }
   }
-  // remove pointless rotate on circles
   adjusted = adjusted.replace(/\stransform=["']rotate\([^"']+\)["']/gi, '');
   return adjusted;
 }
@@ -166,18 +166,16 @@ function extractFrame(inner, frameIdRegex = /Property\s*1\s*=\s*duotone/i) {
   let match;
   while ((match = re.exec(inner))) {
     const id = match[2];
-    if (frameIdRegex.test(id)) return match[3]; // inner HTML of the frame
+    if (frameIdRegex.test(id)) return match[3];
   }
   return null;
 }
 
 function extractTagById(inner, id) {
-  // 1) container group
   const gRe = new RegExp(`<g[^>]*\\bid=(["'])${id}\\1[^>]*>([\\s\\S]*?)<\\/g>`, 'i');
   const gm = inner.match(gRe);
   if (gm) return { kind: 'group', html: gm[2] };
 
-  // 2) any single element (path|circle|rect|ellipse|polygon|polyline|line)
   const tagName = '(?:path|circle|rect|ellipse|polygon|polyline|line)';
   const singleRe = new RegExp(`(<${tagName}[^>]*\\bid=(["'])${id}\\2[^>]*\\/?>)`, 'i');
   const sm = inner.match(singleRe);
@@ -187,7 +185,6 @@ function extractTagById(inner, id) {
 }
 
 function extractDuotone(inner) {
-  // 🔎 If exported from a Figma property frame, focus on that frame first
   const framed = extractFrame(inner) || inner;
 
   const t1 = extractTagById(framed, 'tone1');
@@ -197,7 +194,6 @@ function extractDuotone(inner) {
     let tone1Raw = t1 ? t1.html : '';
     let tone2Raw = t2 ? t2.html : '';
 
-    // Fix stroke/fill overlap (circle ring vs fill) then sanitize
     tone2Raw = fixDuotoneOverlap(tone1Raw, tone2Raw);
 
     return {
@@ -206,7 +202,6 @@ function extractDuotone(inner) {
     };
   }
 
-  // ---- Fallback: split by paint (still use the framed region) ----
   const SHAPE = '(?:path|circle|rect|ellipse|polygon|polyline|line)';
   const fillRE   = new RegExp(`<${SHAPE}\\b[^>]*\\sfill=(["'])(?!none\\1)[^>]*>`, 'gi');
   const strokeRE = new RegExp(`<${SHAPE}\\b[^>]*\\sstroke=(["']).*?>`, 'gi');
@@ -240,8 +235,8 @@ function defaultMeta(base, CompName, { hasStroke, hasFilled, hasDuotone }) {
   if (hasDuotone) variants.push('duotone');
 
   return {
-    name: base,             // "add-plus"
-    displayName: CompName,  // "AddPlus" (you can pretty this later if you want)
+    name: base,
+    displayName: CompName,
     description: '',
     keywords: [],
     categories: [],
@@ -268,11 +263,9 @@ async function loadMeta(base, CompName, flags) {
 }
 
 // ------------- Svelte template -------------
-// ------------- Svelte template -------------
 function wrapSvelte({ strokeInner, filledInner, duoTone1, duoTone2, hasStroke, hasFilled, hasDuotone }) {
   return `<!-- AUTO-GENERATED. DO NOT EDIT. -->
 <script lang="ts">
-  // PUBLIC PROPS
   export let size: number = 24;
   export let absoluteStrokeWidth: boolean = false;
   export let strokeWidth: number = 2;
@@ -283,10 +276,8 @@ function wrapSvelte({ strokeInner, filledInner, duoTone1, duoTone2, hasStroke, h
   export let variant: "stroke" | "filled" | "duotone" | "animated" = "stroke";
   export let ariaLabel: string | undefined = undefined;
 
-  // DERIVED
-  $: svgSize = typeof size === "number" ? size : parseFloat(size);
+  $: svgSize = typeof size === "number" ? size : parseFloat(size as any);
 
-  // Lucide-style stroke math
   $: resolvedStroke =
     absoluteStrokeWidth
       ? strokeWidth
@@ -309,26 +300,22 @@ function wrapSvelte({ strokeInner, filledInner, duoTone1, duoTone2, hasStroke, h
   shape-rendering="geometricPrecision"
 >
   {#if variant === "filled"${hasFilled ? '' : ' && false'}}
-    <!-- FILLED -->
     <g fill="currentColor" stroke="none" style={"color:" + primaryColor}>
       ${filledInner || ''}
     </g>
 
   {:else if variant === "duotone"${hasDuotone ? '' : ' && false'}}
-    <!-- DUOTONE BACKGROUND -->
     ${duoTone2 && duoTone2.trim()
       ? `<g fill="currentColor" stroke="none" style={"color:" + secondaryColor}>
       ${duoTone2}
     </g>`
       : ''}
 
-    <!-- DUOTONE FOREGROUND -->
     <g fill="none" stroke={primaryColor} stroke-width={resolvedStroke}>
       ${duoTone1 || ''}
     </g>
 
   {:else}
-    <!-- STROKE -->
     <g fill="none" stroke={primaryColor} stroke-width={resolvedStroke}>
       ${strokeInner || ''}
     </g>
@@ -337,28 +324,34 @@ function wrapSvelte({ strokeInner, filledInner, duoTone1, duoTone2, hasStroke, h
 `;
 }
 
-
-
-
-
 // ---------------- Main -----------------
 async function main() {
   await fs.mkdir(OUT_DIR, { recursive: true });
+  await fs.mkdir(DIST_DIR, { recursive: true });
 
-  const files = await fg(['**/*.svg'], { cwd: ICONS_DIR, absolute: true });
+  const files = await fg(['src/svg/**/*.svg'], { cwd: PKG_ROOT, absolute: true });
+  console.log(`build-icons: searching in ${ICONS_DIR}, found ${files.length} SVGs`);
+
   if (files.length === 0) {
     console.warn(`No SVGs found in ${ICONS_DIR}`);
-    await fs.writeFile(
-      INDEX_TS,
-      `// AUTO-GENERATED
+
+    const emptyTs = `// AUTO-GENERATED. Do not edit by hand.
+
 export const iconRegistry = {} as const;
+
 export type IconName = keyof typeof iconRegistry;
-`
-    );
+`;
+
+    const emptyJs = `// AUTO-GENERATED. Do not edit by hand.
+
+export const iconRegistry = {};
+`;
+
+    await fs.writeFile(INDEX_TS, emptyTs, 'utf8');
+    await fs.writeFile(INDEX_JS, emptyJs, 'utf8');
     return;
   }
 
-  /** Map: baseName → { stroke?: string, filled?: string, duotone?: {tone1:string,tone2:string}, animated?: string } */
   const map = new Map();
 
   for (const absPath of files) {
@@ -366,7 +359,6 @@ export type IconName = keyof typeof iconRegistry;
     const { icon: baseName, variant } = parseNameParts(absPath);
     const raw = await fs.readFile(absPath, 'utf8');
 
-    // Optimize via SVGO
     let { data: optimized } = optimize(raw, { path: absPath, ...SVGO_CFG });
     optimized = normalizeSvg(optimized, rel);
 
@@ -404,13 +396,12 @@ export type IconName = keyof typeof iconRegistry;
       (data.duotone?.tone2 && data.duotone.tone2.trim())
     );
 
-    // Fallbacks if variants are missing: use stroke geometry
-    const strokeInner = hasStroke ? data.stroke : sanitizeStrokeInner(data.filled || data.duotone?.tone1 || '');
+    const strokeInner = hasStroke
+      ? data.stroke
+      : sanitizeStrokeInner(data.filled || data.duotone?.tone1 || '');
     const filledInner = hasFilled ? data.filled : '';
     const duoTone1 = hasDuotone ? (data.duotone.tone1 || '') : '';
-    // --- NEW ---
-const duoTone2 = hasDuotone ? sanitizeTone2(data.duotone.tone2 || '') : '';
-
+    const duoTone2 = hasDuotone ? sanitizeTone2(data.duotone.tone2 || '') : '';
 
     const svelte = wrapSvelte({
       strokeInner,
@@ -431,7 +422,7 @@ const duoTone2 = hasDuotone ? sanitizeTone2(data.duotone.tone2 || '') : '';
     registry.push(`  "${base}": { component: ${Comp}, meta: ${JSON.stringify(meta)} }`);
   }
 
-  const index = `// AUTO-GENERATED. Do not edit by hand.
+  const indexTs = `// AUTO-GENERATED. Do not edit by hand.
 ${imports.join('\n')}
 
 export { ${exportsArr.join(', ')} };
@@ -442,7 +433,19 @@ ${registry.join(',\n')}
 
 export type IconName = keyof typeof iconRegistry;
 `;
-  await fs.writeFile(INDEX_TS, index, 'utf8');
+
+  const indexJs = `// AUTO-GENERATED. Do not edit by hand.
+${imports.join('\n')}
+
+export { ${exportsArr.join(', ')} };
+
+export const iconRegistry = {
+${registry.join(',\n')}
+};
+`;
+
+  await fs.writeFile(INDEX_TS, indexTs, 'utf8');
+  await fs.writeFile(INDEX_JS, indexJs, 'utf8');
 
   console.log(`✅ Built ${map.size} icons → components (+ registry with meta).`);
 }

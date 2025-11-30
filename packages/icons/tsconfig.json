@@ -1,0 +1,17 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "module": "ESNext",
+    "moduleResolution": "Node",
+    "target": "ES2019",
+    "strict": true,
+    "isolatedModules": true,
+    "skipLibCheck": true,
+    "declaration": true,
+    "emitDeclarationOnly": false,
+    "allowJs": false,
+    "rootDir": "src",
+    "outDir": "dist"
+  },
+  "include": ["src"]
+}

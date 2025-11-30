@@ -69,8 +69,8 @@
       id="stroke-width"
       type="range"
       min="1"
-      max="4"
-      step="1"
+      max="3"
+      step=".5"
       bind:value={strokeWidth}
       class="w-full"
     />

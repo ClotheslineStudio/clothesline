@@ -3,11 +3,6 @@
   "private": true,
   "type": "module",
 
-  "workspaces": [
-    "apps/*",
-    "packages/*"
-  ],
-
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^6.2.1"
   },
@@ -20,4 +15,5 @@
     "build:figma": "pnpm --filter @clothesline/themes run build:figma:single"
   }
 }
+
 

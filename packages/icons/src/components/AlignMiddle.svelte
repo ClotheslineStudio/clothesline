@@ -1,6 +1,5 @@
 <!-- AUTO-GENERATED. DO NOT EDIT. -->
 <script lang="ts">
-  // PUBLIC PROPS
   export let size: number = 24;
   export let absoluteStrokeWidth: boolean = false;
   export let strokeWidth: number = 2;
@@ -11,10 +10,8 @@
   export let variant: "stroke" | "filled" | "duotone" | "animated" = "stroke";
   export let ariaLabel: string | undefined = undefined;
 
-  // DERIVED
-  $: svgSize = typeof size === "number" ? size : parseFloat(size);
+  $: svgSize = typeof size === "number" ? size : parseFloat(size as any);
 
-  // Lucide-style stroke math
   $: resolvedStroke =
     absoluteStrokeWidth
       ? strokeWidth
@@ -37,23 +34,19 @@
   shape-rendering="geometricPrecision"
 >
   {#if variant === "filled"}
-    <!-- FILLED -->
     <g fill="currentColor" stroke="none" style={"color:" + primaryColor}>
       <path fill="currentColor" d="M7 20a1 1 0 1 0 0 2h10a1 1 0 1 0 0-2zm-2-6a1 1 0 1 0 0 2h14a1 1 0 1 0 0-2zm2-6a1 1 0 1 0 0 2h10a1 1 0 1 0 0-2zM5 2a1 1 0 1 0 0 2h14a1 1 0 1 0 0-2z"/>
     </g>
 
   {:else if variant === "duotone"}
-    <!-- DUOTONE BACKGROUND -->
     
 
-    <!-- DUOTONE FOREGROUND -->
     <g fill="none" stroke={primaryColor} stroke-width={resolvedStroke}>
       <path d="M7 9h10m0 12H7"/>
 <path d="M5 3h14m0 12H5"/>
     </g>
 
   {:else}
-    <!-- STROKE -->
     <g fill="none" stroke={primaryColor} stroke-width={resolvedStroke}>
       <path d="M7 9h10m0 12H7M5 3h14m0 12H5"/>
     </g>

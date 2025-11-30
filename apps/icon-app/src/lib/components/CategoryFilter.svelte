@@ -6,33 +6,30 @@
 
   const dispatch = createEventDispatcher();
 
-  // -------------------------------------------------------
-  // Build a map of category → count
-  // -------------------------------------------------------
-  const categoryMap: Record<string, number> = {};
-
-  for (const icon of icons) {
-    for (const cat of icon.categories) {
-      categoryMap[cat] = (categoryMap[cat] || 0) + 1;
-    }
-  }
-
-  // Sort alphabetically
-  const categories = Object.entries(categoryMap)
-    .map(([category, count]) => ({ category, count }))
-    .sort((a, b) => a.category.localeCompare(b.category));
-
-  // -------------------------------------------------------
-  // Selected category
-  // -------------------------------------------------------
+  // Reactive category list
+  let categories: { category: string; count: number }[] = [];
   let selected: string | null = null;
 
-  function selectCategory(category: string | null) {
-  selected = category;
-  dispatch('change', { category }); // clean output
-}
+  $: {
+    const map: Record<string, number> = {};
 
+    for (const icon of icons) {
+      for (const cat of icon.categories ?? []) {
+        map[cat] = (map[cat] || 0) + 1;
+      }
+    }
+
+    categories = Object.entries(map)
+      .map(([category, count]) => ({ category, count }))
+      .sort((a, b) => a.category.localeCompare(b.category));
+  }
+
+  function selectCategory(category: string | null) {
+    selected = category;
+    dispatch('change', { category });
+  }
 </script>
+
 
 <!-- Sidebar category list -->
 <div class="category-container">
@@ -64,6 +61,7 @@
     display: flex;
     justify-content: space-between;
     width: 100%;
+    height: 2rem;
     padding: 0.5rem 0.75rem;
     border-radius: 0.5rem;
     background: var(--surface-100, #f3f3f3);

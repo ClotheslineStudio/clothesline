@@ -16,6 +16,11 @@
 		"test": "npm run test:e2e && npm run test:unit -- --run",
 		"test:unit": "vitest"
 	},
+
+	"dependencies": {
+    "@clothesline/icons": "workspace:*"
+  },
+  
 	"devDependencies": {
 		"@eslint/compat": "^1.4.0",
 		"@eslint/js": "^9.39.1",

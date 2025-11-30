@@ -4,12 +4,7 @@ export { default as Card } from './Card/Card.svelte';
 export { default as Checkbox } from './Checkbox/Checkbox.svelte';
 export { default as Chip } from './Chip/Chip.svelte';
 export { default as Divider } from './Divider/Divider.svelte';
-export {
-  default as Icon,
-  ICON_REGISTRY_KEY,
-  IconDef,
-  IconPathsDef
-} from './Icon/Icon.svelte';
+export { default as Icon } from './Icon/Icon.svelte';
 
 export { default as Radio } from './Radio/Radio.svelte';
 export { default as Switch } from './Switch/Switch.svelte';
