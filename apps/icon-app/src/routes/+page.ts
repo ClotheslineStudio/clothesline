@@ -5,9 +5,26 @@ import type { PageLoad } from './$types';
 // Later we can switch to: import { iconRegistry } from '@clothesline/icons';
 import { iconRegistry } from '../../../../packages/icons/src';
 
+type IconEntry = {
+  meta?: {
+    name?: string;
+    displayName?: string;
+    description?: string;
+    keywords?: string[];
+    categories?: string[];
+    variants?: string[];
+    sizes?: number[];
+    version?: string;
+    author?: string;
+    changelog?: unknown[];
+  };
+  component?: unknown;
+};
+
 export const load: PageLoad = () => {
-  const icons = Object.entries(iconRegistry).map(([key, entry]: [string, any]) => {
-    const meta = entry.meta ?? {};
+  const icons = Object.entries(iconRegistry).map(([key, entry]: [string, unknown]) => {
+    const iconEntry = entry as IconEntry;
+    const meta = iconEntry.meta ?? {};
 
     return {
       // use meta.name if present, otherwise fall back to the key
@@ -22,7 +39,7 @@ export const load: PageLoad = () => {
       author: meta.author ?? 'Clothesline Studio',
       changelog: meta.changelog ?? [],
       // Svelte component – we don't try to type this strictly right now
-      component: entry.component
+      component: (iconEntry.component)
     };
   });
 

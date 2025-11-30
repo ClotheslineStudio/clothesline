@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { IconStyle } from '$lib/types/icon';
+  // Removed import of primaryColor because we cannot bind to imports in Svelte
 
   export let style: IconStyle = 'stroke';
   export let color = '#6381F8';
@@ -7,6 +8,12 @@
   export let strokeWidth = 2;
   export let size = 16;
   export let absolute = false;
+
+  // Use a local variable for the primary color picker
+  let primaryColorValue = color;
+
+  // Update the exported color when the local value changes
+  $: color = primaryColorValue;
 
   function setStyle(newStyle: IconStyle) {
     if (newStyle === 'animated') return; // disabled for now
@@ -34,16 +41,10 @@
       {opt.charAt(0).toUpperCase() + opt.slice(1)}
     </button>
   {/each}
-</div>
-
-
-  <!-- Color Pickers -->
-  <div class="space-y-2">
-    <label for="primary-color" class="text-xs font-medium text-neutral-700">Primary Color</label>
     <input
       id="primary-color"
       type="color"
-      bind:value={color}
+      bind:value={primaryColorValue}
       class="h-7 w-full rounded border border-neutral-300 cursor-pointer"
     />
 

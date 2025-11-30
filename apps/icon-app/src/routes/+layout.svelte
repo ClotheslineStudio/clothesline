@@ -6,20 +6,11 @@
   // NEW: pull in setContext + registry key + icon defs
   import { setContext } from 'svelte';
   // Adjust this import path to wherever ICON_REGISTRY_KEY is exported from in your UI kit
-  import { ICON_REGISTRY_KEY } from '@clothesline/ui';
-
-  import * as IconDefs from '@clothesline/icons';
+ 
 
   let { children } = $props();
 
-  // Build a Map<string, IconDef> from your icon package
-  const iconRegistry = new Map<string, IconDef>(
-    Object.entries(IconDefs)
-    // e.g. { Bug: BugComponent, ArrowLeft: ArrowLeftComponent, ... }
-  );
 
-  // Make it available to the whole app (layout + pages + components)
-  setContext(ICON_REGISTRY_KEY, iconRegistry);
 </script>
 
 <svelte:head>

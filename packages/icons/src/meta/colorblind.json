@@ -1,0 +1,18 @@
+{
+  "name": "colorblind",
+  "displayName": "Color Blind Mode",
+  "description": "Represents color vision accessibility modes such as protan, deutan, or tritan.",
+  "keywords": ["colorblind", "vision", "accessibility", "a11y", "contrast", "filters"],
+  "categories": ["System", "Accessibility"],
+  "variants": ["stroke", "filled", "duotone"],
+  "sizes": [24],
+  "version": "1.0.0",
+  "author": "Travis Peterson",
+  "changelog": [
+    {
+      "version": "1.0.0",
+      "changes": ["Initial release"],
+      "date": "2025-11-29"
+    }
+  ]
+}

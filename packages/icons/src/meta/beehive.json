@@ -1,0 +1,19 @@
+{
+  "name": "beehive",
+  "displayName": "Beehive",
+  "description": "Represents a beehive or hive, often used for teamwork, community, or storage.",
+  "keywords": ["beehive", "hive", "bees", "honey", "community", "teamwork"],
+  "categories": ["Objects", "Nature"],
+  "variants": ["stroke", "filled", "duotone"],
+  "sizes": [24],
+  "version": "1.0.0",
+  "author": "Travis Peterson",
+  "changelog": [
+    {
+      "version": "1.0.0",
+      "changes": ["Initial release"],
+      "date": "2025-11-29"
+    }
+  ]
+}
+

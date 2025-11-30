@@ -1,0 +1,18 @@
+{
+  "name": "translate",
+  "displayName": "Translate",
+  "description": "Represents language translation or switching between languages.",
+  "keywords": ["translate", "language", "localization", "i18n", "text", "globe"],
+  "categories": ["System", "Actions"],
+  "variants": ["stroke", "filled", "duotone"],
+  "sizes": [24],
+  "version": "1.0.0",
+  "author": "Travis Peterson",
+  "changelog": [
+    {
+      "version": "1.0.0",
+      "changes": ["Initial release"],
+      "date": "2025-11-29"
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "name": "contrast",
+  "displayName": "Contrast",
+  "description": "Represents contrast controls for themes, display settings, or accessibility.",
+  "keywords": ["contrast", "brightness", "theme", "display", "accessibility", "high contrast"],
+  "categories": ["System", "Accessibility"],
+  "variants": ["stroke", "filled", "duotone"],
+  "sizes": [24],
+  "version": "1.0.0",
+  "author": "Travis Peterson",
+  "changelog": [
+    {
+      "version": "1.0.0",
+      "changes": ["Initial release"],
+      "date": "2025-11-29"
+    }
+  ]
+}
