@@ -1,3 +1,14 @@
+/* === Theme Imports === */
+@import '@clothesline/themes/dist/clothesline.css';
+@import '@clothesline/themes/dist/timberline.css';
+@import '@clothesline/themes/dist/retrograde.css';
+@import '@clothesline/themes/dist/milkyway.css';
+@import '@clothesline/themes/dist/copper-sun.css';
+@import '@clothesline/themes/dist/tidal-glass.css';
+@import '@clothesline/themes/dist/night-market.css';
+@import '@clothesline/themes/dist/bigsky.css';
+@import '@clothesline/themes/dist/modes.css';
+
 @import "tailwindcss";
 
 @source "./**/*.{svelte,ts,js}";               

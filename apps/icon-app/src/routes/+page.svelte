@@ -3,6 +3,7 @@
   import CategoryFilter from '$lib/components/CategoryFilter.svelte';
   import { iconRegistry } from '@clothesline/icons';
 
+  import IconDetailPanel from '$lib/components/IconDetailPanel.svelte';
   import type { IconRecord, IconStyle } from '$lib/types/icon';
 
   // Search + filters
@@ -21,9 +22,11 @@
   let selected: IconRecord | null = null;
 
   // Build array from registry (runtime data)
-  const allIcons: IconRecord[] = Object.entries(iconRegistry).map(([_, entry]) => ({
+  const allIcons: IconRecord[] = Object.values(iconRegistry).map((entry) => ({
     ...entry.meta,
-    component: entry.component
+    component: entry.component,
+    contributors: 'contributors' in entry.meta ? (entry.meta.contributors as string[]) : [],
+    updatedAt: 'updatedAt' in entry.meta ? (entry.meta as any).updatedAt : ''
   }));
 
   // Filtering logic
@@ -57,26 +60,31 @@
 </script>
 
 <style>
+  /* Icon grid: fixed-width cards, no outer “panel” */
   .icon-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-    gap: 1rem;
+    grid-template-columns: repeat(auto-fill, minmax(90px, 90px));
+    gap: var(--spacing-3, 0.75rem);
+    justify-content: flex-start;
+    align-content: flex-start;
   }
 </style>
 
-<div class="flex h-full w-full overflow-hidden">
-  <!-- LEFT SIDEBAR -->
+<div class="flex gap-6">
+  <!-- LEFT SIDEBAR (its own scroll, not wrapping the grid) -->
   <aside
-    class="hidden md:flex w-72 flex-col border-r border-neutral-200 bg-neutral-50 shrink-0 max-h-screen overflow-y-auto"
+    class="
+      hidden md:flex
+      w-72 shrink-0 flex-col
+      border-r border-[color:var(--color-surface-200)]
+      bg-[color:var(--color-surface-50)]
+      h-[calc(100vh-56px)] sticky top-[56px]
+      overflow-y-auto
+      pt-[var(--spacing-4,1rem)]
+      pb-[var(--spacing-6,1.5rem)]
+    "
   >
-    <div class="px-4 py-4 border-b border-neutral-200">
-      <h1 class="text-base font-semibold">Clothesline Icons</h1>
-      <p class="text-xs text-neutral-500 mt-1">
-        Browse, search, and inspect your icon set.
-      </p>
-    </div>
-
-    <div class="p-4">
+    <div class="px-[var(--spacing-4,1rem)]">
       <Customizer
         bind:style
         bind:color
@@ -87,8 +95,10 @@
       />
     </div>
 
-    <div class="mt-4 px-4 pb-4">
-      <h2 class="text-xs font-semibold mb-2">Categories</h2>
+    <div class="mt-6 px-[var(--spacing-4,1rem)]">
+      <h2 class="text-xs font-semibold mb-2 text-[color:var(--color-surface-700)]">
+        Categories
+      </h2>
 
       <CategoryFilter
         icons={allIcons}
@@ -97,44 +107,89 @@
     </div>
   </aside>
 
-  <!-- MAIN CONTENT -->
-  <main class="flex-1 flex flex-col overflow-hidden">
-    <header class="flex items-center justify-between px-4 py-3 border-b border-neutral-200 bg-white">
+  <!-- MAIN CONTENT (normal page scroll) -->
+  <main class="flex-1">
+    <!-- Local header -->
+    <header
+      class="
+        mb-4
+        flex items-center justify-between
+        border-b border-[color:var(--color-surface-200)]
+        pb-[var(--spacing-3,0.75rem)]
+      "
+    >
       <div class="flex flex-col">
-        <span class="text-sm font-medium">Icon Explorer</span>
-        <span class="text-xs text-neutral-500">{filteredIcons.length} icons</span>
+        <span class="text-sm font-medium text-[color:var(--color-surface-900)]">
+          Icon Explorer
+        </span>
+        <span class="text-xs text-[color:var(--color-surface-600)]">
+          {filteredIcons.length} icons
+        </span>
       </div>
 
       <div class="w-64">
         <input
           bind:value={search}
           placeholder="Search icons…"
-          class="w-full px-3 py-1.5 rounded-md border border-neutral-300 text-sm"
+          class="
+            w-full
+            px-[var(--spacing-3,0.75rem)]
+            py-[var(--spacing-2,0.5rem)]
+            rounded-md
+            border border-[color:var(--color-surface-300)]
+            bg-[color:var(--color-surface-0,#ffffff)]
+            text-sm
+            focus:outline-none
+            focus-visible:ring-2
+            focus-visible:ring-[color:var(--color-primary-500-vis)]
+            focus-visible:ring-offset-1
+          "
         />
       </div>
     </header>
 
-    <!-- ICON GRID -->
-    <section class="flex-1 overflow-auto p-4">
+    <!-- ICON GRID (no internal scroll, page scrolls instead) -->
+    <section class="pb-[var(--spacing-10,2.5rem)]">
       <div class="icon-grid">
         {#each filteredIcons as icon}
           <button
             type="button"
             on:click={() => selectIcon(icon)}
-            class="border border-neutral-300 rounded-lg p-3 text-left bg-white hover:bg-neutral-100 transition"
+            class="
+              group relative
+              flex h-16 w-16 items-center justify-center
+              rounded-lg
+              border border-[color:var(--color-surface-200)]
+              bg-[color:var(--color-surface-0,#ffffff)]
+              hover:bg-[color:var(--color-surface-100)]
+              transition
+            "
           >
-            <div class="text-sm font-medium truncate mb-2">{icon.displayName}</div>
+            <svelte:component
+              this={icon.component}
+              size={size}
+              strokeWidth={strokeWidth}
+              absoluteStrokeWidth={absoluteStroke}
+              primaryColor={color}
+              secondaryColor={style === 'duotone' ? secondaryColor : color}
+              variant={style}
+            />
 
-            <div class="flex items-center justify-center h-10">
-              <svelte:component
-                this={icon.component}
-                size={size}
-                strokeWidth={strokeWidth}
-                absoluteStrokeWidth={absoluteStroke}
-                primaryColor={color}
-                secondaryColor={style === 'duotone' ? secondaryColor : color}
-                variant={style}
-              />
+            <!-- Tooltip with icon name -->
+            <div
+              class="
+                pointer-events-none
+                absolute left-1/2 top-full mt-1
+                -translate-x-1/2
+                whitespace-nowrap
+                rounded-md px-2 py-1
+                bg-[color:var(--color-surface-900)]
+                text-[11px] text-[color:var(--color-surface-50)]
+                opacity-0 group-hover:opacity-100
+                shadow-lg
+              "
+            >
+              {icon.displayName}
             </div>
           </button>
         {/each}
@@ -142,12 +197,14 @@
     </section>
   </main>
 
-  <!-- RIGHT PANEL -->
+  <!-- RIGHT DETAIL PANEL (unchanged behavior) -->
   <aside
     class="
-      fixed right-0 top-[calc(56px)]
-      w-96 h-[calc(100vh-56px)]
-      bg-neutral-50 border-l border-neutral-200 shadow-xl
+      fixed right-0 top-[56px]
+      w-lg h-[calc(100vh-56px)]
+      bg-[color:var(--color-surface-50)]
+      border-l border-[color:var(--color-surface-200)]
+      shadow-xl
       overflow-y-auto z-40
       transform transition-transform duration-300 ease-in-out
     "
@@ -155,7 +212,7 @@
     class:translate-x-0={panelOpen}
   >
     <button
-      class="absolute right-3 top-3 text-neutral-500 hover:text-neutral-700"
+      class="absolute right-3 top-3 text-[color:var(--color-surface-600)] hover:text-[color:var(--color-surface-900)]"
       type="button"
       on:click={closePanel}
     >
@@ -163,50 +220,19 @@
     </button>
 
     {#if selected}
-      <div class="p-6 flex flex-col gap-6">
-        <header class="flex flex-col gap-2">
-          <h2 class="text-lg font-semibold">{selected.displayName}</h2>
-          <p class="text-xs text-neutral-500">
-            Version {selected.version}
-          </p>
-        </header>
-
-        <!-- BIG PREVIEW -->
-        <div class="border rounded-lg p-6 bg-white flex items-center justify-center">
-          <svelte:component
-            this={selected.component}
-            size={64}
-            strokeWidth={strokeWidth}
-            absoluteStrokeWidth={absoluteStroke}
-            primaryColor={color}
-            secondaryColor={style === 'duotone' ? secondaryColor : color}
-            variant={style}
-          />
-        </div>
-
-        <!-- KEYWORDS -->
-        <section>
-          <h3 class="text-xs font-semibold mb-2">Keywords</h3>
-          <div class="flex flex-wrap gap-2">
-            {#each selected.keywords as kw}
-              <span class="px-2 py-1 text-xs bg-neutral-200 rounded">{kw}</span>
-            {/each}
-          </div>
-        </section>
-
-        <!-- CATEGORIES -->
-        <section>
-          <h3 class="text-xs font-semibold mb-2">Categories</h3>
-          <div class="flex flex-wrap gap-2">
-            {#each selected.categories as cat}
-              <span class="px-2 py-1 text-xs bg-neutral-200 rounded">{cat}</span>
-            {/each}
-          </div>
-        </section>
-      </div>
+      <IconDetailPanel
+        icon={selected}
+        {style}
+        {color}
+        {secondaryColor}
+        {strokeWidth}
+        {size}
+        {absoluteStroke}
+      />
     {/if}
   </aside>
 </div>
+
 
 
 

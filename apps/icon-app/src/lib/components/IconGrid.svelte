@@ -19,3 +19,4 @@
     <IconCard {icon} on:select={() => onSelect(icon)} />
   {/each}
 </div>
+

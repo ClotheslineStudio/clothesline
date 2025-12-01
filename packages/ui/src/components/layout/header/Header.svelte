@@ -182,7 +182,7 @@
     display: flex;
     align-items: center;
     gap: var(--spacing-3, 0.75rem);
-    padding-inline: var(--spacing-4, 1rem);
+    padding-inline: var(--spacing-7, 1.5rem);
     padding-block: var(--spacing-3, 0.75rem);
     margin-inline: auto;
   }

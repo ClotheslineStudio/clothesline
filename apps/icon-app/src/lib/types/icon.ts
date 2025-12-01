@@ -21,5 +21,8 @@ export interface IconMeta {
 }
 
 export interface IconRecord extends IconMeta {
+  contributors: string[];
+  author: string;
+  updatedAt: string | number | Date;
   component: ComponentType;
 }

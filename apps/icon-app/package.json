@@ -18,7 +18,10 @@
 	},
 
 	"dependencies": {
-    "@clothesline/icons": "workspace:*"
+	"@clothesline/icons": "workspace:*",
+	"@clothesline/ui": "workspace:*",
+	"@clothesline/themes": "workspace:*",
+	"@clothesline/tokens": "workspace:*"
   },
   
 	"devDependencies": {

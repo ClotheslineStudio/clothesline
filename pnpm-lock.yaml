@@ -17,6 +17,15 @@ importers:
       '@clothesline/icons':
         specifier: workspace:*
         version: link:../../packages/icons
+      '@clothesline/themes':
+        specifier: workspace:*
+        version: link:../../packages/themes
+      '@clothesline/tokens':
+        specifier: workspace:*
+        version: link:../../packages/tokens
+      '@clothesline/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
     devDependencies:
       '@eslint/compat':
         specifier: ^1.4.0

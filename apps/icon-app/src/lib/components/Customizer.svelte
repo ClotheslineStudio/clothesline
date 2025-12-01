@@ -1,18 +1,17 @@
 <script lang="ts">
   import type { IconStyle } from '$lib/types/icon';
-  // Removed import of primaryColor because we cannot bind to imports in Svelte
 
   export let style: IconStyle = 'stroke';
   export let color = '#6381F8';
-  export let secondaryColor = '#6381F8';   // for duotone
+  export let secondaryColor = '#6381F8'; // for duotone
   export let strokeWidth = 2;
   export let size = 16;
   export let absolute = false;
 
-  // Use a local variable for the primary color picker
+  // local primary color value so we can bind to <input type="color">
   let primaryColorValue = color;
 
-  // Update the exported color when the local value changes
+  // whenever the picker changes, update the exported color
   $: color = primaryColorValue;
 
   function setStyle(newStyle: IconStyle) {
@@ -21,47 +20,114 @@
   }
 </script>
 
-<div class="p-4 bg-white border border-neutral-200 rounded-xl shadow-sm space-y-4 w-full">
-  <h2 class="text-sm font-semibold">Customizer</h2>
-
-  <!-- Style buttons -->
-<div class="grid grid-cols-2 gap-2">
-  {#each ['stroke','filled','duotone','animated'] as opt}
-    <button
-      disabled={opt === 'animated'}
-      on:click={() => setStyle(opt as IconStyle)}
-      class="
-        px-3 py-1.5 text-xs rounded-md border text-center w-full
-        disabled:opacity-40 disabled:cursor-not-allowed
-        {style === opt
-          ? 'bg-blue-600 text-white border-blue-600'
-          : 'bg-white border-neutral-300 hover:bg-neutral-100'}
-      "
-    >
-      {opt.charAt(0).toUpperCase() + opt.slice(1)}
-    </button>
-  {/each}
-    <input
-      id="primary-color"
-      type="color"
-      bind:value={primaryColorValue}
-      class="h-7 w-full rounded border border-neutral-300 cursor-pointer"
-    />
-
-    {#if style === 'duotone'}
-      <label for="secondary-color" class="text-xs font-medium text-neutral-700 pt-2">Secondary Color</label>
-      <input
-        id="secondary-color"
-        type="color"
-        bind:value={secondaryColor}
-        class="h-7 w-full rounded border border-neutral-300 cursor-pointer"
-      />
-    {/if}
+<div
+  class="
+    w-full space-y-4
+    rounded-[var(--radius-card,0.75rem)]
+    border border-[color:var(--border-default-color,var(--color-surface-300))]
+    bg-[color:var(--card-bg,var(--color-surface-50))]
+    shadow-[var(--card-shadow,var(--elevation-card,0_8px_20px_rgba(15,23,42,0.12)))]
+    p-[var(--spacing-4,1rem)]
+  "
+>
+  <div class="space-y-1">
+    <h2 class="text-sm font-semibold text-[color:var(--base-font-color,var(--on-surface))]">
+      Customizer
+    </h2>
+    <p class="text-sm text-[color:var(--text-muted,var(--color-surface-700))]">
+      Adjust how icons are rendered in the grid.
+    </p>
   </div>
 
+  <!-- Style -->
+  <section class="space-y-2">
+    <h3 class="text-xs font-medium text-[color:var(--text-muted,var(--color-surface-700))]">
+      Style
+    </h3>
+
+    <div class="grid grid-cols-2 gap-2">
+      {#each ['stroke','filled','duotone','animated'] as opt}
+        <button
+          type="button"
+          disabled={opt === 'animated'}
+          on:click={() => setStyle(opt as IconStyle)}
+          class={`
+            px-3 py-1.5 text-xs
+            rounded-[var(--radius-interactive,0.5rem)]
+            border text-center w-full
+            disabled:opacity-40 disabled:cursor-not-allowed
+            ${
+              style === opt
+                // SELECTED: fill with primary-500, on-primary text, stronger border
+                ? 'bg-[color:var(--color-primary-500-vis)] text-[color:var(--on-primary)] border-[color:var(--color-primary-600-vis)] shadow-[0_0_0_1px_color-mix(in_oklab,var(--color-primary-500-vis)_40%,transparent)]'
+                // UNSELECTED: surface bg + subtle hover
+                : 'bg-[color:var(--color-surface-0)] border-[color:var(--border-default-color,var(--color-surface-300))] hover:bg-[color:var(--color-surface-100)]'
+            }
+          `}
+        >
+          {opt.charAt(0).toUpperCase() + opt.slice(1)}
+        </button>
+      {/each}
+    </div>
+  </section>
+
+  <!-- Colors -->
+  <section class="space-y-2">
+    <h3 class="text-xs font-medium text-[color:var(--text-muted,var(--color-surface-700))]">
+      Colors
+    </h3>
+
+    <div class="grid grid-cols-[auto,1fr] items-center gap-2">
+      <label
+        for="primary-color"
+        class="text-xs text-[color:var(--text-muted,var(--color-surface-700))]"
+      >
+        Primary
+      </label>
+      <input
+        id="primary-color"
+        type="color"
+        bind:value={primaryColorValue}
+        class="
+          h-7 w-full rounded-sm
+          border border-[color:var(--border-default-color,var(--color-surface-300))]
+          bg-[color:var(--color-surface-0)]
+          cursor-pointer
+        "
+      />
+
+      {#if style === 'duotone'}
+        <label
+          for="secondary-color"
+          class="text-xs text-[color:var(--text-muted,var(--color-surface-700))]"
+        >
+          Secondary
+        </label>
+        <input
+          id="secondary-color"
+          type="color"
+          bind:value={secondaryColor}
+          class="
+            h-7 w-full rounded-sm
+            border border-[color:var(--border-default-color,var(--color-surface-300))]
+            bg-[color:var(--color-surface-0)]
+            cursor-pointer
+          "
+        />
+      {/if}
+    </div>
+  </section>
+
   <!-- Stroke Width -->
-  <div class="space-y-1 pt-2">
-    <label for="stroke-width" class="flex justify-between text-xs font-medium text-neutral-700">
+  <section class="space-y-1 pt-1">
+    <label
+      for="stroke-width"
+      class="
+        flex justify-between items-center
+        text-xs font-medium
+        text-[color:var(--text-muted,var(--color-surface-700))]
+      "
+    >
       <span>Stroke width</span>
       <span>{strokeWidth}px</span>
     </label>
@@ -74,11 +140,18 @@
       bind:value={strokeWidth}
       class="w-full"
     />
-  </div>
+  </section>
 
   <!-- Size -->
-  <div class="space-y-1">
-    <label for="size" class="flex justify-between text-xs font-medium text-neutral-700">
+  <section class="space-y-1">
+    <label
+      for="size"
+      class="
+        flex justify-between items-center
+        text-xs font-medium
+        text-[color:var(--text-muted,var(--color-surface-700))]
+      "
+    >
       <span>Size</span>
       <span>{size}px</span>
     </label>
@@ -91,25 +164,36 @@
       bind:value={size}
       class="w-full"
     />
-  </div>
+  </section>
 
   <!-- Absolute Stroke Width -->
-  <div class="flex items-center justify-between pt-2">
-    <span class="text-xs font-medium text-neutral-700">Absolute Stroke Width</span>
+  <section class="flex items-center justify-between pt-1">
+    <span class="text-xs font-medium text-[color:var(--text-muted,var(--color-surface-500))]">
+      Absolute stroke width
+    </span>
+
     <label class="relative inline-flex items-center cursor-pointer">
       <input
         type="checkbox"
         bind:checked={absolute}
         class="sr-only peer"
       />
-      <div class="
-        w-10 h-5 bg-neutral-300 rounded-full peer
-        peer-checked:bg-blue-600
-        after:content-['']
-        after:absolute after:h-4 after:w-4 after:bg-white after:rounded-full
-        after:top-0.5 after:left-0.5 after:transition-all
-        peer-checked:after:translate-x-5
-      "></div>
+      <div
+        class="
+          w-10 h-5 rounded-full
+          bg-[color:var(--color-surface-500-vis)]
+          peer-checked:bg-[color:var(--color-primary-500-vis)]
+          transition-colors duration-150
+          after:content-['']
+          after:absolute after:h-4 after:w-4
+          after:bg-[color:var(--color-surface-0)]
+          after:rounded-full
+          after:top-0.5 after:left-0.5
+          after:transition-transform after:duration-150
+          peer-checked:after:translate-x-5
+          shadow-[0_1px_2px_rgba(0,0,0,0.25)]
+        "
+      ></div>
     </label>
-  </div>
+  </section>
 </div>
