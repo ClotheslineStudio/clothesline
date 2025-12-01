@@ -23,25 +23,25 @@
 <div
   class="
     w-full space-y-4
-    rounded-[var(--radius-card,0.75rem)]
-    border border-[color:var(--border-default-color,var(--color-surface-300))]
-    bg-[color:var(--card-bg,var(--color-surface-50))]
-    shadow-[var(--card-shadow,var(--elevation-card,0_8px_20px_rgba(15,23,42,0.12)))]
-    p-[var(--spacing-4,1rem)]
+    rounded-(--radius-card,0.75rem)
+    border border-(--border-default-color,var(--color-surface-300))
+    bg-(--card-bg,var(--color-surface-50))
+    shadow-(--card-shadow,var(--elevation-card,0_8px_20px_rgba(15,23,42,0.12)))
+    p-(--spacing-4,1rem)
   "
 >
   <div class="space-y-1">
-    <h2 class="text-sm font-semibold text-[color:var(--base-font-color,var(--on-surface))]">
+    <h2 class="text-sm font-semibold text-(--base-font-color,var(--on-surface))">
       Customizer
     </h2>
-    <p class="text-sm text-[color:var(--text-muted,var(--color-surface-700))]">
+    <p class="text-sm text-(--text-muted,var(--color-surface-700))">
       Adjust how icons are rendered in the grid.
     </p>
   </div>
 
   <!-- Style -->
   <section class="space-y-2">
-    <h3 class="text-xs font-medium text-[color:var(--text-muted,var(--color-surface-700))]">
+    <h3 class="text-xs font-medium text-(--text-muted,var(--color-surface-700))">
       Style
     </h3>
 
@@ -53,15 +53,15 @@
           on:click={() => setStyle(opt as IconStyle)}
           class={`
             px-3 py-1.5 text-xs
-            rounded-[var(--radius-interactive,0.5rem)]
+            rounded-(--radius-interactive,0.5rem)
             border text-center w-full
             disabled:opacity-40 disabled:cursor-not-allowed
             ${
               style === opt
                 // SELECTED: fill with primary-500, on-primary text, stronger border
-                ? 'bg-[color:var(--color-primary-500-vis)] text-[color:var(--on-primary)] border-[color:var(--color-primary-600-vis)] shadow-[0_0_0_1px_color-mix(in_oklab,var(--color-primary-500-vis)_40%,transparent)]'
+                ? 'bg-(--color-primary-500-vis) text-(--on-primary) border-(--color-primary-600-vis) shadow-[0_0_0_1px_color-mix(in_oklab,var(--color-primary-500-vis)_40%,transparent)]'
                 // UNSELECTED: surface bg + subtle hover
-                : 'bg-[color:var(--color-surface-0)] border-[color:var(--border-default-color,var(--color-surface-300))] hover:bg-[color:var(--color-surface-100)]'
+                : 'bg-(--color-surface-0) border-(--border-default-color,var(--color-surface-300)) hover:bg-(--color-surface-100)'
             }
           `}
         >
@@ -73,14 +73,14 @@
 
   <!-- Colors -->
   <section class="space-y-2">
-    <h3 class="text-xs font-medium text-[color:var(--text-muted,var(--color-surface-700))]">
+    <h3 class="text-xs font-medium text-(--text-muted,var(--color-surface-700))">
       Colors
     </h3>
 
     <div class="grid grid-cols-[auto,1fr] items-center gap-2">
       <label
         for="primary-color"
-        class="text-xs text-[color:var(--text-muted,var(--color-surface-700))]"
+        class="text-xs text-(--text-muted,var(--color-surface-700))"
       >
         Primary
       </label>
@@ -90,8 +90,8 @@
         bind:value={primaryColorValue}
         class="
           h-7 w-full rounded-sm
-          border border-[color:var(--border-default-color,var(--color-surface-300))]
-          bg-[color:var(--color-surface-0)]
+          border border-(--border-default-color,var(--color-surface-300))
+          bg-(--color-surface-0)
           cursor-pointer
         "
       />
@@ -99,7 +99,7 @@
       {#if style === 'duotone'}
         <label
           for="secondary-color"
-          class="text-xs text-[color:var(--text-muted,var(--color-surface-700))]"
+          class="text-xs text-(--text-muted,var(--color-surface-700))"
         >
           Secondary
         </label>
@@ -109,8 +109,8 @@
           bind:value={secondaryColor}
           class="
             h-7 w-full rounded-sm
-            border border-[color:var(--border-default-color,var(--color-surface-300))]
-            bg-[color:var(--color-surface-0)]
+            border border-(--border-default-color,var(--color-surface-300))
+            bg-(--color-surface-0)
             cursor-pointer
           "
         />
@@ -125,7 +125,7 @@
       class="
         flex justify-between items-center
         text-xs font-medium
-        text-[color:var(--text-muted,var(--color-surface-700))]
+        text-(--text-muted,var(--color-surface-700))
       "
     >
       <span>Stroke width</span>
@@ -149,7 +149,7 @@
       class="
         flex justify-between items-center
         text-xs font-medium
-        text-[color:var(--text-muted,var(--color-surface-700))]
+        text-(--text-muted,var(--color-surface-700))
       "
     >
       <span>Size</span>
@@ -168,7 +168,7 @@
 
   <!-- Absolute Stroke Width -->
   <section class="flex items-center justify-between pt-1">
-    <span class="text-xs font-medium text-[color:var(--text-muted,var(--color-surface-500))]">
+    <span class="text-xs font-medium text-(--text-muted,var(--color-surface-500))">
       Absolute stroke width
     </span>
 
@@ -181,12 +181,12 @@
       <div
         class="
           w-10 h-5 rounded-full
-          bg-[color:var(--color-surface-500-vis)]
-          peer-checked:bg-[color:var(--color-primary-500-vis)]
+          bg-(--color-surface-500-vis)
+          peer-checked:bg-(--color-primary-500-vis)
           transition-colors duration-150
           after:content-['']
           after:absolute after:h-4 after:w-4
-          after:bg-[color:var(--color-surface-0)]
+          after:bg-(--color-surface-0)
           after:rounded-full
           after:top-0.5 after:left-0.5
           after:transition-transform after:duration-150

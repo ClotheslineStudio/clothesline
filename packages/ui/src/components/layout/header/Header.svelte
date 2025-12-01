@@ -1,6 +1,6 @@
 <script context="module" lang="ts">
   // Optional header semantics variant, in case you want to reuse as a toolbar.
-  export type HeaderAs = 'header' | 'div' | 'nav';
+  type HeaderAs = 'header' | 'div' | 'nav';
 
   /**
    * Controls the max-width of the inner content.
@@ -8,7 +8,7 @@
    * - 'page'   : constrained to a typical app/page width.
    * - 'prose'  : narrower, good for docs/blog headers.
    */
-  export type HeaderWidth = 'full' | 'page' | 'prose';
+  type HeaderWidth = 'full' | 'page' | 'prose';
 </script>
 
 <script lang="ts">

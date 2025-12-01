@@ -76,15 +76,15 @@
     class="
       hidden md:flex
       w-72 shrink-0 flex-col
-      border-r border-[color:var(--color-surface-200)]
-      bg-[color:var(--color-surface-50)]
-      h-[calc(100vh-56px)] sticky top-[56px]
+      border-r border-(--color-surface-200)
+      bg-(--color-surface-50)
+      h-[calc(100vh-56px)] sticky top-14
       overflow-y-auto
-      pt-[var(--spacing-4,1rem)]
-      pb-[var(--spacing-6,1.5rem)]
+      pt-(--spacing-4,1rem)
+      pb-(--spacing-6,1.5rem)
     "
   >
-    <div class="px-[var(--spacing-4,1rem)]">
+    <div class="px-(--spacing-4,1rem)">
       <Customizer
         bind:style
         bind:color
@@ -95,8 +95,8 @@
       />
     </div>
 
-    <div class="mt-6 px-[var(--spacing-4,1rem)]">
-      <h2 class="text-xs font-semibold mb-2 text-[color:var(--color-surface-700)]">
+    <div class="mt-6 px-(--spacing-4,1rem)">
+      <h2 class="text-xs font-semibold mb-2 text-(--color-surface-700)">
         Categories
       </h2>
 
@@ -114,15 +114,15 @@
       class="
         mb-4
         flex items-center justify-between
-        border-b border-[color:var(--color-surface-200)]
-        pb-[var(--spacing-3,0.75rem)]
+        border-b border-(--color-surface-200)
+        pb-(--spacing-3,0.75rem)
       "
     >
       <div class="flex flex-col">
-        <span class="text-sm font-medium text-[color:var(--color-surface-900)]">
+        <span class="text-sm font-medium text-(--color-surface-900)">
           Icon Explorer
         </span>
-        <span class="text-xs text-[color:var(--color-surface-600)]">
+        <span class="text-xs text-(--color-surface-600)">
           {filteredIcons.length} icons
         </span>
       </div>
@@ -133,15 +133,15 @@
           placeholder="Search icons…"
           class="
             w-full
-            px-[var(--spacing-3,0.75rem)]
-            py-[var(--spacing-2,0.5rem)]
+            px-(--spacing-3,0.75rem)
+            py-(--spacing-2,0.5rem)
             rounded-md
-            border border-[color:var(--color-surface-300)]
-            bg-[color:var(--color-surface-0,#ffffff)]
+            border border-(--color-surface-300)
+            bg-(--color-surface-0,#ffffff)
             text-sm
             focus:outline-none
             focus-visible:ring-2
-            focus-visible:ring-[color:var(--color-primary-500-vis)]
+            focus-visible:ring-(--color-primary-500-vis)
             focus-visible:ring-offset-1
           "
         />
@@ -149,7 +149,7 @@
     </header>
 
     <!-- ICON GRID (no internal scroll, page scrolls instead) -->
-    <section class="pb-[var(--spacing-10,2.5rem)]">
+    <section class="pb-(--spacing-10,2.5rem)">
       <div class="icon-grid">
         {#each filteredIcons as icon}
           <button
@@ -159,9 +159,9 @@
               group relative
               flex h-16 w-16 items-center justify-center
               rounded-lg
-              border border-[color:var(--color-surface-200)]
-              bg-[color:var(--color-surface-0,#ffffff)]
-              hover:bg-[color:var(--color-surface-100)]
+              border border-(--color-surface-200)
+              bg-(--color-surface-0,#ffffff)
+              hover:bg-(--color-surface-100)
               transition
             "
           >
@@ -183,8 +183,8 @@
                 -translate-x-1/2
                 whitespace-nowrap
                 rounded-md px-2 py-1
-                bg-[color:var(--color-surface-900)]
-                text-[11px] text-[color:var(--color-surface-50)]
+                bg-(--color-surface-900)
+                text-[11px] text-(--color-surface-50)
                 opacity-0 group-hover:opacity-100
                 shadow-lg
               "
@@ -200,10 +200,10 @@
   <!-- RIGHT DETAIL PANEL (unchanged behavior) -->
   <aside
     class="
-      fixed right-0 top-[56px]
+      fixed right-0 top-14
       w-lg h-[calc(100vh-56px)]
-      bg-[color:var(--color-surface-50)]
-      border-l border-[color:var(--color-surface-200)]
+      bg-(--color-surface-50)
+      border-l border-(--color-surface-200)
       shadow-xl
       overflow-y-auto z-40
       transform transition-transform duration-300 ease-in-out
@@ -212,7 +212,7 @@
     class:translate-x-0={panelOpen}
   >
     <button
-      class="absolute right-3 top-3 text-[color:var(--color-surface-600)] hover:text-[color:var(--color-surface-900)]"
+      class="absolute right-3 top-3 text-(--color-surface-600) hover:text-(--color-surface-900)"
       type="button"
       on:click={closePanel}
     >

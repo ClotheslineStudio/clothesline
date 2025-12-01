@@ -27,7 +27,7 @@
   <link rel="icon" href={logo} />
 </svelte:head>
 
-<div class="min-h-screen flex flex-col bg-[color:var(--background-app,var(--color-surface-50))]">
+<div class="min-h-screen flex flex-col bg-(--background-app,var(--color-surface-50))">
   <!-- HEADER (full width) -->
   <Header bordered elevated maxWidth="page">
     <!-- LEFT: logo -->
@@ -90,9 +90,9 @@
       flex-1
       w-full
       mx-auto
-      px-[var(--spacing-6,1.5rem)]
-      pt-[var(--spacing-3,0.75rem)]
-      pb-[var(--spacing-6,1.5rem)]
+      px-(--spacing-6,1.5rem)
+      pt-(--spacing-3,0.75rem)
+      pb-(--spacing-6,1.5rem)
       relative
     "
     style="max-width: 1120px;"
