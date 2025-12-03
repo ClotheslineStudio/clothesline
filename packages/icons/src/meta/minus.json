@@ -3,11 +3,11 @@
     "displayName": "Minus",
     "description": "Represents removing, subtracting, or decreasing an item or value.",
     "keywords": ["minus", "remove", "subtract", "decrease", "dash"],
-    "categories": ["System", "Actions"],
+    "categories": ["System", "Actions", "Math"],
     "variants": ["stroke", "filled", "duotone"],
     "sizes": [24],
     "version": "1.0.0",
-    "author": "Travis Peterson",
+    "author": "Clothesline Studio",
     "changelog": [
       {
         "version": "1.0.0",

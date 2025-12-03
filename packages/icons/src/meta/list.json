@@ -3,11 +3,11 @@
     "displayName": "List",
     "description": "Represents lists, tasks, or ordered content.",
     "keywords": ["list", "tasks", "items", "bullets", "menu", "checklist"],
-    "categories": ["Content", "System"],
+    "categories": ["Content", "System", "Editor", "Text"],
     "variants": ["stroke", "filled", "duotone"],
     "sizes": [24],
     "version": "1.0.0",
-    "author": "Travis Peterson",
+    "author": "Clothesline Studio",
     "changelog": [
       {
         "version": "1.0.0",

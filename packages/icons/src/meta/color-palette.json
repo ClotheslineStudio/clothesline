@@ -3,11 +3,11 @@
     "displayName": "Color Palette",
     "description": "Represents color themes, palettes, or design tokens.",
     "keywords": ["color", "palette", "theme", "design", "tokens", "swatches"],
-    "categories": ["Design", "Appearance"],
+    "categories": ["Design", "System"],
     "variants": ["stroke", "filled", "duotone"],
     "sizes": [24],
     "version": "1.0.0",
-    "author": "Travis Peterson",
+    "author": "Clothesline Studio",
     "changelog": [
       {
         "version": "1.0.0",

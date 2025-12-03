@@ -3,11 +3,11 @@
     "displayName": "Grid View",
     "description": "Represents a grid layout, gallery, or card collection view.",
     "keywords": ["grid", "view", "gallery", "cards", "layout", "tiles"],
-    "categories": ["Layout", "Navigation"],
+    "categories": ["Layout", "Navigation", "View"],
     "variants": ["stroke", "filled", "duotone"],
     "sizes": [24],
     "version": "1.0.0",
-    "author": "Travis Peterson",
+    "author": "Clothesline Studio",
     "changelog": [
       {
         "version": "1.0.0",

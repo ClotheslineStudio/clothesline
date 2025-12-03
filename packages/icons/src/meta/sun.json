@@ -3,11 +3,11 @@
     "displayName": "Sun",
     "description": "Represents day mode, light mode, or daytime.",
     "keywords": ["sun", "day", "light-mode", "theme", "weather"],
-    "categories": ["System", "Weather"],
+    "categories": ["System", "Weather", "Space", "Nature"],
     "variants": ["stroke", "filled", "duotone"],
     "sizes": [24],
     "version": "1.0.0",
-    "author": "Travis Peterson",
+    "author": "Clothesline Studio",
     "changelog": [
       {
         "version": "1.0.0",

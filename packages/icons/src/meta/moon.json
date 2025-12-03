@@ -3,11 +3,11 @@
     "displayName": "Moon",
     "description": "Represents night mode, dark mode, or nighttime.",
     "keywords": ["moon", "night", "dark-mode", "theme", "sleep"],
-    "categories": ["System", "Weather"],
+    "categories": ["System", "Weather", "Space", "Nature"],
     "variants": ["stroke", "filled", "duotone"],
     "sizes": [24],
     "version": "1.0.0",
-    "author": "Travis Peterson",
+    "author": "Clothesline Studio",
     "changelog": [
       {
         "version": "1.0.0",

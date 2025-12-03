@@ -3,11 +3,11 @@
     "displayName": "Star",
     "description": "Represents highlighting, rating, or favoriting an item.",
     "keywords": ["star", "favorite", "rating", "highlight", "featured"],
-    "categories": ["System", "Reactions"],
+    "categories": ["System", "Reactions", "Space", "Nature"],
     "variants": ["stroke", "filled", "duotone"],
     "sizes": [24],
     "version": "1.0.0",
-    "author": "Travis Peterson",
+    "author": "Clothesline Studio",
     "changelog": [
       {
         "version": "1.0.0",

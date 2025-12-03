@@ -324,6 +324,87 @@ function wrapSvelte({ strokeInner, filledInner, duoTone1, duoTone2, hasStroke, h
 `;
 }
 
+
+function buildSvgVariants(options) {
+  const {
+    strokeInner,
+    filledInner,
+    duoTone1,
+    duoTone2,
+    hasStroke,
+    hasFilled,
+    hasDuotone
+  } = options;
+
+  const baseAttrs = [
+    'xmlns="http://www.w3.org/2000/svg"',
+    'width="24"',
+    'height="24"',
+    'viewBox="0 0 24 24"',
+    'fill="none"',
+    'shape-rendering="geometricPrecision"',
+    'stroke-linecap="round"',
+    'stroke-linejoin="round"',
+    'aria-hidden="true"'
+  ].join(' ');
+
+  const strokeSvg =
+    hasStroke && strokeInner && strokeInner.trim()
+      ? `<svg ${baseAttrs}>
+  <g fill="none" stroke="currentColor" stroke-width="2">
+    ${strokeInner}
+  </g>
+</svg>`
+      : '';
+
+  const filledSvg =
+    hasFilled && filledInner && filledInner.trim()
+      ? `<svg ${baseAttrs}>
+  <g fill="currentColor" stroke="none">
+    ${filledInner}
+  </g>
+</svg>`
+      : '';
+
+  const duotoneSvg =
+    hasDuotone && (duoTone1 && duoTone1.trim() || duoTone2 && duoTone2.trim())
+      ? `<svg ${baseAttrs}>
+  ${
+    duoTone2 && duoTone2.trim()
+      ? `<g fill="currentColor" stroke="none">
+    ${duoTone2}
+  </g>`
+      : ''
+  }
+
+  <g fill="none" stroke="currentColor" stroke-width="2">
+    ${duoTone1}
+  </g>
+</svg>`
+      : '';
+
+  const result = {
+    stroke: strokeSvg
+  };
+
+  if (filledSvg) {
+    result.filled = filledSvg;
+  }
+
+  if (duotoneSvg) {
+    result.duotone = duotoneSvg;
+  }
+
+  return result;
+}
+
+
+
+
+
+
+
+
 // ---------------- Main -----------------
 async function main() {
   await fs.mkdir(OUT_DIR, { recursive: true });
@@ -412,6 +493,16 @@ export const iconRegistry = {};
       hasFilled,
       hasDuotone
     });
+    const svgVariants = buildSvgVariants({
+  strokeInner,
+  filledInner,
+  duoTone1,
+  duoTone2,
+  hasStroke,
+  hasFilled,
+  hasDuotone
+});
+
 
     await fs.writeFile(outFile, svelte, 'utf8');
 
@@ -419,7 +510,10 @@ export const iconRegistry = {};
 
     imports.push(`import ${Comp} from './components/${Comp}.svelte';`);
     exportsArr.push(Comp);
-    registry.push(`  "${base}": { component: ${Comp}, meta: ${JSON.stringify(meta)} }`);
+    registry.push(
+  `  "${base}": { component: ${Comp}, meta: ${JSON.stringify(meta)}, svg: ${JSON.stringify(svgVariants)} }`
+);
+
   }
 
   const indexTs = `// AUTO-GENERATED. Do not edit by hand.

@@ -3,11 +3,11 @@
   "displayName": "Translate",
   "description": "Represents language translation or switching between languages.",
   "keywords": ["translate", "language", "localization", "i18n", "text", "globe"],
-  "categories": ["System", "Actions"],
+  "categories": ["System", "Actions", "Accessibility"],
   "variants": ["stroke", "filled", "duotone"],
   "sizes": [24],
   "version": "1.0.0",
-  "author": "Travis Peterson",
+  "author": "Clothesline Studio",
   "changelog": [
     {
       "version": "1.0.0",
