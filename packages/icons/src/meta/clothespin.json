@@ -1,0 +1,18 @@
+{
+    "name": "clothespin",
+    "displayName": "Clothespin",
+    "description": "Represents Clothesline branding, pinning, or attaching items.",
+    "keywords": ["clothespin", "clothesline", "pin", "attach", "clip", "brand"],
+    "categories": ["Brand", "Objects"],
+    "variants": ["stroke", "filled", "duotone"],
+    "sizes": [24],
+    "version": "1.0.0",
+    "author": "Travis Peterson",
+    "changelog": [
+      {
+        "version": "1.0.0",
+        "changes": ["Initial release"],
+        "date": "2025-01-01"
+      }
+    ]
+  }

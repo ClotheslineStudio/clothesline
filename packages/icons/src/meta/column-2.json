@@ -1,0 +1,18 @@
+ {
+    "name": "column-2",
+    "displayName": "Column 2",
+    "description": "Represents a two-column layout or split view.",
+    "keywords": ["column", "two column", "layout", "split", "grid", "content"],
+    "categories": ["Layout", "Design"],
+    "variants": ["stroke", "filled", "duotone"],
+    "sizes": [24],
+    "version": "1.0.0",
+    "author": "Travis Peterson",
+    "changelog": [
+      {
+        "version": "1.0.0",
+        "changes": ["Initial release"],
+        "date": "2025-01-01"
+      }
+    ]
+  }

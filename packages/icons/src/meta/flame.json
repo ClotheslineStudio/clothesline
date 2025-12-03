@@ -1,0 +1,18 @@
+ {
+    "name": "flame",
+    "displayName": "Flame",
+    "description": "Represents heat, trending items, or high activity.",
+    "keywords": ["flame", "fire", "hot", "trend", "activity", "burn"],
+    "categories": ["Status", "Concepts"],
+    "variants": ["stroke", "filled", "duotone"],
+    "sizes": [24],
+    "version": "1.0.0",
+    "author": "Travis Peterson",
+    "changelog": [
+      {
+        "version": "1.0.0",
+        "changes": ["Initial release"],
+        "date": "2025-01-01"
+      }
+    ]
+  }

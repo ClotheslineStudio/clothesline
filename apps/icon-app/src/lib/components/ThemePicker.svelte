@@ -198,112 +198,220 @@
   .tp-btn {
     display: inline-flex;
     align-items: center;
-    gap: .5rem;
-    height: 32px;
-    padding: 0 .6rem 0 .4rem;
-    border-radius: .6rem;
-    border: 1px solid var(--color-surface-300);
-    background: color-mix(in oklab, var(--color-surface-100) 90%, transparent);
+    gap: var(--spacing-2, 0.5rem);
+    height: var(--size-control-sm, 32px);
+    padding: 0 var(--spacing-3, 0.75rem) 0 var(--spacing-2, 0.5rem);
+    border-radius: var(--radius-interactive, 0.6rem);
+    border: var(--border-interactive, 1px)
+      solid var(--border-default-color, var(--color-surface-300));
+    background: color-mix(
+      in oklab,
+      var(--background-panel, var(--color-surface-100)) 90%,
+      transparent
+    );
     color: var(--on-surface);
-    font-size: .875rem;
+    font-size: var(--type-scale-sm, 0.875rem);
     line-height: 1;
   }
-  .tp-btn:hover { background: color-mix(in oklab, var(--color-surface-100) 100%, transparent); }
-  .tp-btn:focus-visible { outline: 2px solid var(--color-info-500); outline-offset: 2px; }
+
+  .tp-btn:hover {
+    background: color-mix(
+      in oklab,
+      var(--background-panel, var(--color-surface-100)) 100%,
+      transparent
+    );
+  }
+
+  .tp-btn:focus-visible {
+    outline: var(--button-focus-ring-width, 2px)
+      solid var(--button-focus-ring-color, var(--ring-color, var(--color-info-500)));
+    outline-offset: var(--button-focus-ring-offset, 2px);
+  }
+
   .tp-dot {
-    width: .8rem; height: .8rem; border-radius: 999px;
+    width: var(--size-4, 0.8rem);
+    height: var(--size-4, 0.8rem);
+    border-radius: var(--radius-full, 999px);
     background:
-      conic-gradient(from 0deg,
+      conic-gradient(
+        from 0deg,
         var(--color-secondary-500),
         var(--color-accent-500),
         var(--color-success-500),
         var(--color-warning-500),
         var(--color-error-500),
-        var(--color-secondary-500));
-    box-shadow: 0 0 0 2px var(--color-surface-50) inset;
+        var(--color-secondary-500)
+      );
+    box-shadow: 0 0 0 var(--border-2, 2px)
+      var(--background-panel, var(--color-surface-50)) inset;
   }
-  .tp-label { text-transform: capitalize; }
-  .tp-caret { opacity: .6 }
+
+  .tp-label {
+    text-transform: capitalize;
+  }
+
+  .tp-caret {
+    opacity: var(--opacity-60, 0.6);
+  }
 
   /* Backdrop to catch outside clicks */
   .tp-backdrop {
-    position: fixed; inset: 0;
+    position: fixed;
+    inset: 0;
     background: transparent;
+    /* no z-index here so the panel (z=1000) stays on top */
   }
 
   /* Panel */
   .tp-panel {
     position: absolute;
-    right: 16px;
-    top: calc(56px + 8px);
-    z-index: 1000;
+    right: var(--spacing-4, 16px);
+    top: calc(56px + var(--spacing-2, 8px));
+    z-index: var(--z-dropdown, 1000);
     width: min(900px, 95vw);
-    border-radius: 14px;
-    border: 1px solid var(--color-surface-300);
-    background: var(--color-surface-50);
-    box-shadow: 0 20px 60px rgba(0,0,0,.14);
-    padding: 14px;
+    border-radius: var(--radius-container, 14px);
+    border: var(--border-card, 1px)
+      solid var(--border-default-color, var(--color-surface-300));
+    background: var(--background-panel, var(--color-surface-50));
+    box-shadow: var(--elevation-menu, 0 20px 60px rgba(0, 0, 0, 0.14));
+    padding: var(--spacing-3, 14px);
   }
 
-  .tp-header { padding: 6px 8px 12px; }
-  .tp-title { font-weight: 700; }
-  .tp-sub   { font-size: .825rem; opacity: .75; }
+  .tp-header {
+    padding: var(--spacing-2, 6px) var(--spacing-2, 8px)
+      var(--spacing-3, 12px);
+  }
+
+  .tp-title {
+    font-weight: var(--type-weight-bold, 700);
+  }
+
+  .tp-sub {
+    font-size: var(--type-scale-xs, 0.825rem);
+    opacity: var(--opacity-75, 0.75);
+  }
 
   /* Grid of cards */
   .tp-grid {
     display: grid;
-    grid-template-columns: repeat( auto-fill, minmax(230px, 1fr) );
-    gap: 12px;
+    grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+    gap: var(--spacing-3, 12px);
   }
 
   .tp-card {
     display: flex;
     flex-direction: column;
-    gap: 10px;
-    padding: 12px;
-    border-radius: 12px;
-    border: 1px solid var(--color-surface-300);
-    background: color-mix(in oklab, var(--color-surface-100) 92%, transparent);
+    gap: var(--spacing-3, 10px);
+    padding: var(--spacing-4, 12px);
+    border-radius: var(--radius-card, 12px);
+    border: var(--border-card, 1px)
+      solid var(--border-default-color, var(--color-surface-300));
+    background: var(
+      --card-bg,
+      color-mix(
+        in oklab,
+        var(--background-panel, var(--color-surface-100)) 92%,
+        transparent
+      )
+    );
     text-align: left;
-    transition: transform .12s ease, background-color .12s ease, border-color .12s ease, box-shadow .12s ease;
+    transition:
+      transform var(--motion-duration-fast, 0.12s)
+        var(--motion-ease, ease),
+      background-color var(--motion-duration-fast, 0.12s)
+        var(--motion-ease, ease),
+      border-color var(--motion-duration-fast, 0.12s)
+        var(--motion-ease, ease),
+      box-shadow var(--motion-duration-fast, 0.12s)
+        var(--motion-ease, ease);
   }
+
   /* 🔥 Hover highlight uses the card's own theme (via inline CSS vars) */
   .tp-card:hover {
     transform: translateY(-1px);
     border-color: var(--card-hover-border);
-    background: color-mix(in oklab, var(--card-hover-border) 16%, var(--card-surf-50));
-    box-shadow: 0 6px 22px color-mix(in oklab, var(--card-hover-border) 18%, transparent);
+    background: color-mix(
+      in oklab,
+      var(--card-hover-border) 16%,
+      var(--card-surf-50)
+    );
+    box-shadow: 0 6px 22px
+      color-mix(in oklab, var(--card-hover-border) 18%, transparent);
   }
-  .tp-card:focus-visible { outline: 2px solid var(--card-focus); outline-offset: 2px; }
 
-  .tp-name { font-weight: 700; text-transform: capitalize; }
+  .tp-card:focus-visible {
+    outline: var(--button-focus-ring-width, 2px)
+      solid var(--card-focus);
+    outline-offset: var(--button-focus-ring-offset, 2px);
+  }
+
+  .tp-name {
+    font-weight: var(--type-weight-semibold, 700);
+    text-transform: capitalize;
+  }
 
   /* Small chips – full circles */
   .tp-chips {
-    display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px;
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: var(--spacing-2, 8px);
   }
+
   .tp-chip {
-    width: 20px; height: 20px; border-radius: 999px;
+    width: var(--size-5, 20px);
+    height: var(--size-5, 20px);
+    border-radius: var(--radius-full, 999px);
     background: var(--chip);
-    border: 2px solid color-mix(in oklab, var(--chip) 35%, black);
-    box-shadow: 0 0 0 2px color-mix(in oklab, var(--chip) 10%, white) inset;
+    border: var(--border-2, 2px)
+      solid
+      color-mix(
+        in oklab,
+        var(--chip) 35%,
+        var(--color-surface-950, black)
+      );
+    box-shadow: 0 0 0 var(--border-2, 2px)
+      color-mix(
+        in oklab,
+        var(--chip) 10%,
+        var(--color-surface-0, white)
+      ) inset;
   }
 
   /* Big chips – full circles, show surface+neutral variety (not just white/black) */
   .tp-bigs {
-    display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 2px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--spacing-3, 10px);
+    margin-top: var(--spacing-1, 2px);
   }
+
   .tp-big {
-    width: 28px; height: 28px; border-radius: 999px;
+    width: var(--size-6, 28px);
+    height: var(--size-6, 28px);
+    border-radius: var(--radius-full, 999px);
     background: var(--chip);
-    border: 2px solid color-mix(in oklab, var(--chip) 35%, black);
+    border: var(--border-2, 2px)
+      solid
+      color-mix(
+        in oklab,
+        var(--chip) 35%,
+        var(--color-surface-950, black)
+      );
     box-shadow:
-      0 0 0 3px color-mix(in oklab, var(--chip) 10%, white) inset,
-      0 1px 8px color-mix(in oklab, var(--chip) 20%, transparent);
+      0 0 0 var(--border-3, 3px)
+        color-mix(
+          in oklab,
+          var(--chip) 10%,
+          var(--color-surface-0, white)
+        ) inset,
+      0 1px 8px
+        color-mix(in oklab, var(--chip) 20%, transparent);
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .tp-card { transition: none; }
+    .tp-card {
+      transition: none;
+    }
   }
 </style>
 

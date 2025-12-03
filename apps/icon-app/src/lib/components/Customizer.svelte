@@ -1,6 +1,8 @@
 <script lang="ts">
   import type { IconStyle } from '$lib/types/icon';
 
+  import { Switch, Button } from '@clothesline/ui';
+
   export let style: IconStyle = 'stroke';
   export let color = '#6381F8';
   export let secondaryColor = '#6381F8'; // for duotone
@@ -47,26 +49,19 @@
 
     <div class="grid grid-cols-2 gap-2">
       {#each ['stroke','filled','duotone','animated'] as opt}
-        <button
+        <Button
           type="button"
+          size="sm"
+          variant={style === opt ? 'solid' : 'outline'}
+          color={style === opt ? 'primary' : 'neutral'}
           disabled={opt === 'animated'}
+          ariaLabel={`Use ${opt} icon style`}
+          aria-pressed={style === opt}
+          class="w-full justify-center text-xs"
           on:click={() => setStyle(opt as IconStyle)}
-          class={`
-            px-3 py-1.5 text-xs
-            rounded-(--radius-interactive,0.5rem)
-            border text-center w-full
-            disabled:opacity-40 disabled:cursor-not-allowed
-            ${
-              style === opt
-                // SELECTED: fill with primary-500, on-primary text, stronger border
-                ? 'bg-(--color-primary-500-vis) text-(--on-primary) border-(--color-primary-600-vis) shadow-[0_0_0_1px_color-mix(in_oklab,var(--color-primary-500-vis)_40%,transparent)]'
-                // UNSELECTED: surface bg + subtle hover
-                : 'bg-(--color-surface-0) border-(--border-default-color,var(--color-surface-300)) hover:bg-(--color-surface-100)'
-            }
-          `}
         >
           {opt.charAt(0).toUpperCase() + opt.slice(1)}
-        </button>
+        </Button>
       {/each}
     </div>
   </section>
@@ -167,33 +162,24 @@
   </section>
 
   <!-- Absolute Stroke Width -->
-  <section class="flex items-center justify-between pt-1">
-    <span class="text-xs font-medium text-(--text-muted,var(--color-surface-500))">
+  <section class="flex items-center justify-between gap-2 pt-[var(--spacing-1)]">
+    <span
+      class="
+        text-[length:var(--type-label-size)]
+        leading-[var(--type-label-leading)]
+        font-[var(--type-label-weight)]
+        tracking-[var(--type-label-tracking)]
+        uppercase
+        text-[color:var(--text-muted)]
+      "
+    >
       Absolute stroke width
     </span>
 
-    <label class="relative inline-flex items-center cursor-pointer">
-      <input
-        type="checkbox"
-        bind:checked={absolute}
-        class="sr-only peer"
-      />
-      <div
-        class="
-          w-10 h-5 rounded-full
-          bg-(--color-surface-500-vis)
-          peer-checked:bg-(--color-primary-500-vis)
-          transition-colors duration-150
-          after:content-['']
-          after:absolute after:h-4 after:w-4
-          after:bg-(--color-surface-0)
-          after:rounded-full
-          after:top-0.5 after:left-0.5
-          after:transition-transform after:duration-150
-          peer-checked:after:translate-x-5
-          shadow-[0_1px_2px_rgba(0,0,0,0.25)]
-        "
-      ></div>
-    </label>
+    <Switch
+      bind:checked={absolute}
+      ariaLabel="Use absolute stroke width"
+      name="absolute-stroke-width"
+    />
   </section>
 </div>

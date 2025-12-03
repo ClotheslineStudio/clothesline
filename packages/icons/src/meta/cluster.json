@@ -1,0 +1,18 @@
+ {
+    "name": "cluster",
+    "displayName": "Cluster",
+    "description": "Represents grouped items, clusters, or related entities.",
+    "keywords": ["cluster", "group", "nodes", "network", "collection", "aggregation"],
+    "categories": ["System", "Data"],
+    "variants": ["stroke", "filled", "duotone"],
+    "sizes": [24],
+    "version": "1.0.0",
+    "author": "Travis Peterson",
+    "changelog": [
+      {
+        "version": "1.0.0",
+        "changes": ["Initial release"],
+        "date": "2025-01-01"
+      }
+    ]
+  }

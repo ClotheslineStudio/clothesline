@@ -80,35 +80,95 @@
     width: var(--btn-size);
     height: var(--btn-size);
     border-radius: var(--btn-radius);
-    border: 1px solid var(--color-surface-300);
-    background: color-mix(in oklab, var(--color-surface-100) 90%, transparent);
-    color: var(--on-surface);
-    transition: background .15s ease, border-color .15s ease, transform .08s ease;
-  }
-  .mode-btn:hover {
-    background: color-mix(in oklab, var(--color-surface-100) 100%, transparent);
-    border-color: var(--color-surface-400);
-  }
-  .mode-btn:active { transform: translateY(1px); }
-  .mode-btn:focus-visible {
-    outline: 2px solid var(--color-info-500);
-    outline-offset: 2px;
+    border: var(--border-interactive, 1px)
+      solid var(--border-default-color, var(--color-surface-300));
+    background: var(
+      --icon-button-bg,
+      color-mix(
+        in oklab,
+        var(--background-panel, var(--color-surface-100)) 90%,
+        transparent
+      )
+    );
+    color: var(--icon, var(--on-surface));
+    transition:
+      background var(--motion-duration-fast, 0.15s)
+        var(--motion-ease, ease),
+      border-color var(--motion-duration-fast, 0.15s)
+        var(--motion-ease, ease),
+      transform 0.08s ease;
   }
 
-  .icon { opacity: .95; }
-  .sun  { transform-origin: 50% 50%; }
-  .moon { transform-origin: 50% 50%; }
+  .mode-btn:hover {
+    background: var(
+      --icon-button-bg-hover,
+      color-mix(
+        in oklab,
+        var(--background-panel, var(--color-surface-100)) 100%,
+        transparent
+      )
+    );
+    border-color: var(
+      --button-border-hover,
+      var(--border-hover, var(--color-surface-400))
+    );
+  }
+
+  .mode-btn:active {
+    transform: translateY(1px);
+  }
+
+  .mode-btn:focus-visible {
+    outline: var(--button-focus-ring-width, 2px)
+      solid var(
+        --button-focus-ring-color,
+        var(--ring-color, var(--color-info-500))
+      );
+    outline-offset: var(--button-focus-ring-offset, 2px);
+  }
+
+  .icon {
+    opacity: var(--opacity-95, 0.95);
+  }
+
+  .sun {
+    transform-origin: 50% 50%;
+  }
+
+  .moon {
+    transform-origin: 50% 50%;
+  }
 
   @media (prefers-reduced-motion: no-preference) {
-    .sun  { animation: spin-in .25s ease both; }
-    .moon { animation: pop-in  .20s ease both; }
+    .sun {
+      animation: spin-in 0.25s var(--motion-ease, ease) both;
+    }
+    .moon {
+      animation: pop-in 0.2s var(--motion-ease, ease) both;
+    }
   }
+
   @keyframes spin-in {
-    from { opacity: 0; rotate: -90deg; scale: .8; }
-    to   { opacity: 1; rotate: 0deg;    scale: 1; }
+    from {
+      opacity: 0;
+      rotate: -90deg;
+      scale: 0.8;
+    }
+    to {
+      opacity: 1;
+      rotate: 0deg;
+      scale: 1;
+    }
   }
+
   @keyframes pop-in {
-    from { opacity: 0; scale: .85; }
-    to   { opacity: 1; scale: 1; }
+    from {
+      opacity: 0;
+      scale: 0.85;
+    }
+    to {
+      opacity: 1;
+      scale: 1;
+    }
   }
 </style>

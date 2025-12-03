@@ -369,17 +369,25 @@ function spacingVars(): string {
 function radiusVars(): string {
   const out: Record<string, string> = {};
 
+  // Base scale
   for (const key in radiusScale) {
     out[`radius-${key}`] = radiusScale[key as RadiusScaleKey];
   }
 
+  // Semantic aliases
   for (const key in radiusSemantic) {
-    const scaleKey = radiusSemantic[key as RadiusSemanticKey];
-    out[`radius-${key}`] = `var(--radius-${scaleKey})`;
+    const semanticKey = key as RadiusSemanticKey;
+    const scaleKey = radiusSemantic[semanticKey];
+
+    // Avoid overriding the raw scale var (e.g. full -> full)
+    if (semanticKey === scaleKey) continue;
+
+    out[`radius-${semanticKey}`] = `var(--radius-${scaleKey})`;
   }
 
   return toCSSVars(out);
 }
+
 
 // ============================================================================
 // 8. Scaling + motion tokens

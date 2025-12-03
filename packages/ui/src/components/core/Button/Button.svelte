@@ -14,12 +14,16 @@
   export let disabled = false;
   export let loading = false;
 
-  export let href: string | undefined;
-  export let target: string | undefined;
-  export let rel: string | undefined;
-  export let ariaLabel: string | undefined;
+  // Optional props
+  export let href: string | undefined = undefined;
+  export let target: string | undefined = undefined;
+  export let rel: string | undefined = undefined;
+  export let ariaLabel: string | undefined = undefined;
 
   const baseClass = 'cl-button';
+
+  // loading behaves like disabled for interaction
+  $: isDisabled = disabled || loading;
 
   $: colorClass = `${baseClass}--color-${color}`;
   $: variantClass = `${baseClass}--variant-${variant}`;
@@ -28,15 +32,17 @@
 
 <svelte:element
   this={href ? 'a' : 'button'}
+  {...$$restProps}
   type={href ? undefined : type}
-  href={href}
-  target={target}
-  rel={rel}
+  href={isDisabled ? undefined : href}
+  target={href && !isDisabled ? target : undefined}
+  rel={href && !isDisabled ? rel : undefined}
   aria-label={ariaLabel}
-  aria-disabled={disabled || loading}
-  aria-busy={loading}
+  aria-disabled={isDisabled ? 'true' : undefined}
+  aria-busy={loading ? 'true' : undefined}
+  tabindex={href && isDisabled ? -1 : undefined}
   class={`${baseClass} ${colorClass} ${variantClass} ${sizeClass}`}
-  disabled={href ? undefined : disabled}
+  disabled={href ? undefined : isDisabled}
 >
   <slot name="icon-left" />
   <slot />
@@ -196,8 +202,6 @@
      Variants
      ========================= */
 
-  /* solid = default */
-
   .cl-button--variant-outline {
     background-color: transparent;
     color: var(--on-surface-strong);
@@ -234,6 +238,7 @@
     background-color: transparent;
   }
 </style>
+
 
 
 

@@ -1,0 +1,18 @@
+ {
+    "name": "code-commit",
+    "displayName": "Code Commit",
+    "description": "Represents a code commit, version control action, or change set.",
+    "keywords": ["code", "commit", "git", "version control", "changeset", "repository"],
+    "categories": ["Developer", "System"],
+    "variants": ["stroke", "filled", "duotone"],
+    "sizes": [24],
+    "version": "1.0.0",
+    "author": "Travis Peterson",
+    "changelog": [
+      {
+        "version": "1.0.0",
+        "changes": ["Initial release"],
+        "date": "2025-01-01"
+      }
+    ]
+  }

@@ -1,4 +1,4 @@
-// packages/themes/src/mode.ts
+// packages/themes/src/modes.ts
 
 export type Vision =
   | "none"

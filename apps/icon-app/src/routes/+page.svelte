@@ -22,12 +22,14 @@
   let selected: IconRecord | null = null;
 
   // Build array from registry (runtime data)
-  const allIcons: IconRecord[] = Object.values(iconRegistry).map((entry) => ({
-    ...entry.meta,
-    component: entry.component,
-    contributors: 'contributors' in entry.meta ? (entry.meta.contributors as string[]) : [],
-    updatedAt: 'updatedAt' in entry.meta ? (entry.meta as any).updatedAt : ''
-  }));
+  const allIcons: IconRecord[] = Object.values(iconRegistry)
+    .filter((entry) => entry && entry.meta && entry.meta.name && entry.component)
+    .map((entry) => ({
+      ...entry.meta,
+      component: entry.component,
+      contributors: 'contributors' in entry.meta ? (entry.meta.contributors as string[]) : [],
+      updatedAt: 'updatedAt' in entry.meta ? (entry.meta as any).updatedAt : ''
+    }));
 
   // Filtering logic
   $: filteredIcons =
@@ -70,14 +72,14 @@
   }
 </style>
 
-<div class="flex gap-6">
+<div class="flex gap-6 items-stretch">
   <!-- LEFT SIDEBAR (its own scroll, not wrapping the grid) -->
   <aside
     class="
       hidden md:flex
       w-72 shrink-0 flex-col
-      border-r border-(--color-surface-200)
-      bg-(--color-surface-50)
+      bg-(--background-app)
+    
       h-[calc(100vh-56px)] sticky top-14
       overflow-y-auto
       pt-(--spacing-4,1rem)
@@ -108,116 +110,115 @@
   </aside>
 
   <!-- MAIN CONTENT (normal page scroll) -->
-  <main class="flex-1">
-    <!-- Local header -->
-    <header
-      class="
-        mb-4
-        flex items-center justify-between
-        border-b border-(--color-surface-200)
-        pb-(--spacing-3,0.75rem)
-      "
-    >
-      <div class="flex flex-col">
-        <span class="text-sm font-medium text-(--color-surface-900)">
-          Icon Explorer
-        </span>
-        <span class="text-xs text-(--color-surface-600)">
-          {filteredIcons.length} icons
-        </span>
-      </div>
+  <!-- MAIN CONTENT (normal page scroll) -->
+<main class="flex-1">
+  <!-- Local header -->
+  <header
+    class="
+      mb-4
+      flex items-center justify-between
+      border-b border-(--border-default-color,var(--color-surface-200))
+      pb-(--spacing-3,0.75rem)
+    "
+  >
+    <div class="flex flex-col">
+      <span class="text-sm font-medium text-(--on-surface-strong,var(--color-surface-900))">
+        Icon Explorer
+      </span>
+      <span class="text-xs text-(--text-muted,var(--color-surface-600))">
+        {filteredIcons.length} icons
+      </span>
+    </div>
 
-      <div class="w-64">
-        <input
-          bind:value={search}
-          placeholder="Search icons…"
+    <div class="w-64">
+      <input
+        bind:value={search}
+        placeholder="Search icons…"
+        class="
+          w-full
+          px-(--spacing-3,0.75rem)
+          py-(--spacing-2,0.5rem)
+          rounded-md
+          border border-(--border-default-color,var(--color-surface-300))
+          bg-(--background-panel,var(--color-surface-0,#ffffff))
+          text-sm
+          focus:outline-none
+          focus-visible:ring-2
+          focus-visible:ring-(--button-focus-ring-color,var(--color-primary-500-vis))
+          focus-visible:ring-offset-1
+        "
+      />
+    </div>
+</header>
+
+  <!-- ICON GRID (no internal scroll, page scrolls instead) -->
+  <section class="pb-(--spacing-10,2.5rem)">
+    <div class="icon-grid">
+      {#each filteredIcons as icon}
+        <button
+          type="button"
+          on:click={() => selectIcon(icon)}
           class="
-            w-full
-            px-(--spacing-3,0.75rem)
-            py-(--spacing-2,0.5rem)
-            rounded-md
-            border border-(--color-surface-300)
-            bg-(--color-surface-0,#ffffff)
-            text-sm
-            focus:outline-none
-            focus-visible:ring-2
-            focus-visible:ring-(--color-primary-500-vis)
-            focus-visible:ring-offset-1
+            group relative
+            flex h-16 w-16 items-center justify-center
+            rounded-lg
+            border border-(--color-surface-200)
+            bg-(--color-surface-100,#ffffff)
+            hover:bg-(--color-surface-100)
+            transition
           "
-        />
-      </div>
-    </header>
+        >
+          <svelte:component
+            this={icon.component}
+            size={size}
+            strokeWidth={strokeWidth}
+            absoluteStrokeWidth={absoluteStroke}
+            primaryColor={color}
+            secondaryColor={style === 'duotone' ? secondaryColor : color}
+            variant={style}
+          />
 
-    <!-- ICON GRID (no internal scroll, page scrolls instead) -->
-    <section class="pb-(--spacing-10,2.5rem)">
-      <div class="icon-grid">
-        {#each filteredIcons as icon}
-          <button
-            type="button"
-            on:click={() => selectIcon(icon)}
+          <!-- Tooltip with icon name -->
+          <div
             class="
-              group relative
-              flex h-16 w-16 items-center justify-center
-              rounded-lg
-              border border-(--color-surface-200)
-              bg-(--color-surface-0,#ffffff)
-              hover:bg-(--color-surface-100)
-              transition
+              pointer-events-none
+              absolute left-1/2 top-full mt-1
+              -translate-x-1/2
+              whitespace-nowrap
+              rounded-md px-2 py-1
+              bg-(--color-surface-900)
+              text-[11px] text-(--color-surface-50)
+              opacity-0 group-hover:opacity-100
+              shadow-lg
             "
           >
-            <svelte:component
-              this={icon.component}
-              size={size}
-              strokeWidth={strokeWidth}
-              absoluteStrokeWidth={absoluteStroke}
-              primaryColor={color}
-              secondaryColor={style === 'duotone' ? secondaryColor : color}
-              variant={style}
-            />
-
-            <!-- Tooltip with icon name -->
-            <div
-              class="
-                pointer-events-none
-                absolute left-1/2 top-full mt-1
-                -translate-x-1/2
-                whitespace-nowrap
-                rounded-md px-2 py-1
-                bg-(--color-surface-900)
-                text-[11px] text-(--color-surface-50)
-                opacity-0 group-hover:opacity-100
-                shadow-lg
-              "
-            >
-              {icon.displayName}
-            </div>
-          </button>
-        {/each}
-      </div>
-    </section>
-  </main>
+            {icon.displayName}
+          </div>
+        </button>
+      {/each}
+    </div>
+  </section>
+</main>
 
   <!-- RIGHT DETAIL PANEL (unchanged behavior) -->
   <aside
-    class="
-      fixed right-0 top-14
-      w-lg h-[calc(100vh-56px)]
-      bg-(--color-surface-50)
-      border-l border-(--color-surface-200)
-      shadow-xl
-      overflow-y-auto z-40
-      transform transition-transform duration-300 ease-in-out
-    "
-    class:translate-x-full={!panelOpen}
-    class:translate-x-0={panelOpen}
-  >
-    <button
-      class="absolute right-3 top-3 text-(--color-surface-600) hover:text-(--color-surface-900)"
-      type="button"
-      on:click={closePanel}
-    >
-      ✕
-    </button>
+  class="
+    fixed right-0
+    w-lg
+    bg-(--background-panel)
+    border-l border-(--border-default-color)
+    shadow-xl
+    overflow-y-auto z-40
+    transform transition-transform duration-300 ease-in-out
+  "
+  style="
+    /* match header height: logo (size-12) + top + bottom padding (spacing-2 * 2) */
+    top: calc(var(--size-12) + 2 * var(--spacing-4));
+    height: calc(100vh - (var(--size-12) + 2 * var(--spacing-4)));
+  "
+  class:translate-x-full={!panelOpen}
+  class:translate-x-0={panelOpen}
+>
 
     {#if selected}
       <IconDetailPanel
@@ -228,10 +229,14 @@
         {strokeWidth}
         {size}
         {absoluteStroke}
+        onClose={closePanel}
       />
     {/if}
   </aside>
+
+
 </div>
+
 
 
 

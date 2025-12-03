@@ -1,0 +1,18 @@
+{
+    "name": "flower-sunflower",
+    "displayName": "Flower Sunflower",
+    "description": "Represents nature, growth, or positive themes.",
+    "keywords": ["flower", "sunflower", "nature", "growth", "garden", "organic"],
+    "categories": ["Nature", "Concepts"],
+    "variants": ["stroke", "filled", "duotone"],
+    "sizes": [24],
+    "version": "1.0.0",
+    "author": "Travis Peterson",
+    "changelog": [
+      {
+        "version": "1.0.0",
+        "changes": ["Initial release"],
+        "date": "2025-01-01"
+      }
+    ]
+  }

@@ -1,5 +1,7 @@
 <script lang="ts">
   import type { IconRecord, IconStyle } from '$lib/types/icon';
+  import { Button, Badge } from '@clothesline/ui';
+  import { Close } from '@clothesline/icons';
 
   export let icon: IconRecord;
 
@@ -10,6 +12,9 @@
   export let strokeWidth: number;
   export let size: number;
   export let absoluteStroke: boolean;
+
+  // close from parent (panel)
+  export let onClose: () => void = () => {};
 
   // local size selection for the preview
   let selectedSize = size ?? 24;
@@ -42,46 +47,139 @@
   }
 </script>
 
-<div class="p-6 flex flex-col gap-6">
-  <!-- HEADER -->
-  <header class="flex items-start justify-between gap-4">
+<div class="p-[var(--spacing-6)] flex flex-col gap-[var(--spacing-6)]">
+<header class="flex items-start justify-between gap-[var(--spacing-4)]">
+  <!-- Left: close + title -->
+  <div class="flex items-start gap-[var(--spacing-3)]">
+    {#if onClose}
+      <button
+        type="button"
+        class="inline-flex items-center justify-center"
+        aria-label="Close details panel"
+        on:click={() => onClose && onClose()}
+        style="
+          width: var(--size-control-sm);
+          height: var(--size-control-sm);
+          border-radius: var(--radius-full);
+          border: 1px solid var(--border-muted-color);
+          background-color: var(--color-surface-0);
+          color: var(--icon-muted);
+          transition: var(--button-transition);
+        "
+        on:mouseover={(e) => (e.currentTarget.style.backgroundColor = 'var(--color-surface-100)')}
+        on:mouseout={(e) => (e.currentTarget.style.backgroundColor = 'var(--color-surface-0)')}
+      >
+        <Close size={16} strokeWidth={2} />
+      </button>
+    {/if}
+
     <div>
-      <h2 class="text-lg font-semibold">{icon.displayName}</h2>
-      <p class="text-xs text-neutral-500">
+      <h2
+        class="font-semibold"
+        style="
+          font-family: var(--type-heading-family);
+          font-size: var(--type-heading-size);
+          line-height: var(--type-heading-leading);
+          letter-spacing: var(--type-heading-tracking);
+        "
+      >
+        {icon.displayName}
+      </h2>
+
+      <p
+        class="mt-[var(--spacing-1)] text-xs"
+        style="color: var(--text-muted); font-size: var(--type-scale-xs);"
+      >
         Version {icon.version}
       </p>
+
       {#if icon.updatedAt}
-        <p class="text-[11px] text-neutral-400 mt-0.5">
+        <p
+          class="mt-[calc(var(--spacing-1)/2)] text-[11px]"
+          style="color: var(--text-muted);"
+        >
           Updated {new Date(icon.updatedAt).toLocaleDateString()}
         </p>
       {/if}
     </div>
+  </div>
 
-    <div class="text-right space-y-3">
-      <!-- Keywords -->
+    <!-- RIGHT: keywords + categories -->
+    <div class="text-right space-y-[var(--spacing-3)] max-w-[220px]">
+      <!-- Keywords: horizontal scroll -->
       <div>
-        <div class="text-[10px] font-semibold uppercase text-neutral-400">
+        <div
+          class="text-[10px] font-semibold uppercase"
+          style="
+            color: var(--text-muted);
+            font-family: var(--type-label-family);
+            letter-spacing: var(--type-label-tracking);
+          "
+        >
           Keywords
         </div>
-        <div class="mt-1 flex flex-wrap gap-1 justify-end max-w-[180px]">
-          {#each icon.keywords as kw}
-            <span class="px-2 py-0.5 rounded-full bg-neutral-100 text-[11px]">
-              {kw}
-            </span>
-          {/each}
+
+        <div
+          class="mt-[var(--spacing-1)] overflow-x-auto"
+          style="padding-bottom: var(--spacing-1);"
+        >
+          <div
+            class="flex gap-[var(--spacing-1)]"
+            style="
+              flex-wrap: nowrap;
+              min-width: max-content;
+            "
+          >
+            {#each icon.keywords as kw}
+              <span
+                class="px-[var(--spacing-2)] py-[calc(var(--spacing-1)/2)] rounded-full text-[11px]"
+                style="
+                  background-color: var(--color-surface-100);
+                  color: var(--on-surface-muted);
+                  white-space: nowrap;
+                "
+              >
+                {kw}
+              </span>
+            {/each}
+          </div>
         </div>
       </div>
 
-      <!-- Categories -->
+      <!-- Categories: clickable pill badges -->
       <div>
-        <div class="text-[10px] font-semibold uppercase text-neutral-400">
+        <div
+          class="text-[10px] font-semibold uppercase"
+          style="
+            color: var(--text-muted);
+            font-family: var(--type-label-family);
+            letter-spacing: var(--type-label-tracking);
+          "
+        >
           Categories
         </div>
-        <div class="mt-1 flex flex-wrap gap-1 justify-end">
+
+        <div
+          class="mt-[var(--spacing-1)] flex flex-wrap gap-[var(--spacing-1)] justify-end"
+        >
           {#each icon.categories as cat}
-            <span class="px-2 py-0.5 rounded-full bg-emerald-50 text-[11px]">
+            <Badge
+              variant="accent"
+              size="sm"
+              appearance="soft"
+              pill={true}
+              label={cat}
+              role="button"
+              tabindex="0"
+              aria-label={`Filter by ${cat} category`}
+              style="cursor: pointer;"
+              on:click={() => {
+                // TODO: hook into filter later (e.g. dispatch event)
+                console.log('Category clicked:', cat);
+              }}
+            >
               {cat}
-            </span>
+            </Badge>
           {/each}
         </div>
       </div>
@@ -89,16 +187,29 @@
   </header>
 
   <!-- BIG PREVIEW -->
-  <section class="border rounded-xl p-6 bg-white flex flex-col gap-3">
+  <section
+    class="flex flex-col gap-[var(--spacing-3)]"
+    style="
+      background-color: var(--preview-code-bg);
+      border: 1px solid var(--preview-border);
+      border-radius: var(--preview-radius);
+      padding: var(--preview-padding);
+      box-shadow: var(--preview-shadow);
+    "
+  >
     <div class="flex items-center justify-between">
-      <span class="text-xs font-medium text-neutral-500">Preview</span>
-      <!-- you can swap this for a real light/dark toggle later -->
-      <span class="text-[11px] text-neutral-400">
+      <span
+        class="text-xs font-medium"
+        style="color: var(--text-muted); font-size: var(--type-scale-xs);"
+      >
+        Preview
+      </span>
+      <span class="text-[11px]" style="color: var(--text-muted);">
         {style} · {selectedSize}px
       </span>
     </div>
 
-    <div class="flex items-center justify-center py-6">
+    <div class="flex items-center justify-center py-[var(--spacing-6)]">
       <svelte:component
         this={icon.component}
         size={48}
@@ -113,16 +224,31 @@
 
   <!-- SIZES -->
   <section>
-    <h3 class="text-xs font-semibold mb-2">Sizes</h3>
-    <div class="flex gap-3">
+    <h3
+      class="mb-[var(--spacing-2)] text-xs font-semibold"
+      style="color: var(--text-muted); font-size: var(--type-scale-xs);"
+    >
+      Sizes
+    </h3>
+    <div class="flex gap-[var(--spacing-3)]">
       {#each sizes as sz}
         <button
           type="button"
-          class="border rounded-lg px-3 py-2 bg-white flex flex-col items-center gap-1 text-[11px]
-                 {selectedSize === sz
-                   ? 'border-indigo-500 shadow-sm'
-                   : 'border-neutral-300'}"
+          class="flex flex-col items-center gap-[var(--spacing-2)] text-[11px] border rounded-[var(--radius-md)] px-[var(--spacing-3)] py-[var(--spacing-2)]"
+          class:selected={selectedSize === sz}
           on:click={() => (selectedSize = sz)}
+          style={selectedSize === sz
+            ? `
+              background-color: var(--color-surface-0);
+              border-color: var(--color-primary-500);
+              box-shadow: var(--elevation-card);
+              color: var(--on-surface-strong);
+            `
+            : `
+              background-color: var(--color-surface-0);
+              border-color: var(--border-default-color);
+              color: var(--on-surface-muted);
+            `}
         >
           <svelte:component
             this={icon.component}
@@ -140,59 +266,128 @@
   </section>
 
   <!-- COPY BUTTONS -->
-  <section class="flex gap-3">
-    <button
-      type="button"
-      class="flex-1 border border-neutral-300 rounded-md px-3 py-2 text-sm bg-white"
-      on:click={() => copy('// TODO: inject raw SVG here')}
-    >
-      Copy SVG
-    </button>
-    <button
-      type="button"
-      class="flex-1 rounded-md px-3 py-2 text-sm font-medium bg-indigo-500 text-white"
-      on:click={() => copy(svelteSnippet)}
-    >
-      Copy Svelte
-    </button>
+  <section class="flex gap-[var(--spacing-1)]">
+    <div class="flex-1">
+      <Button
+        type="button"
+        variant="outline"
+        color="primary"
+        size="lg"
+        ariaLabel="Copy SVG markup"
+        on:click={() => copy('// TODO: inject raw SVG here')}
+      >
+        Copy SVG
+      </Button>
+    </div>
+
+    <div class="flex-1">
+      <Button
+        type="button"
+        variant="solid"
+        color="primary"
+        size="lg"
+        ariaLabel="Copy Svelte usage snippet"
+        on:click={() => copy(svelteSnippet)}
+      >
+        Copy Svelte
+      </Button>
+    </div>
   </section>
 
   <!-- CODE BLOCK -->
   <section>
-    <h3 class="text-xs font-semibold mb-2">Svelte Usage</h3>
-    <pre class="bg-neutral-900 text-neutral-50 rounded-lg text-[11px] p-3 overflow-auto">
+    <h3
+      class="mb-[var(--spacing-2)] text-xs font-semibold"
+      style="color: var(--text-muted); font-size: var(--type-scale-xs);"
+    >
+      Svelte Usage
+    </h3>
+    <pre
+      class="rounded-lg overflow-auto"
+      style="
+        background-color: var(--preview-code-bg);
+        color: var(--preview-code-color);
+        padding: var(--preview-code-padding);
+        font-family: var(--preview-code-font-family);
+        font-size: var(--preview-code-font-size);
+        border: 1px solid var(--preview-code-border);
+      "
+    >
 <code>{svelteSnippet}</code>
     </pre>
   </section>
 
   <!-- AUTHOR / CONTRIBUTORS -->
-  <section class="grid grid-cols-2 gap-4 text-xs">
+  <section class="grid grid-cols-2 gap-[var(--spacing-4)] text-xs">
     <div>
-      <div class="text-[10px] font-semibold uppercase text-neutral-400">
+      <div
+        class="text-[10px] font-semibold uppercase"
+        style="color: var(--text-muted);"
+      >
         Author
       </div>
-      <div class="mt-2 flex items-center gap-2">
-        <div class="h-7 w-7 rounded-full bg-neutral-300"></div>
+      <div class="mt-[var(--spacing-2)] flex items-center gap-[var(--spacing-2)]">
+        <div
+          class="h-7 w-7 rounded-full"
+          style="background-color: var(--color-surface-300);"
+        ></div>
         <span>{icon.author}</span>
       </div>
     </div>
     <div>
-      <div class="text-[10px] font-semibold uppercase text-neutral-400">
+      <div
+        class="text-[10px] font-semibold uppercase"
+        style="color: var(--text-muted);"
+      >
         Contributors
       </div>
       {#if icon.contributors?.length}
-        <div class="mt-2 space-y-1">
+        <div class="mt-[var(--spacing-2)] space-y-[var(--spacing-1)]">
           {#each icon.contributors as user}
-            <div class="flex items-center gap-2">
-              <div class="h-7 w-7 rounded-full bg-neutral-300"></div>
+            <div class="flex items-center gap-[var(--spacing-2)]">
+              <div
+                class="h-7 w-7 rounded-full"
+                style="background-color: var(--color-surface-300);"
+              ></div>
               <span>{user}</span>
             </div>
           {/each}
         </div>
       {:else}
-        <p class="mt-2 text-[11px] text-neutral-400">None yet.</p>
+        <p
+          class="mt-[var(--spacing-2)] text-[11px]"
+          style="color: var(--text-muted);"
+        >
+          None yet.
+        </p>
       {/if}
     </div>
   </section>
 </div>
 
+<style>
+  .icon-detail__close {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--size-control-sm);
+    height: var(--size-control-sm);
+    border-radius: var(--radius-full);
+    border: 1px solid var(--border-muted-color);
+    background-color: var(--color-surface-0);
+    color: var(--icon-muted);
+    cursor: pointer;
+    box-shadow: none;
+    transition: var(--button-transition);
+  }
+
+  .icon-detail__close:hover {
+    background-color: var(--color-surface-100);
+    color: var(--icon-primary);
+  }
+
+  .icon-detail__close:focus-visible {
+    outline: var(--focusRing-width, 2px) solid var(--ring-color);
+    outline-offset: var(--ring-offset-width, 2px);
+  }
+</style>

@@ -5,12 +5,17 @@
   const dispatch = createEventDispatcher<{ select: { icon: IconRecord } }>();
 
   export let icon: IconRecord;
+
+  // Rendering options (all driven by the customizer / parent)
   export let size: number = 24;
   export let style: IconStyle = 'stroke';
-  export let color = '#6381F8';
-  export let secondaryColor = '#6381F8';
-  export let strokeWidth = 2;
-  export let absoluteStroke = false;
+
+  // Colors: let the theme handle defaults; customizer overrides by passing hex strings
+  export let color: string | undefined;          // primary override from Customizer
+  export let secondaryColor: string | undefined; // optional duotone secondary
+
+  export let strokeWidth: number = 2;
+  export let absoluteStroke: boolean = false;
 
   const handleSelect = () => {
     dispatch('select', { icon });
@@ -22,6 +27,13 @@
       handleSelect();
     }
   };
+
+  // Resolve what the icon actually receives
+  $: iconPrimary = color ?? 'currentColor';
+  $: iconSecondary =
+    style === 'duotone'
+      ? (secondaryColor ?? color ?? 'currentColor')
+      : iconPrimary;
 </script>
 
 <div
@@ -37,8 +49,8 @@
     size={size}
     strokeWidth={strokeWidth}
     absoluteStrokeWidth={absoluteStroke}
-    primaryColor={color}
-    secondaryColor={style === 'duotone' ? secondaryColor : color}
+    primaryColor={iconPrimary}
+    secondaryColor={iconSecondary}
     variant={style}
     aria-hidden="true"
     class="icon-card__glyph"
@@ -60,23 +72,44 @@
     padding: var(--spacing-4, 1rem);
     border-radius: var(--radius-card, 0.75rem);
 
-    border-width: var(--border-card, 2px);
+    border-width: var(--border-card-width, 1px);
     border-style: solid;
-    border-color: var(--color-surface-300-vis, var(--color-surface-300, #cbd5e1));
+    border-color: var(
+      --icon-card-border,
+      var(--border-subtle, var(--border-default-color, rgba(15, 23, 42, 0.12)))
+    );
 
-    background-color: var(--color-surface-100-vis, var(--color-surface-100, #f1f5f9));
-    color: var(--icon, var(--on-surface, #0f172a));
+    background-color: var(
+      --icon-card-bg,
+      var(
+        --card-bg,
+        var(--surface-raised, var(--background-surface, #f9fafb))
+      )
+    );
+
+    color: var(
+      --icon-card-fg,
+      var(--icon, var(--on-surface, #0f172a))
+    );
 
     cursor: pointer;
     transition:
-      background-color var(--motion-duration-fast, 150ms) var(--motion-ease, ease-in-out),
-      box-shadow var(--motion-duration-fast, 150ms) var(--motion-ease, ease-in-out),
+      background-color var(--motion-duration-fast, 150ms)
+        var(--motion-ease, ease-in-out),
+      box-shadow var(--motion-duration-fast, 150ms)
+        var(--motion-ease, ease-in-out),
       transform 100ms ease-out;
   }
 
   .icon-card:hover {
-    background-color: var(--color-surface-200-vis, var(--color-surface-200, #e2e8f0));
-    box-shadow: var(--elevation-card, 0 1px 2px rgba(15, 23, 42, 0.08));
+    background-color: var(
+      --icon-card-bg-hover,
+      var(--surface-raised-hover, var(--background-surface-alt, #e9edf5))
+    );
+    box-shadow: var(
+      --icon-card-shadow,
+      var(--elevation-card, 0 1px 2px rgba(15, 23, 42, 0.08))
+    );
   }
 
   .icon-card:active {
@@ -84,14 +117,17 @@
   }
 
   .icon-card:focus-visible {
-    outline: var(--focus-ring, 2px solid var(--color-primary-500-vis, #3b82f6));
+    outline: var(
+      --focus-ring,
+      2px solid var(--focus-ring-color, var(--color-primary-vis, #3b82f6))
+    );
     outline-offset: 2px;
   }
 
   :global(.icon-card__glyph) {
-    width: var(--size-icon, 1.5rem);
-    height: var(--size-icon, 1.5rem);
-    stroke-width: var(--icon-stroke, 2);
+    width: var(--icon-card-icon-size, var(--size-icon, 1.5rem));
+    height: var(--icon-card-icon-size, var(--size-icon, 1.5rem));
+    stroke-width: var(--icon-card-icon-stroke, var(--icon-stroke, 2));
   }
 
   .icon-card__label {
@@ -105,12 +141,14 @@
 
     border-radius: var(--radius-sm, 0.25rem);
 
-    background-color: color-mix(
-      in oklab,
-      var(--color-surface-900-vis, #020617) 80%,
-      transparent
+    background-color: var(
+      --icon-card-label-bg,
+      color-mix(in oklab, var(--surface-backdrop, #020617) 80%, transparent)
     );
-    color: var(--color-surface-50-vis, #f9fafb);
+    color: var(
+      --icon-card-label-fg,
+      var(--on-surface-high, #f9fafb)
+    );
 
     font-size: var(--type-caption-size, 0.75rem);
     line-height: 1;

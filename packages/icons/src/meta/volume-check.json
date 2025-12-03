@@ -1,0 +1,18 @@
+ {
+    "name": "volume-check",
+    "displayName": "Volume Check",
+    "description": "Represents verified audio levels, sound check, or volume status.",
+    "keywords": ["volume", "check", "audio", "sound", "levels", "speaker"],
+    "categories": ["Media", "Audio"],
+    "variants": ["stroke", "filled", "duotone"],
+    "sizes": [24],
+    "version": "1.0.0",
+    "author": "Travis Peterson",
+    "changelog": [
+      {
+        "version": "1.0.0",
+        "changes": ["Initial release"],
+        "date": "2025-01-01"
+      }
+    ]
+  }

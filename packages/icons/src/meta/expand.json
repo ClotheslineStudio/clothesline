@@ -1,0 +1,18 @@
+ {
+    "name": "expand",
+    "displayName": "Expand",
+    "description": "Represents expanding content, maximizing panels, or enlarging views.",
+    "keywords": ["expand", "maximize", "enlarge", "resize", "open", "fullscreen"],
+    "categories": ["System", "Actions"],
+    "variants": ["stroke", "filled", "duotone"],
+    "sizes": [24],
+    "version": "1.0.0",
+    "author": "Travis Peterson",
+    "changelog": [
+      {
+        "version": "1.0.0",
+        "changes": ["Initial release"],
+        "date": "2025-01-01"
+      }
+    ]
+  }
