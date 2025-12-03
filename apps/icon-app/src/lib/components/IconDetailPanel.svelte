@@ -47,10 +47,10 @@
   }
 </script>
 
-<div class="p-[var(--spacing-6)] flex flex-col gap-[var(--spacing-6)]">
-<header class="flex items-start justify-between gap-[var(--spacing-4)]">
+<div class="p-(--spacing-6) flex flex-col gap-(--spacing-6)">
+<header class="flex items-start justify-between gap-(--spacing-4)">
   <!-- Left: close + title -->
-  <div class="flex items-start gap-[var(--spacing-3)]">
+  <div class="flex items-start gap-(--spacing-3)">
     {#if onClose}
       <button
         type="button"
@@ -68,6 +68,8 @@
         "
         on:mouseover={(e) => (e.currentTarget.style.backgroundColor = 'var(--color-surface-100)')}
         on:mouseout={(e) => (e.currentTarget.style.backgroundColor = 'var(--color-surface-0)')}
+        on:focus={(e) => (e.currentTarget.style.backgroundColor = 'var(--color-surface-100)')}
+        on:blur={(e) => (e.currentTarget.style.backgroundColor = 'var(--color-surface-0)')}
       >
         <Close size={16} strokeWidth={2} />
       </button>
@@ -87,7 +89,7 @@
       </h2>
 
       <p
-        class="mt-[var(--spacing-1)] text-xs"
+        class="mt-(--spacing-1) text-xs"
         style="color: var(--text-muted); font-size: var(--type-scale-xs);"
       >
         Version {icon.version}
@@ -105,7 +107,7 @@
   </div>
 
     <!-- RIGHT: keywords + categories -->
-    <div class="text-right space-y-[var(--spacing-3)] max-w-[220px]">
+    <div class="text-right space-y-(--spacing-3) max-w-[220px]">
       <!-- Keywords: horizontal scroll -->
       <div>
         <div
@@ -120,11 +122,11 @@
         </div>
 
         <div
-          class="mt-[var(--spacing-1)] overflow-x-auto"
+          class="mt-(--spacing-1) overflow-x-auto"
           style="padding-bottom: var(--spacing-1);"
         >
           <div
-            class="flex gap-[var(--spacing-1)]"
+            class="flex gap-(--spacing-1)"
             style="
               flex-wrap: nowrap;
               min-width: max-content;
@@ -132,7 +134,7 @@
           >
             {#each icon.keywords as kw}
               <span
-                class="px-[var(--spacing-2)] py-[calc(var(--spacing-1)/2)] rounded-full text-[11px]"
+                class="px-(--spacing-2) py-[calc(var(--spacing-1)/2)] rounded-full text-[11px]"
                 style="
                   background-color: var(--color-surface-100);
                   color: var(--on-surface-muted);
@@ -160,7 +162,7 @@
         </div>
 
         <div
-          class="mt-[var(--spacing-1)] flex flex-wrap gap-[var(--spacing-1)] justify-end"
+          class="mt-(--spacing-1) flex flex-wrap gap-(--spacing-1) justify-end"
         >
           {#each icon.categories as cat}
             <Badge
@@ -188,7 +190,7 @@
 
   <!-- BIG PREVIEW -->
   <section
-    class="flex flex-col gap-[var(--spacing-3)]"
+    class="flex flex-col gap-(--spacing-3)"
     style="
       background-color: var(--preview-code-bg);
       border: 1px solid var(--preview-border);
@@ -209,7 +211,7 @@
       </span>
     </div>
 
-    <div class="flex items-center justify-center py-[var(--spacing-6)]">
+    <div class="flex items-center justify-center py-(--spacing-6)">
       <svelte:component
         this={icon.component}
         size={48}
@@ -225,16 +227,16 @@
   <!-- SIZES -->
   <section>
     <h3
-      class="mb-[var(--spacing-2)] text-xs font-semibold"
+      class="mb-(--spacing-2) text-xs font-semibold"
       style="color: var(--text-muted); font-size: var(--type-scale-xs);"
     >
       Sizes
     </h3>
-    <div class="flex gap-[var(--spacing-3)]">
+    <div class="flex gap-(--spacing-3)">
       {#each sizes as sz}
         <button
           type="button"
-          class="flex flex-col items-center gap-[var(--spacing-2)] text-[11px] border rounded-[var(--radius-md)] px-[var(--spacing-3)] py-[var(--spacing-2)]"
+          class="flex flex-col items-center gap-(--spacing-2) text-[11px] border rounded-md px-(--spacing-3) py-(--spacing-2)"
           class:selected={selectedSize === sz}
           on:click={() => (selectedSize = sz)}
           style={selectedSize === sz
@@ -266,7 +268,7 @@
   </section>
 
   <!-- COPY BUTTONS -->
-  <section class="flex gap-[var(--spacing-1)]">
+  <section class="flex gap-(--spacing-1)">
     <div class="flex-1">
       <Button
         type="button"
@@ -297,7 +299,7 @@
   <!-- CODE BLOCK -->
   <section>
     <h3
-      class="mb-[var(--spacing-2)] text-xs font-semibold"
+      class="mb-(--spacing-2) text-xs font-semibold"
       style="color: var(--text-muted); font-size: var(--type-scale-xs);"
     >
       Svelte Usage
@@ -318,7 +320,7 @@
   </section>
 
   <!-- AUTHOR / CONTRIBUTORS -->
-  <section class="grid grid-cols-2 gap-[var(--spacing-4)] text-xs">
+  <section class="grid grid-cols-2 gap-(--spacing-4) text-xs">
     <div>
       <div
         class="text-[10px] font-semibold uppercase"
@@ -326,7 +328,7 @@
       >
         Author
       </div>
-      <div class="mt-[var(--spacing-2)] flex items-center gap-[var(--spacing-2)]">
+      <div class="mt-(--spacing-2) flex items-center gap-(--spacing-2)">
         <div
           class="h-7 w-7 rounded-full"
           style="background-color: var(--color-surface-300);"
@@ -342,9 +344,9 @@
         Contributors
       </div>
       {#if icon.contributors?.length}
-        <div class="mt-[var(--spacing-2)] space-y-[var(--spacing-1)]">
+        <div class="mt-(--spacing-2) space-y-(--spacing-1)">
           {#each icon.contributors as user}
-            <div class="flex items-center gap-[var(--spacing-2)]">
+            <div class="flex items-center gap-(--spacing-2)">
               <div
                 class="h-7 w-7 rounded-full"
                 style="background-color: var(--color-surface-300);"
@@ -355,7 +357,7 @@
         </div>
       {:else}
         <p
-          class="mt-[var(--spacing-2)] text-[11px]"
+          class="mt-(--spacing-2) text-[11px]"
           style="color: var(--text-muted);"
         >
           None yet.
@@ -366,28 +368,4 @@
 </div>
 
 <style>
-  .icon-detail__close {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: var(--size-control-sm);
-    height: var(--size-control-sm);
-    border-radius: var(--radius-full);
-    border: 1px solid var(--border-muted-color);
-    background-color: var(--color-surface-0);
-    color: var(--icon-muted);
-    cursor: pointer;
-    box-shadow: none;
-    transition: var(--button-transition);
-  }
-
-  .icon-detail__close:hover {
-    background-color: var(--color-surface-100);
-    color: var(--icon-primary);
-  }
-
-  .icon-detail__close:focus-visible {
-    outline: var(--focusRing-width, 2px) solid var(--ring-color);
-    outline-offset: var(--ring-offset-width, 2px);
-  }
 </style>

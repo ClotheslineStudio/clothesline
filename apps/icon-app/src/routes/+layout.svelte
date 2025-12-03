@@ -30,7 +30,7 @@
   });
 
   // --- (Optional) helpers you can wire to UI controls ----------------------
-  function setVision(vision: ModeState['vision'] | 'protan' | 'deutan' | 'tritan' | 'mono') {
+  function setVision(vision: ModeState['vision']) {
     setTheme({ vision });
   }
 
@@ -196,8 +196,10 @@
         background-color: var(--color-surface-50);
         transition: var(--button-transition);
       "
-      on:mouseover={(e) => (e.currentTarget.style.backgroundColor = 'var(--color-surface-100)')}
-      on:mouseout={(e) => (e.currentTarget.style.backgroundColor = 'var(--color-surface-50)')}
+      onmouseover={(e) => (e.currentTarget.style.backgroundColor = 'var(--color-surface-100)')}
+      onmouseout={(e) => (e.currentTarget.style.backgroundColor = 'var(--color-surface-50)')}
+      onfocus={(e) => (e.currentTarget.style.backgroundColor = 'var(--color-surface-100)')}
+      onblur={(e) => (e.currentTarget.style.backgroundColor = 'var(--color-surface-50)')}
     >
       <img
         src={figmaIcon}

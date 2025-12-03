@@ -162,15 +162,15 @@
   </section>
 
   <!-- Absolute Stroke Width -->
-  <section class="flex items-center justify-between gap-2 pt-[var(--spacing-1)]">
+  <section class="flex items-center justify-between gap-2 pt-(--spacing-1)">
     <span
       class="
-        text-[length:var(--type-label-size)]
-        leading-[var(--type-label-leading)]
-        font-[var(--type-label-weight)]
-        tracking-[var(--type-label-tracking)]
+        text-(length:--type-label-size)
+        leading-(--type-label-leading)
+        font-(--type-label-weight)
+        tracking-(--type-label-tracking)
         uppercase
-        text-[color:var(--text-muted)]
+        text-(--text-muted)
       "
     >
       Absolute stroke width
