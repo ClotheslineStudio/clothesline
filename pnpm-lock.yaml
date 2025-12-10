@@ -398,6 +398,18 @@ importers:
 
   apps/studio:
     dependencies:
+      '@clothesline/icons':
+        specifier: workspace:*
+        version: link:../../packages/icons
+      '@clothesline/themes':
+        specifier: workspace:*
+        version: link:../../packages/themes
+      '@clothesline/tokens':
+        specifier: workspace:*
+        version: link:../../packages/tokens
+      '@clothesline/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
       gray-matter:
         specifier: ^4.0.3
         version: 4.0.3

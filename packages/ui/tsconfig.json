@@ -2,26 +2,27 @@
   "extends": "../../tsconfig.json",
 
   "compilerOptions": {
-     "rootDir": "./src",  // Add this line
-    // Enable modern module resolution for SvelteKit + ESM
-    "module": "ESNext",
-"moduleResolution": "bundler",
+    // Keep sources under src/
+    "rootDir": "./src",
 
-    // Recognize Svelte types
+    // SvelteKit / modern bundler setup
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "verbatimModuleSyntax": true, // 👈 required for Svelte + TS
+
+    // Svelte awareness
     "types": ["svelte"],
 
-    // Improve DX for Svelte files
+    // DX / safety
     "allowJs": true,
     "checkJs": false,
     "esModuleInterop": true,
     "skipLibCheck": true
   },
 
-  // Include your source files
   "include": ["src/**/*"],
-
-  // Ignore generated/built output
   "exclude": ["dist", "node_modules"]
 }
+
 
 
