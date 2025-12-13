@@ -1,246 +1,184 @@
+<!-- apps/playground/src/routes/test/+page.svelte -->
 <script lang="ts">
-  import { iconRegistry } from '@clothesline/icons';
-  import Card from '$lib/components/core/Card/Card.svelte';
+  import { onMount } from 'svelte';
 
-  type Variant = 'stroke' | 'filled' | 'duotone' | 'animated';
-  type Role = 'default' | 'muted' | 'primary' | 'success' | 'warning' | 'error';
+  type Mode = 'light' | 'dark';
+  type Contrast = 'normal' | 'high' | 'custom';
+  type Vision = 'none' | 'protanopia' | 'deuteranopia' | 'tritanopia' | 'monochrome';
 
-  // Controls
-  let query = '';
-  let variant: Variant = 'stroke';
-  let role: Role = 'default';
-  let secondaryRole: Role = 'muted';
-  let size = 24;
-  let strokeWidthInput = ''; // blank → use token
+  let theme = 'clothesline';
+  let mode: Mode = 'light';
+  let contrast: Contrast = 'normal';
+  let contrastFactor = 1.12; // used only when contrast === 'custom'
+  let vision: Vision = 'none';
 
-  // Theme toggles (writes attributes on <html>)
-  let mode: 'light' | 'dark' = 'light';
-  let highContrast = false;
-  $: {
+  function apply() {
     const root = document.documentElement;
+
+    root.setAttribute('data-theme', theme);
     root.setAttribute('data-mode', mode);
-    root.setAttribute('data-contrast', highContrast ? 'high' : 'normal');
+
+    // contrast
+    root.setAttribute('data-contrast', contrast);
+    if (contrast === 'custom') {
+      const clamped = Math.max(0.8, Math.min(1.5, Number(contrastFactor || 1)));
+      root.style.setProperty('--contrast-factor', String(clamped));
+    } else {
+      root.style.removeProperty('--contrast-factor');
+    }
+
+    // vision
+    if (vision === 'none') root.removeAttribute('data-vision');
+    else root.setAttribute('data-vision', vision);
   }
 
-  // Data
-  const entries = Object.entries(iconRegistry) as [string, any][];
-  $: filtered = entries.filter(([name]) =>
-    name.toLowerCase().includes(query.trim().toLowerCase())
-  );
+  onMount(() => {
+    // initialize once on client
+    apply();
+  });
 
-  // Derived
-  $: isDuotone = variant === 'duotone';
-
-  // strokeWidth prop: undefined when input empty OR not a finite number
-  function toStrokeWidth(v: string) {
-    const n = Number(v);
-    return v.trim() === '' || !Number.isFinite(n) ? undefined : n;
-  }
-  $: strokeWidthProp = toStrokeWidth(strokeWidthInput);
-
-  function setSize(v: number) {
-    size = v;
-  }
+  // re-apply when values change (client-only guard)
+  $: if (typeof document !== 'undefined') apply();
 </script>
 
-<div class="page">
-  <!-- Controls -->
-  <Card className="controls" padding="lg" shadow="sm">
-    <div class="controls-grid">
-      <label class="ctrl">
-        <span>Search</span>
-        <input placeholder="filter icons…" bind:value={query} />
-      </label>
+<main class="page">
+  <header class="header">
+    <h1>Modes Test</h1>
+    <p>Applies <code>data-theme</code>, <code>data-mode</code>, <code>data-contrast</code>, <code>data-vision</code> on &lt;html&gt;.</p>
+  </header>
 
-      <label class="ctrl">
-        <span>Variant</span>
-        <select bind:value={variant}>
-          <option value="stroke">stroke</option>
-          <option value="filled">filled</option>
-          <option value="duotone">duotone</option>
-          <option value="animated">animated</option>
+  <section class="card">
+    <div class="grid">
+      <label class="field">
+        <span>Theme</span>
+        <select bind:value={theme}>
+          <option value="clothesline">clothesline</option>
+          <option value="timberline">timberline</option>
+          <option value="bigsky">bigsky</option>
+          <option value="milkyway">milkyway</option>
+          <option value="retrograde">retrograde</option>
+          <option value="tidal-glass">tidal-glass</option>
+          <option value="copper-sun">copper-sun</option>
+          <option value="night-market">night-market</option>
         </select>
       </label>
 
-      <label class="ctrl">
-        <span>Role</span>
-        <select bind:value={role}>
-          <option value="default">default</option>
-          <option value="muted">muted</option>
-          <option value="primary">primary</option>
-          <option value="success">success</option>
-          <option value="warning">warning</option>
-          <option value="error">error</option>
+      <label class="field">
+        <span>Mode</span>
+        <select bind:value={mode}>
+          <option value="light">light</option>
+          <option value="dark">dark</option>
         </select>
       </label>
 
-      <label class="ctrl">
-        <span>Secondary (duotone)</span>
-        <select bind:value={secondaryRole} disabled={!isDuotone} title={!isDuotone ? 'Only used for duotone' : ''}>
-          <option value="muted">muted</option>
-          <option value="default">default</option>
-          <option value="primary">primary</option>
-          <option value="success">success</option>
-          <option value="warning">warning</option>
-          <option value="error">error</option>
+      <label class="field">
+        <span>Contrast</span>
+        <select bind:value={contrast}>
+          <option value="normal">normal</option>
+          <option value="high">high</option>
+          <option value="custom">custom</option>
         </select>
       </label>
 
-      <label class="ctrl">
-        <span>Size (px)</span>
-        <input type="number" min="12" max="256" bind:value={size} />
-        <div class="chips">
-          <button type="button" on:click={() => setSize(16)}>16</button>
-          <button type="button" on:click={() => setSize(20)}>20</button>
-          <button type="button" on:click={() => setSize(24)}>24</button>
-          <button type="button" on:click={() => setSize(32)}>32</button>
-        </div>
-      </label>
-
-      <label class="ctrl">
-        <span>Stroke width (blank = token)</span>
+      <label class="field" aria-disabled={contrast !== 'custom'}>
+        <span>Contrast factor</span>
         <input
           type="number"
-          min="0"
-          step="0.25"
-          placeholder="var(--cl-icon-stroke)"
-          bind:value={strokeWidthInput}
+          step="0.01"
+          min="0.8"
+          max="1.5"
+          bind:value={contrastFactor}
+          disabled={contrast !== 'custom'}
         />
       </label>
 
-      <div class="toggles">
-        <label class="check">
-          <input type="checkbox" bind:checked={highContrast} />
-          <span>High contrast</span>
-        </label>
+      <label class="field">
+        <span>Vision</span>
+        <select bind:value={vision}>
+          <option value="none">none</option>
+          <option value="protanopia">protanopia</option>
+          <option value="deuteranopia">deuteranopia</option>
+          <option value="tritanopia">tritanopia</option>
+          <option value="monochrome">monochrome</option>
+        </select>
+      </label>
+    </div>
 
-        <button class="mode" on:click={() => (mode = mode === 'light' ? 'dark' : 'light')}>
-          {mode === 'light' ? 'Switch to dark' : 'Switch to light'}
-        </button>
+    <div class="preview">
+      <div class="chip">--body-background-color: <code>{getComputedStyle(document.documentElement).getPropertyValue('--body-background-color') || '∅'}</code></div>
+      <div class="chip">--base-font-color: <code>{getComputedStyle(document.documentElement).getPropertyValue('--base-font-color') || '∅'}</code></div>
+      <div class="chip">--border-default-color: <code>{getComputedStyle(document.documentElement).getPropertyValue('--border-default-color') || '∅'}</code></div>
+      <div class="note">
+        If these show “∅”, your CSS isn’t loaded or the variable names don’t exist yet.
       </div>
     </div>
-  </Card>
-
-  <!-- Grid -->
-  <div class="grid">
-    {#if filtered.length === 0}
-      <div class="empty">No icons match “{query}”.</div>
-    {/if}
-
-    {#each filtered as [name, Comp]}
-      <Card className="item" padding="md" shadow="sm" rounded border>
-        <div class="preview">
-          <svelte:component
-            this={Comp}
-            {size}
-            {variant}
-            role={role}
-            secondaryRole={secondaryRole}
-            strokeWidth={strokeWidthProp}
-            ariaLabel={name}
-          />
-        </div>
-        <div class="meta">
-          <div class="name" title={name}>{name}</div>
-          <div class="sub">{variant} · {role}</div>
-        </div>
-      </Card>
-    {/each}
-  </div>
-</div>
+  </section>
+</main>
 
 <style>
-  /* Page scaffolding */
   .page {
+    padding: 1.25rem;
     display: grid;
     gap: 1rem;
-    padding: clamp(1rem, 2vw, 1.5rem);
+    max-width: 960px;
+    margin: 0 auto;
   }
 
-  /* Controls */
-  :global(.controls) { width: 100%; }
-  .controls-grid {
+  .header h1 { margin: 0; font-size: 1.5rem; }
+  .header p { margin: .25rem 0 0; opacity: .8; }
+
+  .card {
+    border: 1px solid var(--border-default-color, #d1d5db);
+    background: var(--background-panel, #ffffff);
+    border-radius: 0.75rem;
+    padding: 1rem;
     display: grid;
-    grid-template-columns: repeat(6, minmax(0, 1fr));
-    gap: .75rem;
-  }
-  .ctrl {
-    display: flex; flex-direction: column; gap: .375rem;
-  }
-  .ctrl > span {
-    font-size: .8125rem; opacity: .8;
-  }
-  .ctrl input,
-  .ctrl select {
-    padding: .5rem .625rem;
-    border: 1px solid var(--border-default-color, #d1d5db);
-    border-radius: .5rem;
-    background: var(--background-elevated, white);
-    color: inherit;
-    outline: none;
-  }
-  .ctrl:nth-child(1) { grid-column: span 2; }
-  .ctrl:nth-child(n+2):nth-child(-n+6) { grid-column: span 1; }
-
-  .chips { display:flex; gap:.4rem; margin-top:.35rem; }
-  .chips > button {
-    padding:.15rem .45rem; border:1px solid var(--border-default-color, #d1d5db);
-    border-radius:.375rem; background:var(--background-elevated, white); cursor:pointer;
-    font-size:.75rem;
+    gap: 1rem;
   }
 
-  .toggles {
-    grid-column: 1 / -1;
-    display: flex; align-items: center; gap: .75rem; padding-top: .25rem;
-  }
-  .check { display: inline-flex; align-items: center; gap: .5rem; }
-  .mode {
-    padding: .4rem .7rem; border-radius: .5rem; cursor: pointer;
-    border: 1px solid var(--border-default-color, #d1d5db);
-    background: var(--background-elevated, white);
-  }
-
-  /* Grid of icon cards */
   .grid {
     display: grid;
     gap: .75rem;
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    grid-template-columns: repeat(5, minmax(0, 1fr));
   }
 
-  /* Each card */
-  :global(.item) {
-    display:grid;
-    grid-template-rows: 1fr auto;
-    min-height: 120px;
+  .field { display: grid; gap: .35rem; }
+  .field > span { font-size: .8125rem; opacity: .75; }
+
+  input, select {
+    padding: .5rem .625rem;
+    border: 1px solid var(--border-default-color, #d1d5db);
+    border-radius: .5rem;
+    background: var(--background-elevation-1, #fff);
+    color: inherit;
+    outline: none;
+  }
+  input:focus-visible, select:focus-visible {
+    outline: 2px solid var(--ring-color, #2563eb);
+    outline-offset: 2px;
   }
 
-  /* Perfect centering */
   .preview {
     display: grid;
-    place-items: center;
-    min-height: 72px;
-  }
-  .preview :global(svg) {
-    display: block;
+    gap: .5rem;
+    padding-top: .25rem;
   }
 
-  .meta {
-    margin-top: .25rem;
-    display: grid; gap: .15rem;
-  }
-  .name {
-    font-size: .875rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-  }
-  .sub {
-    font-size: .75rem; opacity: .7; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  .chip {
+    padding: .5rem .625rem;
+    border: 1px dashed var(--border-muted-color, #e5e7eb);
+    border-radius: .5rem;
+    background: var(--background-elevation-2, #fafafa);
+    font-size: .875rem;
   }
 
-  .empty {
-    grid-column: 1 / -1;
-    opacity: .7;
-    padding: .75rem 0;
+  .note {
+    opacity: .75;
+    font-size: .8125rem;
+  }
+
+  @media (max-width: 920px) {
+    .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   }
 </style>
-
-
 
