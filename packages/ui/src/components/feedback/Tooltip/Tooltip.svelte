@@ -46,10 +46,10 @@
     coords = { top, left };
   }
 
-  const listeners = [
+  const listeners: [string, EventListenerOrEventListenerObject, boolean][] = [
     ['scroll', updatePosition, true],
     ['resize', updatePosition, true]
-  ] as const;
+  ];
 
   onMount(() => {
     for (const [evt, fn, cap] of listeners) window.addEventListener(evt, fn as any, cap);
@@ -90,7 +90,7 @@
 <style>
   .cl-tooltip-anchor { display: inline-flex; position: relative; }
   .cl-tooltip {
-    background-color: var(--color-surface-900, #333);
+    background-color: var(--tooltip-bg, #333);
     color: var(--color-surface-0, #fff);
     padding: 0.25rem 0.5rem;
     font-size: 0.75rem;

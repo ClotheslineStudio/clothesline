@@ -1,7 +1,7 @@
 /**
  * index.ts
  * Master export of all design tokens for the Clothesline system.
- * Combines all primitives + component-level tokens + utilities.
+ * Combines all primitives + semantic tokens + component-level tokens.
  */
 
 /* ---------------------------------------------
@@ -28,6 +28,15 @@ export { sizeTokens } from './sizes/sizes.ts';
 export { opacityTokens } from './primitives/opacity.ts';
 export { zIndexTokens } from './primitives/z-index.ts';
 
+/* ---------------------------------------------
+   SEMANTIC TOKENS
+---------------------------------------------- */
+import { textTokens } from './text/text.ts';
+import { linkTokens } from './link/link.ts';
+
+// Named exports for semantic tokens
+export { textTokens } from './text/text.ts';
+export { linkTokens } from './link/link.ts';
 
 /* ---------------------------------------------
    COMPONENT TOKENS
@@ -49,6 +58,9 @@ import { toastTokens } from './components/toast.ts';
 import { timelineTokens } from './components/timeline.ts';
 import { switchTokens } from './components/switch.ts';
 import { iconTokens } from './components/icons.ts';
+import { focusTokens } from './focus/focus.ts';
+import { borderStyleTokens } from './borders/border-styles.ts';
+import { focusStyleTokens } from './focus/focus-styles.ts';
 
 // Named exports for components
 export { avatarTokens } from './components/avatar.ts';
@@ -68,22 +80,26 @@ export { toastTokens } from './components/toast.ts';
 export { timelineTokens } from './components/timeline.ts';
 export { switchTokens } from './components/switch.ts';
 export { iconTokens } from './components/icons.ts';
-
+export { focusTokens } from './focus/focus.ts';
+export { borderStyleTokens } from './borders/border-styles.ts';
+export { focusStyleTokens } from './focus/focus-styles.ts';
 
 /* ---------------------------------------------
    BASE TOKENS (for theme builder)
+   IMPORTANT: baseTokens should be CSS-ready style tokens only.
+   Do NOT spread { scale, semantic } packs here.
 ---------------------------------------------- */
 export const baseTokens = {
-  // primitives
+  // style-level tokens
+  ...borderStyleTokens,
+  ...focusStyleTokens,
+
+  // ✅ backgrounds are CSS-ready style tokens too
   ...backgroundTokens,
-  ...borderTokens,
-  ...radiusTokens,
-  ...scalingTokens,
-  ...spacingTokens,
-  ...typographyTokens,
-  ...sizeTokens,
-  ...opacityTokens,
-  ...zIndexTokens,
+
+  // semantic style tokens
+  ...textTokens,
+  ...linkTokens,
 
   // components
   ...avatarTokens,
@@ -102,10 +118,8 @@ export const baseTokens = {
   ...toastTokens,
   ...timelineTokens,
   ...switchTokens,
-  ...iconTokens,
+  ...iconTokens
 };
-
-
 
 
 

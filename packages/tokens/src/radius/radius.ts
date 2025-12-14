@@ -40,8 +40,8 @@ export type RadiusSemanticKey =
   | 'badge'
   | 'card'
   | 'tooltip'
-  | 'focusRing'
-  | 'touchTarget';
+  | 'focus-ring'
+  | 'touch-target';
 
 export const radiusSemantic: Record<RadiusSemanticKey, RadiusScaleKey> = {
   // general scale
@@ -61,8 +61,8 @@ export const radiusSemantic: Record<RadiusSemanticKey, RadiusScaleKey> = {
   tooltip: '2',
 
   // accessibility
-  focusRing: '1',     // 2px → good for outlines
-  touchTarget: '8'    // larger rounding for big tap areas
+  'focus-ring': '1',     // 2px → good for outlines
+  'touch-target': '8'    // larger rounding for big tap areas
 };
 
 export const radiusTokens = {

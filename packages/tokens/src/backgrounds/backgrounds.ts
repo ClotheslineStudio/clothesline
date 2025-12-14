@@ -1,78 +1,58 @@
 /**
- * Background & surface tokens for Clothesline UI.
+ * Background tokens (CSS-ready, theme-coupled).
  *
- * Design goals:
- * - Token names are stable across modes (light/dark handled via modes.css overrides).
- * - Tokens represent semantic roles (page, app chrome, surfaces, overlays), not raw colors.
- * - Keep “image config” separate from background colors to avoid mixing concerns.
+ * Contract:
+ * - These are semantic roles, not a numeric scale.
+ * - Values MAY use var() and reference color ramps.
+ * - Emit under the `--background-*` namespace.
+ * - Prefer `*-vis` color vars so vision/contrast adjustments flow through.
  *
- * Emission:
- * - Keys are raw token names (no `--`).
- * - Build step emits them as CSS variables under the `--background-*` namespace
- *   unless you intentionally include the full prefix in the key.
+ * Notes:
+ * - `scrim` = the dimming layer behind modals/drawers. Pair with opacity at point-of-use.
+ * - `elevation-*` here is a *surface color step*, not a shadow. Shadows live in elevation tokens.
  */
-
 export const backgroundTokens = {
-  /* =========================================================
-     PAGE / DOCUMENT BACKGROUNDS
-     ========================================================= */
-  // The root/page background (behind everything).
-  "body-color": "var(--color-surface-50)",
+  background: {
+    /* PAGE / CANVAS */
+    body: "var(--color-surface-50-vis)",
+    app: "var(--color-surface-50-vis)",
 
-  // Default “app canvas” background for full-height layouts.
-  "app": "var(--color-surface-50)",
+    /* SURFACES */
+    surface: "var(--color-surface-100-vis)",
+    panel: "var(--color-surface-100-vis)",
 
-  /* =========================================================
-     SURFACE ROLES (LAYERED UI)
-     ========================================================= */
-  // Generic surface for sections/containers (cards often sit on this).
-  "surface": "var(--color-surface-100)",
+    /* ELEVATED SURFACES (visual layer, not shadow) */
+    "elevation-1": "var(--color-surface-100-vis)",
+    "elevation-2": "var(--color-surface-200-vis)",
 
-  // App chrome surfaces (sidebars, headers, panels).
-  "panel": "var(--color-surface-100)",
+    /* OVERLAYS */
+    scrim: "var(--color-surface-950-vis)",
 
-  // Elevation steps (raised surfaces).
-  // Keep these aligned with your elevation/shadow system.
-  "elevation-1": "var(--color-surface-100)",
-  "elevation-2": "var(--color-surface-200)",
+    /* DECORATIVE / OPTIONAL LAYERS */
+    "gradient-1": "none",
+    "gradient-2": "none",
+    overlay: "none",
+    "visual-noise": "none",
+    blur: "none",
+    animation: "none",
 
-  /* =========================================================
-     OVERLAYS / SCRIMS / EFFECTS (OPTIONAL)
-     ========================================================= */
-  // Used for modal backdrops, drawers, etc. (often combined with opacity tokens).
-  // Recommend pairing with an opacity token at point-of-use.
-  "scrim": "var(--color-surface-950)",
+    /* BACKGROUND IMAGE SETTINGS (OPTIONAL) */
+    image: "none",
+    "image-attachment": "fixed",
+    "image-position": "center",
+    "image-repeat": "no-repeat",
+    "image-size": "cover",
 
-  // Optional decorative layers (leave as "none" by default).
-  "gradient-1": "none",
-  "gradient-2": "none",
-  "overlay": "none",
-  "visual-noise": "none",
-  "blur": "none",
-  "animation": "none",
+    /* CONTEXTUAL */
+    secure: "var(--color-neutral-100-vis)",
+    print: "#fff",
+    admin: "var(--color-error-50-vis)",
 
-  /* =========================================================
-     BACKGROUND IMAGE (OPTIONAL)
-     ========================================================= */
-  "image": "none",
-  "image-attachment": "fixed",
-  "image-position": "center",
-  "image-repeat": "no-repeat",
-  "image-size": "cover",
-
-  /* =========================================================
-     CONTEXTUAL / SPECIALTY BACKGROUNDS
-     ========================================================= */
-  // These should be used sparingly; prefer semantic surface roles when possible.
-  "secure": "var(--color-neutral-100)",
-  "print": "#fff",
-  "admin": "var(--color-error-50)",
-
-  /* =========================================================
-     DEFAULT ALIAS
-     ========================================================= */
-  // Your system-wide default background role.
-  "default": "var(--background-body-color)"
+    /* DEFAULT */
+    default: "var(--background-body)"
+  }
 } as const;
+
+export type BackgroundTokenKey = keyof (typeof backgroundTokens)["background"];
 
 

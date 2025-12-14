@@ -67,8 +67,7 @@ import {
   typeRoles,
   typeScale,
   typeTracking,
-  typeWeights,
-  typographyTokens
+  typeWeights
 } from "../../tokens/src/typography/typography.ts";
 
 // Opacity
@@ -95,9 +94,61 @@ import {
   type ElevationSemanticKey
 } from "../../tokens/src/primitives/elevation.ts";
 
+import { textTokens } from "../../tokens/src/text/text.ts";
+import { linkTokens } from "../../tokens/src/link/link.ts";
+
+import {
+  focusScale,
+  focusSemantic
+} from "../../tokens/src/focus/focus.ts";
+
+
+
 // ============================================================================
 // Helpers
 // ============================================================================
+function filterBaseTokensForComponents(tokens: Record<string, any>) {
+  const omitPrefixes = [
+    "spacing-",
+    "radius-",
+    "size-",
+    "type-",
+    "opacity-",
+    "z-",
+    "elevation-",
+    // If you're emitting TEXT/LINK as their own sections:
+    "text-",
+    "anchor-",
+
+    // IMPORTANT: only omit border WIDTH tokens (emitted elsewhere)
+    "border-width-",
+
+    // If focus primitives/semantic are emitted in their own section:
+    // (keep this OFF if you still want focus style tokens inside BASE TOKENS)
+    // "focus-",
+  ];
+
+  const omitExact = new Set(["border-0", "border-1", "border-2", "border-4"]);
+
+  const out: Record<string, any> = {};
+  for (const [k, v] of Object.entries(tokens)) {
+    if (omitExact.has(k)) continue;
+    if (omitPrefixes.some((p) => k.startsWith(p))) continue;
+    out[k] = v;
+  }
+  return out;
+}
+
+
+
+function textVars(): string {
+  return toCSSVars(textTokens as any);
+}
+
+function linkVars(): string {
+  return toCSSVars(linkTokens as any);
+}
+
 
 function section(title: string, content: string): string {
   if (!content.trim()) return "";
@@ -281,13 +332,16 @@ function toCSSVars(
   const groupNames = Object.keys(groups).sort();
 
   const blocks = groupNames.map((group) => {
-    const lines = groups[group]
-      .sort((a, b) => a[0].localeCompare(b[0]))
-      .map(([k, v]) => `  ${k.startsWith("--") ? k : `--${k}`}: ${v};`)
-      .join("\n");
+  const collator = new Intl.Collator("en", { numeric: true, sensitivity: "base" });
 
-    return `  /* ${group.toUpperCase()} */\n${lines}`;
-  });
+  const lines = groups[group]
+    .sort((a, b) => collator.compare(a[0], b[0]))
+    .map(([k, v]) => `  ${k.startsWith("--") ? k : `--${k}`}: ${v};`)
+    .join("\n");
+
+  return `  /* ${group.toUpperCase()} */\n${lines}`;
+});
+
 
   return blocks.join("\n\n");
 }
@@ -510,10 +564,7 @@ function typographyVars(): string {
     out[`type-${role}-transform`] = config.transform;
   }
 
-  // Component typography tokens
-  for (const key in typographyTokens) {
-    out[key] = typographyTokens[key as keyof typeof typographyTokens];
-  }
+ 
 
   return toCSSVars(out);
 }
@@ -525,17 +576,26 @@ function typographyVars(): string {
 function opacityVars(): string {
   const out: Record<string, string> = {};
 
+  // 1) Emit primitives (scale) exactly once
   for (const key in opacityScale) {
     out[`opacity-${key}`] = opacityScale[key as OpacityScaleKey];
   }
 
+  // 2) Emit semantic aliases, but NEVER overwrite an existing primitive token
   for (const key in opacitySemantic) {
+    const cssKey = `opacity-${key}`;
+
+    // If this semantic name collides with a primitive name (e.g. "disabled", "backdrop"),
+    // do not overwrite the primitive value with a self-referencing var().
+    if (cssKey in out) continue;
+
     const scaleKey = opacitySemantic[key as OpacitySemanticKey];
-    out[`opacity-${key}`] = `var(--opacity-${scaleKey})`;
+    out[cssKey] = `var(--opacity-${scaleKey})`;
   }
 
   return toCSSVars(out);
 }
+
 
 // ============================================================================
 // 13. Z-index tokens
@@ -544,10 +604,12 @@ function opacityVars(): string {
 function zIndexVars(): string {
   const out: Record<string, string> = {};
 
+  // primitives (scale)
   for (const key in zIndexScale) {
     out[`z-${key}`] = zIndexScale[key as ZIndexScaleKey];
   }
 
+  // semantic aliases
   for (const key in zIndexSemantic) {
     const scaleKey = zIndexSemantic[key as ZIndexSemanticKey];
     out[`z-${key}`] = `var(--z-${scaleKey})`;
@@ -555,6 +617,36 @@ function zIndexVars(): string {
 
   return toCSSVars(out);
 }
+
+
+// ============================================================================
+// X. Focus tokens (width + offset)
+// ============================================================================
+
+function focusVars(): string {
+  const out: Record<string, string> = {};
+
+  // primitives (scale)
+  for (const key in focusScale) {
+    out[`focus-${key}`] = focusScale[key as keyof typeof focusScale];
+  }
+
+  // semantic aliases (IMPORTANT: do NOT double-prefix "focus-")
+  for (const key in focusSemantic) {
+    const scaleKey = focusSemantic[key as keyof typeof focusSemantic];
+
+    // scaleKey may be "2" or "offset-2"
+    const ref =
+      scaleKey.startsWith("offset-")
+        ? `var(--focus-${scaleKey})`
+        : `var(--focus-${scaleKey})`;
+
+    out[key] = ref;
+  }
+
+  return toCSSVars(out);
+}
+
 
 // ============================================================================
 // 14. Elevation (shadow) tokens
@@ -602,7 +694,8 @@ function onVars(mode: ThemeMode): string {
 // ============================================================================
 
 function themeCSS(theme: ThemeConfig): string {
-  const baseTokensCss = toCSSVars(baseTokens as any);
+  const baseTokensCss = toCSSVars(filterBaseTokensForComponents(baseTokens as any));
+
 
   // Shared across light/dark for this theme
   const shared = `
@@ -611,8 +704,11 @@ ${section("SPACING", spacingVars())}
 ${section("RADIUS", radiusVars())}
 ${section("SIZE", sizeVars())}
 ${section("BORDERS", borderVars())}
+${section("FOCUS", focusVars())}
 ${section("SCALING & MOTION", scalingVars())}
 ${section("TYPOGRAPHY", typographyVars())}
+${section("TEXT", textVars())}
+${section("LINK", linkVars())}
 ${section("OPACITY", opacityVars())}
 ${section("Z-INDEX", zIndexVars())}
 ${section("ELEVATION", elevationVars())}

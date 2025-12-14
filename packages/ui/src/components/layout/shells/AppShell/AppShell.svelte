@@ -9,13 +9,20 @@
 
   /* Responsive sidebar (off-canvas under breakpoint) */
   export let collapsible = true;
-  export let collapsed = true;                      // closed on mobile by default
+  export let collapsed = true; // closed on mobile by default
+
+  /**
+   * IMPORTANT:
+   * CSS cannot use var(--collapse-bp) inside @media().
+   * We keep this prop for future JS-driven/utility approaches,
+   * but the CSS uses a container-query cutoff.
+   */
   export let collapseBreakpoint = '1024px';
 
-  /* Page rhythm (shared gutter for AppBar, content, footer) */
+  /* Page rhythm */
   export let contentMaxWidth: string | null = '1200px';
-  export let pageGutterX = 'var(--spacing-4, 1rem)';
-  export let contentPaddingY = 'var(--spacing-6, 1.5rem)';
+  export let pageGutterX = 'var(--spacing-4)';
+  export let contentPaddingY = 'var(--spacing-6)';
 
   /* Overlay for off-canvas sidebar on small screens */
   export let showOverlay = true;
@@ -24,18 +31,17 @@
 <div
   class={`appshell ${className}`}
   style={`
-    --sidebar-width:${sidebarWidth};
-    --collapse-bp:${collapseBreakpoint};
-    --page-gutter-x:${pageGutterX};
-    --content-py:${contentPaddingY};
-    ${contentMaxWidth ? `--content-max:${contentMaxWidth};` : ''}
+    --sidebar-width: ${sidebarWidth};
+    --page-gutter-x: ${pageGutterX};
+    --content-py: ${contentPaddingY};
+    ${contentMaxWidth ? `--content-max: ${contentMaxWidth};` : ''}
+    --collapse-bp: ${collapseBreakpoint};
   `}
   data-collapsible={collapsible ? 'true' : 'false'}
   data-collapsed={collapsed ? 'true' : 'false'}
   data-sticky-header={stickyHeader ? 'true' : 'false'}
   data-sticky-footer={stickyFooter ? 'true' : 'false'}
 >
-  <!-- Header wrapper is "no-box" so AppBar can own the surface & gutters -->
   <header class="appshell__header">
     <slot name="header" />
   </header>
@@ -62,103 +68,131 @@
 </div>
 
 <style>
-  /* ===== Page palette (tokens flip automatically with your reversed ramps) */
+  /* ===== Root shell uses semantic background + on-surface */
   .appshell {
-    background: var(--color-surface-50);
-    color: var(--on-surface);              /* one source of truth for text */
+    background: var(--background-body);
+    color: var(--on-surface);
     min-height: 100dvh;
     display: flex;
     flex-direction: column;
+
+    /* Enables container queries for responsive off-canvas behavior */
+    container-type: inline-size;
+    container-name: appshell;
   }
 
-  /* ===== Header: let AppBar fill edge-to-edge and own the surface */
+  /* ===== Header: allow AppBar to own surface/gutters */
   .appshell__header {
     flex-shrink: 0;
-    position: sticky;
-    top: 0;
-    z-index: 20;
     background: transparent;
     border: 0;
     padding: 0;
-    display: contents;                     /* ← wrapper disappears, no side gaps */
+    display: contents;
   }
-  [data-sticky-header="false"] .appshell__header { position: static; }
 
-  /* ===== Body (sidebar + content) */
+  /* If the consumer disables sticky header, AppBar should handle it (no wrapper positioning). */
+  /* We avoid position: sticky here because AppBar already has sticky support. */
+
+  /* ===== Body */
   .appshell__body {
     display: flex;
     flex: 1;
-    min-height: 0;                         /* enables children to scroll */
+    min-height: 0; /* enables children to scroll */
   }
 
   .appshell__sidebar {
     width: var(--sidebar-width);
     flex-shrink: 0;
-    background: var(--color-surface-100);
-    color: inherit;                        /* inherits --on-surface */
-    border-right: 1px solid var(--color-surface-300);
+    background: var(--background-panel);
+    color: inherit;
+    border-right: var(--border-1) solid var(--border-color-default);
     overflow: auto;
-    padding: var(--spacing-4, 1rem) var(--page-gutter-x);
+
+    /* Align sidebar content with the overall gutter system */
+    padding: var(--spacing-4) var(--page-gutter-x);
   }
 
   .appshell__content {
     flex: 1;
     min-width: 0;
     overflow: auto;
-    background: var(--color-surface-50);
+    background: var(--background-app);
     color: inherit;
   }
+
   .appshell__content-inner {
     margin-inline: auto;
     max-width: var(--content-max, none);
     padding: var(--content-py) var(--page-gutter-x);
   }
 
-  /* ===== Footer (owns its surface; text inherits) */
+  /* ===== Footer */
   .appshell__footer {
     flex-shrink: 0;
-    background: var(--color-surface-100);
+    background: var(--background-panel);
     color: inherit;
-    border-top: 1px solid var(--color-surface-300);
-    padding: var(--spacing-4, 1rem);
+    border-top: var(--border-1) solid var(--border-color-default);
+
+    padding: var(--spacing-4);
     padding-left: calc(var(--page-gutter-x) + env(safe-area-inset-left));
     padding-right: calc(var(--page-gutter-x) + env(safe-area-inset-right));
+
     text-align: center;
     font-size: 0.875rem;
   }
+
   [data-sticky-footer="true"] .appshell__footer {
     position: sticky;
     bottom: 0;
-    z-index: 10;
+    z-index: var(--z-sticky-header, 500);
   }
 
-  /* ===== Responsive off-canvas sidebar ===== */
-  @media (max-width: var(--collapse-bp)) {
+  /* ===== Overlay (default hidden; only shown when sidebar open under collapse) */
+  .appshell__overlay { display: none; }
+
+  /* =========================================================
+     Responsive off-canvas sidebar
+     Uses container query to avoid var() in @media() constraints.
+     Cutoff: 1024px by default (matches your prop value).
+     If you change collapseBreakpoint at runtime, CSS won't react—
+     that’s by design; CSS cannot do dynamic media queries safely.
+     ========================================================= */
+
+  @container appshell (max-width: 1024px) {
     [data-collapsible="true"] .appshell__body { position: relative; }
 
     [data-collapsible="true"] .appshell__sidebar {
       position: absolute;
       inset: 0 auto 0 0;
       height: 100%;
-      max-width: min(88vw, var(--sidebar-width));
+      max-width: min(88cqw, var(--sidebar-width));
       transform: translateX(-100%);
-      transition: transform .2s ease;
-      box-shadow: 0 10px 30px rgba(0,0,0,.25);
-      z-index: 30;
+      transition: transform var(--motion-duration-base, 250ms) var(--motion-ease, ease-in-out);
+      box-shadow: var(--elevation-8, 0 10px 30px rgba(0,0,0,.25));
+      z-index: var(--z-overlay, 5000);
     }
+
     [data-collapsible="true"][data-collapsed="false"] .appshell__sidebar {
       transform: translateX(0);
     }
 
-    /* Dim overlay when sidebar is open */
-    [data-collapsible="true"] .appshell__overlay { display: none; }
     [data-collapsible="true"][data-collapsed="false"] .appshell__overlay {
       display: block;
       position: absolute;
       inset: 0;
-      background: rgba(0,0,0,.35);
-      z-index: 25;
+
+      /* Pair scrim color with an opacity token */
+      background: var(--background-scrim);
+      opacity: var(--opacity-scrim-medium, 0.32);
+
+      z-index: var(--z-overlay, 5000);
     }
   }
+
+  /* Optional: reduced motion support via your scaling/motion tokens */
+  @media (prefers-reduced-motion: reduce) {
+    .appshell__sidebar { transition: none; }
+  }
 </style>
+
 

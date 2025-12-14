@@ -2,7 +2,7 @@
   import { onMount } from 'svelte';
   import { browser } from '$app/environment';
   import { setTheme } from '@clothesline/themes';
-  import Tooltip from '$lib/components/feedback/Tooltip/Tooltip.svelte';
+  import { Tooltip } from '@clothesline/ui';
   import { Github, Laptop, Tablet, Smartphone, Sun, Moon, Clipboard } from 'lucide-svelte';
 
   export let title: string = '';

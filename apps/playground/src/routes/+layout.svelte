@@ -17,7 +17,7 @@
   import ModeToggle from '$lib/ModeToggle.svelte';
 
   // Icons
-  import { Menu, Github} from 'lucide-svelte';
+  import { Menu, Github } from 'lucide-svelte';
   import { Search as SearchIcon } from '@clothesline/icons';
 
   // Sidebar collapse (AppShell controls off-canvas on small screens)
@@ -93,11 +93,13 @@
   contentMaxWidth="1200px"
   pageGutterX="var(--spacing-4, 1rem)"
 >
-  <!-- Header (AppBar fully owns surface and gutters via AppShell) -->
   <div slot="header">
     <AppBar sticky border elevated>
       <div slot="left" class="brand">
-        <button class="icon-btn" on:click={toggleSidebar} aria-label="Toggle sidebar"><Menu size={18} /></button>
+        <button class="icon-btn" on:click={toggleSidebar} aria-label="Toggle sidebar">
+          <Menu size={18} />
+        </button>
+
         <a href="/" class="brand-link">
           <img src="/Logo-01.svg" alt="Logo" class="brand-logo" />
           <span class="brand-name">Clothesline UI</span>
@@ -118,24 +120,26 @@
           <input type="search" placeholder="Search…" />
         </div>
 
-        <!-- Theme toggle lives in the header now -->
         <ThemePicker />
-
         <ModeToggle size={32} rounded={8} />
 
-        <a href="https://github.com/clotheslinestudio/ui" target="_blank" rel="noopener noreferrer" class="icon-link" aria-label="GitHub">
+        <a
+          href="https://github.com/clotheslinestudio/ui"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="icon-link"
+          aria-label="GitHub"
+        >
           <Github size={18} />
         </a>
       </div>
     </AppBar>
   </div>
 
-  <!-- Sidebar -->
   <div slot="sidebar">
     <Sidebar {routes} />
   </div>
 
-  <!-- Content -->
   <div slot="content">
     <ThreeColumn maxWidth={920} tocWidth={280} stickyTop={16}>
       <div slot="main">
@@ -147,7 +151,6 @@
     </ThreeColumn>
   </div>
 
-  <!-- Footer -->
   <div slot="footer">
     <Footer>
       <div slot="left">
@@ -161,8 +164,8 @@
         </nav>
       </div>
       <div slot="right">
-        <a href="https://twitter.com" target="_blank">Twitter</a>
-        <a href="https://discord.gg" target="_blank">Discord</a>
+        <a href="https://twitter.com" target="_blank" rel="noreferrer">Twitter</a>
+        <a href="https://discord.gg" target="_blank" rel="noreferrer">Discord</a>
       </div>
     </Footer>
   </div>
@@ -170,57 +173,72 @@
 
 <style>
   /* Brand */
-  .brand { display:flex; align-items:center; gap:.5rem; }
-  .brand-link { display:flex; align-items:center; gap:.5rem; color: inherit; text-decoration: none; }
-  .brand-logo { height: 2rem; }
+  .brand { display: flex; align-items: center; gap: var(--spacing-2); }
+  .brand-link {
+    display: flex; align-items: center; gap: var(--spacing-2);
+    color: var(--on-surface-strong);
+    text-decoration: none;
+  }
+  .brand-logo { height: var(--size-control-md); }
   .brand-name { font-weight: 700; }
 
   /* Center nav */
-  .main-nav { display:flex; gap:1rem; font-size:.9rem; }
+  .main-nav { display: flex; gap: var(--spacing-4); font-size: 0.9rem; }
   .main-nav a {
-    text-decoration:none;
-    color: var(--base-font-color);
-    opacity:.85;
-    padding:.25rem .5rem;
-    border-radius:.5rem;
+    text-decoration: none;
+    color: var(--on-surface);
+    opacity: 0.92;
+    padding: var(--spacing-1) var(--spacing-2);
+    border-radius: var(--radius-interactive);
+    transition: background var(--motion-duration-fast) var(--motion-ease),
+                opacity var(--motion-duration-fast) var(--motion-ease);
   }
-  .main-nav a:hover { opacity:1; background: color-mix(in oklab, var(--base-font-color) 10%, transparent); }
-  :global(html[data-mode="dark"]) .main-nav a { color: var(--base-font-color-dark); }
+  .main-nav a:hover {
+    opacity: 1;
+    background: color-mix(in oklab, var(--on-surface) 10%, transparent);
+  }
 
   /* Right actions */
-  .actions { display:flex; align-items:center; gap:.5rem; }
+  .actions { display: flex; align-items: center; gap: var(--spacing-2); }
 
-  .icon-btn, .icon-link {
-    display:inline-flex; align-items:center; justify-content:center;
-    width:32px; height:32px; border-radius:.5rem;
-    color: inherit; opacity:.9; transition: background .15s ease, opacity .15s ease;
+  .icon-btn,
+  .icon-link {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: var(--size-control-md);
+    height: var(--size-control-md);
+    border-radius: var(--radius-interactive);
+    color: var(--on-surface);
+    opacity: 0.95;
+    transition: background var(--motion-duration-fast) var(--motion-ease),
+                opacity var(--motion-duration-fast) var(--motion-ease);
   }
-  .icon-btn:hover, .icon-link:hover { opacity:1; background: color-mix(in oklab, currentColor 20%, transparent); }
+  .icon-btn:hover,
+  .icon-link:hover {
+    opacity: 1;
+    background: color-mix(in oklab, var(--background-scrim) 12%, transparent);
+  }
 
-  /* Search box (dark-safe) */
+  /* Search (token driven; no mode-specific overrides) */
   .search {
-    display:flex; align-items:center; gap:.4rem;
-    border:1px solid var(--color-surface-300);
-    background: color-mix(in oklab, var(--color-surface-50) 88%, transparent);
-    padding:.25rem .5rem; border-radius:.5rem;
+    display: flex; align-items: center; gap: var(--spacing-2);
+    border: var(--border-1) solid var(--border-color-default);
+    background: var(--background-surface);
+    padding: var(--spacing-1) var(--spacing-2);
+    border-radius: var(--radius-interactive);
   }
   .search input {
-    border:0; outline:0; background:transparent;
-    color: var(--base-font-color);
-    font-size:.9rem; min-width:12ch;
+    border: 0; outline: 0; background: transparent;
+    color: var(--on-surface);
+    font-size: 0.9rem;
+    min-width: 12ch;
   }
-  .search input::placeholder { color: var(--text-muted, #667085); }
-  :global(html[data-mode="dark"]) .search {
-    border-color: var(--color-surface-700);
-    background: color-mix(in oklab, var(--color-surface-900) 90%, transparent);
-  }
-  :global(html[data-mode="dark"]) .search input { color: var(--base-font-color-dark); }
-  :global(html[data-mode="dark"]) .search input::placeholder { color: var(--text-muted, #a1a1aa); }
+  .search input::placeholder { color: var(--on-surface-muted); }
 
   /* Footer nav */
-  .footer-nav { display:flex; gap:1rem; font-size:.8rem; opacity:.9; }
-  .footer-nav a { text-decoration:none; color: inherit; }
+  .footer-nav { display: flex; gap: var(--spacing-4); font-size: 0.8rem; opacity: 0.92; }
+  .footer-nav a { text-decoration: none; color: var(--on-surface); }
 </style>
+
 
 
 
