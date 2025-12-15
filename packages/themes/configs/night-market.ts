@@ -1,4 +1,5 @@
-import type { ThemeConfig } from 'src/types.js';
+import type { ThemeConfig } from '../src/types.js';
+
 
 /**
  * Night Market — calibrated OKLCH seeds.

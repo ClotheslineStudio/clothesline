@@ -1,5 +1,6 @@
 // packages/themes/configs/copper-sun.ts
-import type { ThemeConfig } from 'src/types.js';
+import type { ThemeConfig } from '../src/types.js';
+
 
 /**
  * Copper Sun — calibrated OKLCH seeds.
@@ -63,7 +64,7 @@ export const copperSunTheme: ThemeConfig = {
         high: { vars: { '--focus-ring': 'oklch(82% 0.25 230)' } }
       },
       vision: {
-        mono: { vars: { '--neutral-boost': 0.02 }, note: 'Used by generator to widen neutral steps' }
+        monochromacy: { vars: { '--neutral-boost': 0.02 }, note: 'Used by generator to widen neutral steps' }
       },
       motor: {
         kbd: { selectors: [':focus-visible'], note: 'See modes.css for the actual outline rule' }

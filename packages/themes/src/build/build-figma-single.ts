@@ -12,22 +12,22 @@ import fs from "fs-extra";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-import type { ThemeConfig } from "./types.ts";
-import { generateRampFromSeed, RAMP_STEPS as rampNames } from "../../tokens/utils/generateRamps.js";
-import { toOklch } from "../../tokens/utils/colorEngine.js";
+import type { ThemeConfig } from "../types.ts";
+import { generateRampFromSeed, RAMP_STEPS as rampNames } from "../../../tokens/utils/generateRamps.js";
+import { toOklch } from "../../../tokens/utils/colorEngine.js";
 import { baseTokens } from "@clothesline/tokens";
 
 // ===============================================================
 // Theme imports
 // ===============================================================
-import { clotheslineTheme } from "../configs/clothesline.ts";
-import { timberlineTheme }   from "../configs/timberline.ts";
-import { nightMarketTheme }  from "../configs/night-market.ts";
-import { retrogradeTheme }   from "../configs/retrograde.ts";
-import { tidalGlassTheme }   from "../configs/tidal-glass.ts";
-import { copperSunTheme }    from "../configs/copper-sun.ts";
-import { milkywayTheme }     from "../configs/milkyway.ts";
-import { bigSkyTheme }       from "../configs/bigsky.ts";
+import { clotheslineTheme } from "../../configs/clothesline.ts";
+import { timberlineTheme }   from "../../configs/timberline.ts";
+import { nightMarketTheme }  from "../../configs/night-market.ts";
+import { retrogradeTheme }   from "../../configs/retrograde.ts";
+import { tidalGlassTheme }   from "../../configs/tidal-glass.ts";
+import { copperSunTheme }    from "../../configs/copper-sun.ts";
+import { milkywayTheme }     from "../../configs/milkyway.ts";
+import { bigSkyTheme }       from "../../configs/bigsky.ts";
 
 const THEMES: ThemeConfig[] = [
   clotheslineTheme,
@@ -152,11 +152,17 @@ function buildGlobalSet() {
 }
 
 // ===============================================================
-// Output location (CORRECTED)
+// Output locations (package-root anchored)
 // ===============================================================
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const outFile = path.resolve(__dirname, "../tokens/tokens.json");
-const distFile = path.resolve(__dirname, "../dist/formats/figma/tokens-studio.single.json");
+const pkgRoot = path.resolve(__dirname, '../..'); // …/packages/themes
+
+// Tokens Studio “live” file (tracked in git)
+const outFile = path.join(pkgRoot, 'tokens', 'tokens.json');
+
+// Optional: a copy under dist for inspection/artifacts
+const distFile = path.join(pkgRoot, 'dist', 'formats', 'figma', 'tokens-studio.single.json');
+
 
 
 // ===============================================================
@@ -185,8 +191,9 @@ await fs.outputJson(outFile, file, { spaces: 2 });
 await fs.ensureDir(path.dirname(distFile));
 await fs.outputJson(distFile, file, { spaces: 2 });
 
-console.log("✓ Wrote", outFile);
-console.log("✓ Wrote", distFile);
+console.log('✓ Wrote', outFile);
+console.log('✓ Wrote', distFile);
+
 }
 
 run().catch(err => {

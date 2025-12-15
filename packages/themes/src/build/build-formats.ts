@@ -7,22 +7,24 @@ import { fileURLToPath } from 'url';
 // import { rampFormatsFromSeed, rampNames } from '../../tokens/colors/index.js';
 // Removed duplicate import; all imports must be at the top level.
 
-import type { ThemeConfig } from './types.ts';
-import type { OklchColor } from '../../tokens/utils/colorEngine.js';
-import { toOklch } from '../../tokens/utils/colorEngine.js';
+import type { ThemeConfig } from '../types.ts';
+import type { OklchColor } from '../../../tokens/utils/colorEngine.js';
+import { toOklch } from '../../../tokens/utils/colorEngine.js';
 
 // Theme configs (same list you use in build.ts)
-import { clotheslineTheme } from '../configs/clothesline.ts';
-import { timberlineTheme }   from '../configs/timberline.ts';
-import { nightMarketTheme }  from '../configs/night-market.ts';
-import { retrogradeTheme }   from '../configs/retrograde.ts';
-import { tidalGlassTheme }   from '../configs/tidal-glass.ts';
-import { copperSunTheme }    from '../configs/copper-sun.ts';
-import { milkywayTheme }     from '../configs/milkyway.ts';
-import { bigSkyTheme }       from '../configs/bigsky.ts';
+import { clotheslineTheme } from '../../configs/clothesline.ts';
+import { timberlineTheme }   from '../../configs/timberline.ts';
+import { nightMarketTheme }  from '../../configs/night-market.ts';
+import { retrogradeTheme }   from '../../configs/retrograde.ts';
+import { tidalGlassTheme }   from '../../configs/tidal-glass.ts';
+import { copperSunTheme }    from '../../configs/copper-sun.ts';
+import { milkywayTheme }     from '../../configs/milkyway.ts';
+import { bigSkyTheme }       from '../../configs/bigsky.ts';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const distDir   = path.resolve(__dirname, '../dist/formats');
+const pkgRoot = path.resolve(__dirname, '../..'); // …/packages/themes
+const distDir = path.join(pkgRoot, 'dist', 'formats');
+
 
 type ThemeMode = 'light' | 'dark';
 const ROLES = [
@@ -32,7 +34,7 @@ const ROLES = [
 ] as const;
 type RoleName = typeof ROLES[number];
 
-import { generateRampFromSeed, RAMP_STEPS as rampNames } from '../../tokens/utils/generateRamps.js';
+import { generateRampFromSeed, RAMP_STEPS as rampNames } from '../../../tokens/utils/generateRamps.js';
 
 /** Coerce various config shapes into an OKLCH seed. (Copied from build.ts pattern) */
 type Step = (typeof rampNames)[number];

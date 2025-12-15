@@ -5,8 +5,7 @@
   "main": "src/index.ts",
   "exports": {
     ".": "./src/index.ts",
-    "./setTheme": "./src/setTheme.ts",
-    "./modes": "./src/modes.ts",
+    "./modes": "./src/runtime/modes.ts",
     "./css/foundations.css": "./dist/css/foundations.css",
     "./css/components.css": "./dist/css/components.css",
     "./css/semantic-colors.css": "./dist/css/semantic-colors.css",
@@ -23,12 +22,14 @@
     "tokens"
   ],
   "scripts": {
-    "build": "tsx src/build.ts",
-    "build:watch": "chokidar \"src/**/*.{ts,json}\" \"configs/**/*.{ts,json}\" -c \"pnpm build\"",
-    "build:formats": "tsx src/build-formats.ts",
-    "build:figma:single": "tsx src/build-figma-single.ts",
-    "build:all": "pnpm run build && pnpm run build:formats && pnpm run build:figma:single"
-  },
+  "build": "tsx src/build/build.ts",
+  "build:formats": "tsx src/build/build-formats.ts",
+  "build:figma:single": "tsx src/build/build-figma-single.ts",
+  "build:all": "pnpm run build && pnpm run build:formats && pnpm run build:figma:single",
+  "build:watch": "chokidar \"src/**/*.{ts,json}\" \"configs/**/*.{ts,json}\" -c \"pnpm run build:all\""
+
+},
+
   "devDependencies": {
     "@clothesline/tokens": "workspace:*",
     "@types/fs-extra": "^11.0.4",

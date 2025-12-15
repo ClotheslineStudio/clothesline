@@ -1,5 +1,6 @@
 // packages/themes/configs/clothesline.ts
-import type { ThemeConfig } from 'src/types.js';
+import type { ThemeConfig } from '../src/types.js';
+
 
 /**
  * Clothesline — unified OKLCH seeds.
