@@ -12,8 +12,6 @@ export default defineConfig({
     alias: {
       '@clothesline/ui': resolve(__dirname, '../../packages/ui/src'),
       '@clothesline/icons': resolve(__dirname, '../..', 'packages', 'icons'),
-      // 👇 IMPORTANT: drop `/src` so CSS imports can see /dist
-      '@clothesline/themes': resolve(__dirname, '../../packages/themes'),
       '@clothesline/tokens': resolve(__dirname, '../../packages/tokens/src')
     }
   },
