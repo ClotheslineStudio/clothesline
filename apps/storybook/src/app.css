@@ -2,15 +2,19 @@
    CLOTHESLINE THEME IMPORTS
    (via @clothesline/themes package exports)
    ========================================================= */
-@import "@clothesline/themes/clothesline.css";
-@import "@clothesline/themes/timberline.css";
-@import "@clothesline/themes/retrograde.css";
-@import "@clothesline/themes/milkyway.css";
-@import "@clothesline/themes/copper-sun.css";
-@import "@clothesline/themes/tidal-glass.css";
-@import "@clothesline/themes/night-market.css";
-@import "@clothesline/themes/bigsky.css";
-@import "@clothesline/themes/modes.css";
+/* === Theme Imports === */
+@import '@clothesline/themes/css/themes/clothesline.css';
+@import '@clothesline/themes/css/themes/timberline.css';
+@import '@clothesline/themes/css/themes/retrograde.css';
+@import '@clothesline/themes/css/themes/milkyway.css';
+@import '@clothesline/themes/css/themes/copper-sun.css';
+@import '@clothesline/themes/css/themes/tidal-glass.css';
+@import '@clothesline/themes/css/themes/night-market.css';
+@import '@clothesline/themes/css/themes/bigsky.css';
+@import '@clothesline/themes/css/modes.css';
+@import '@clothesline/themes/css/foundations.css';
+@import '@clothesline/themes/css/components.css';
+@import '@clothesline/themes/css/semantic-colors.css';
 
 /* =========================================================
    TAILWIND v4 ENTRY

@@ -156,6 +156,8 @@ function buildGlobalSet() {
 // ===============================================================
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const outFile = path.resolve(__dirname, "../tokens/tokens.json");
+const distFile = path.resolve(__dirname, "../dist/formats/figma/tokens-studio.single.json");
+
 
 // ===============================================================
 // Build
@@ -177,10 +179,14 @@ async function run() {
     file[`${theme.name}.dark`]  = buildColorSet(theme, "dark");
   }
 
-  await fs.ensureDir(path.dirname(outFile));
-  await fs.outputJson(outFile, file, { spaces: 2 });
+await fs.ensureDir(path.dirname(outFile));
+await fs.outputJson(outFile, file, { spaces: 2 });
 
-  console.log("✓ Wrote", outFile);
+await fs.ensureDir(path.dirname(distFile));
+await fs.outputJson(distFile, file, { spaces: 2 });
+
+console.log("✓ Wrote", outFile);
+console.log("✓ Wrote", distFile);
 }
 
 run().catch(err => {

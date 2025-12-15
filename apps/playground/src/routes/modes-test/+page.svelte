@@ -1,402 +1,623 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { browser } from '$app/environment';
-  import { setTheme, type Vision, type Contrast } from '@clothesline/themes';
-
-  type ThemeName =
-    | 'clothesline'
-    | 'timberline'
-    | 'night-market'
-    | 'retrograde'
-    | 'tidal-glass'
-    | 'copper-sun'
-    | 'milkyway'
-    | 'bigsky';
 
   type Mode = 'light' | 'dark';
-  type Reading = 'none' | 'dyslexia' | 'plain';
-  type Motion = 'normal' | 'reduced' | 'off';
 
-  // --- Controls ---
-  let theme: ThemeName = 'night-market';
-  let mode: Mode = 'light';
-
-  let contrastKind: 'normal' | 'high' | 'custom' = 'normal';
-  let contrastFactor = 1.12;
-
-  let vision: Vision = 'none';
-  let reading: Reading = 'none';
-  let motion: Motion = 'normal';
-
-  // Optional knobs (ModeState supports these; whether they *visibly* do anything depends on your CSS)
-  let typescale = 1.0;
-  let focus = true;
-  let rtl = false;
-
-  let uiSimplified = false;
-  let uiVisualAlerts = false;
-  let uiCaptions = false;
-
-  let motorLargeHit = false;
-  let motorKbd = false;
-  let motorSticky = false;
-
-  let devA11y = false;
-  let devGrid = false;
-  let devTokens = false;
-
-  // --- Snapshot ---
-  const TOKENS = [
-    '--background-app',
-    '--background-panel',
-    '--base-font-color',
-    '--on-surface',
-    '--on-surface-muted',
-    '--border-default-color',
-    '--ring-offset-color',
-
-    '--color-primary-500',
-    '--color-secondary-500',
-    '--color-accent-500',
-    '--color-surface-50',
-    '--color-surface-900',
-
-    // vision pipeline “CT” vars (if these are unset, vision won’t work)
-    '--color-primary-500-ct',
-    '--color-secondary-500-ct',
-    '--color-surface-500-ct',
-
-    // typography + shape
-    '--font-family-base',
-    '--font-family-dyslexia',
-    '--radius-base',
-    '--radius-sm',
-    '--radius-md',
-
-    // contrast factor hook (your dark block shows --k-ct usage)
-    '--k-ct'
+  const roles = [
+    'primary',
+    'secondary',
+    'tertiary',
+    'success',
+    'warning',
+    'error',
+    'info',
+    'accent',
+    'neutral',
+    'surface'
   ] as const;
 
-  let htmlAttrs = '';
-  let inlineContrast = '';
-  let computed: Record<string, string> = {};
+  type Role = (typeof roles)[number];
 
-  function readVar(root: HTMLElement, name: string) {
-    return getComputedStyle(root).getPropertyValue(name).trim() || '(unset)';
+  const allSteps = ['50','100','200','300','400','500','600','700','800','900','950'] as const;
+  const compactSteps = ['100','200','300','400','500','600','700','800','900'] as const;
+
+  // Keep whatever you have here; leaving as-is.
+  const themes = ['bigsky'] as const;
+
+  type VisionPreset = 'none' | 'protanopia' | 'deuteranopia' | 'tritanopia' | 'monochromacy';
+
+  // Replace "final" with "role"
+  type Stage = 'base' | 'ct' | 'vis' | 'role';
+
+  const stages: Array<{ id: Stage; label: string; suffix: string }> = [
+    { id: 'base', label: 'base', suffix: '-base' },
+    { id: 'ct', label: 'ct', suffix: '-ct' },
+    { id: 'vis', label: 'vis', suffix: '-vis' },
+    { id: 'role', label: 'role', suffix: '' }
+  ];
+
+  let theme: (typeof themes)[number] = 'bigsky';
+  let mode: Mode = 'light';
+
+  let contrastFactor = 1.0;
+  let visionPreset: VisionPreset = 'none';
+
+  let showAllRoles = false;
+  let selectedRole: Role = 'primary';
+
+  let useCompactSteps = true;
+  $: steps = (useCompactSteps ? compactSteps : allSteps);
+
+  let activeStages: Stage[] = ['base', 'ct', 'role'];
+
+  // Debug state
+  let computedAt = '';
+  let missing: string[] = [];
+  let sampleVars: Array<{ name: string; value: string }> = [];
+
+  // Extra debug: show what the DOM is *actually* set to
+  let domTheme = '';
+  let domMode: Mode | '' = '';
+
+  function htmlEl() {
+    return document.documentElement;
   }
 
-  function snapshot() {
+  /** Read current theme/mode from the DOM and sync local state to it. */
+  function syncThemeModeFromDOM() {
+    const el = htmlEl();
+    domTheme = el.dataset.theme ?? '';
+    domMode = (el.dataset.mode as Mode) ?? '';
+
+    // Only sync if DOM has values; prevents wiping local picks when DOM is empty.
+    if (domTheme) {
+      // @ts-expect-error: DOM may contain themes not listed in `themes` const
+      theme = domTheme;
+    }
+    if (domMode === 'light' || domMode === 'dark') {
+      mode = domMode;
+    }
+  }
+
+  /** Only called when the user changes theme/mode *on this page*. */
+  function applyThemeModeToDOM() {
+    const el = htmlEl();
+    el.dataset.theme = String(theme);
+    el.dataset.mode = mode;
+    syncThemeModeFromDOM();
+  }
+
+  /** Contrast should NEVER rewrite theme/mode. */
+  function applyContrastFactor() {
+    htmlEl().style.setProperty('--contrast-factor', String(contrastFactor));
+  }
+
+  function applyVisionPreset(preset: VisionPreset) {
+    const el = htmlEl();
+
+    for (const r of roles) {
+      el.style.setProperty(`--vision-${r}-l-shift`, '0%');
+      el.style.setProperty(`--vision-${r}-c-scale`, '1');
+      el.style.setProperty(`--vision-${r}-h-shift`, '0deg');
+    }
+
+    if (preset === 'none') return;
+
+    const presets: Record<VisionPreset, { l: string; c: string; h: string }> = {
+      none: { l: '0%', c: '1', h: '0deg' },
+      protanopia: { l: '0%', c: '0.85', h: '12deg' },
+      deuteranopia: { l: '0%', c: '0.85', h: '-10deg' },
+      tritanopia: { l: '0%', c: '0.88', h: '18deg' },
+      monochromacy: { l: '0%', c: '0.05', h: '0deg' }
+    };
+
+    const p = presets[preset];
+    for (const r of roles) {
+      el.style.setProperty(`--vision-${r}-l-shift`, p.l);
+      el.style.setProperty(`--vision-${r}-c-scale`, p.c);
+      el.style.setProperty(`--vision-${r}-h-shift`, p.h);
+    }
+  }
+
+  function tokenName(role: Role, step: string, stage: Stage) {
+    const suffix = stages.find((s) => s.id === stage)?.suffix ?? '';
+    return `--color-${role}-${step}${suffix}`;
+  }
+
+  function expectedVars(): string[] {
+    const vars: string[] = [];
+
+    vars.push('--on-primary', '--on-secondary', '--on-tertiary', '--on-success', '--on-warning', '--on-error', '--on-info');
+
+    vars.push('--k-ct', '--contrast-factor');
+    for (const r of roles) {
+      vars.push(`--vision-${r}-l-shift`, `--vision-${r}-c-scale`, `--vision-${r}-h-shift`);
+    }
+
+    const rolesToCheck = showAllRoles ? roles : ([selectedRole] as const);
+
+    for (const r of rolesToCheck) {
+      for (const s of steps) {
+        for (const st of activeStages) {
+          vars.push(tokenName(r, s, st));
+        }
+      }
+    }
+
+    return vars;
+  }
+
+  function refreshDebug() {
     if (!browser) return;
-    const html = document.documentElement;
 
-    htmlAttrs = [
-      `data-theme=${html.getAttribute('data-theme') ?? ''}`,
-      `data-mode=${html.getAttribute('data-mode') ?? ''}`,
-      `data-contrast=${html.getAttribute('data-contrast') ?? ''}`,
-      `data-vision=${html.getAttribute('data-vision') ?? ''}`,
-      `data-reading=${html.getAttribute('data-reading') ?? ''}`,
-      `data-motion=${html.getAttribute('data-motion') ?? ''}`,
-      `data-typescale=${html.getAttribute('data-typescale') ?? ''}`,
-      `data-focus=${html.getAttribute('data-focus') ?? ''}`,
-      `data-rtl=${html.getAttribute('data-rtl') ?? ''}`,
-      `data-ui=${html.getAttribute('data-ui') ?? ''}`,
-      `data-motor=${html.getAttribute('data-motor') ?? ''}`,
-      `data-dev=${html.getAttribute('data-dev') ?? ''}`
-    ].join('  |  ');
+    const el = htmlEl();
+    const cs = getComputedStyle(el);
 
-    inlineContrast = html.style.getPropertyValue('--contrast-factor').trim() || '(unset)';
+    const vars = expectedVars();
+    const missingNext: string[] = [];
 
-    const out: Record<string, string> = {};
-    for (const t of TOKENS) out[t] = readVar(html, t);
-    computed = out;
+    for (const v of vars) {
+      const val = cs.getPropertyValue(v).trim();
+      if (!val) missingNext.push(v);
+    }
+
+    missing = missingNext;
+
+    const sample = [
+      `--k-ct`,
+      `--color-${selectedRole}-500-base`,
+      `--color-${selectedRole}-500-ct`,
+      `--color-${selectedRole}-500-vis`,
+      `--color-${selectedRole}-500`,
+      `--on-primary`
+    ];
+
+    sampleVars = sample.map((name) => ({ name, value: cs.getPropertyValue(name).trim() }));
+    computedAt = new Date().toLocaleString();
+
+    syncThemeModeFromDOM();
   }
 
-  function buildContrast(): Contrast {
-    if (contrastKind === 'custom') return { custom: Number(contrastFactor) };
-    return contrastKind;
+  /** Use this for theme/mode changes (page controls). */
+  function applyAll() {
+    if (!browser) return;
+    applyThemeModeToDOM();
+    applyContrastFactor();
+    applyVisionPreset(visionPreset);
+    requestAnimationFrame(refreshDebug);
   }
 
-  function listFromChecks(map: Record<string, boolean>) {
-    return Object.entries(map)
-      .filter(([, on]) => on)
-      .map(([k]) => k);
+  /** Use this for contrast/vision changes so we do NOT stomp theme. */
+  function applyKnobsOnly() {
+    if (!browser) return;
+    syncThemeModeFromDOM(); // reflect global state, but don't write it
+    applyContrastFactor();
+    applyVisionPreset(visionPreset);
+    requestAnimationFrame(refreshDebug);
   }
 
-  function apply() {
-    const ui = listFromChecks({
-      simplified: uiSimplified,
-      'visual-alerts': uiVisualAlerts,
-      captions: uiCaptions
-    }) as any[];
-
-    const motor = listFromChecks({
-      'large-hit': motorLargeHit,
-      kbd: motorKbd,
-      'sticky-controls': motorSticky
-    }) as any[];
-
-    const dev = listFromChecks({
-      'a11y-debug': devA11y,
-      grid: devGrid,
-      tokens: devTokens
-    }) as any[];
-
-    setTheme({
-      theme,
-      mode,
-      contrast: buildContrast(),
-      vision,
-      reading,
-      motion,
-      typescale,
-      focus,
-      rtl,
-      ui,
-      motor,
-      dev
-    });
-
-    // let styles settle then snapshot
-    requestAnimationFrame(snapshot);
+  function toggleMode() {
+    mode = mode === 'light' ? 'dark' : 'light';
+    applyAll(); // this is a deliberate mode change, so apply theme/mode
   }
 
-  function resetToSafeDefaults() {
-    theme = 'clothesline';
-    mode = 'light';
-    contrastKind = 'normal';
-    contrastFactor = 1.12;
-    vision = 'none';
-    reading = 'none';
-    motion = 'normal';
-    typescale = 1.0;
-    focus = true;
-    rtl = false;
-
-    uiSimplified = false;
-    uiVisualAlerts = false;
-    uiCaptions = false;
-
-    motorLargeHit = false;
-    motorKbd = false;
-    motorSticky = false;
-
-    devA11y = false;
-    devGrid = false;
-    devTokens = false;
-
-    apply();
+  function copy(text: string) {
+    if (!browser) return;
+    navigator.clipboard.writeText(text);
   }
 
   onMount(() => {
-    if (!browser) return;
-
-    // adopt whatever the header already set (if present)
-    const html = document.documentElement;
-    const t = html.getAttribute('data-theme') as ThemeName | null;
-    const m = html.getAttribute('data-mode') as Mode | null;
-
-    if (t) theme = t;
-    if (m) mode = m;
-
-    apply();
+    // Start by honoring whatever global theme/mode is already on <html>
+    syncThemeModeFromDOM();
+    // Apply knobs without rewriting theme/mode
+    applyKnobsOnly();
   });
 </script>
 
-<h1>Theme / Mode Smoke Test</h1>
+<svelte:head>
+  <title>Modes Test</title>
+</svelte:head>
 
-<div class="wrap">
-  <section class="controls">
+<div class="page">
+  <header class="panel">
     <div class="row">
+      <h1>Modes Test</h1>
+      <div class="spacer"></div>
+      <button class="btn" on:click={applyKnobsOnly}>Refresh</button>
+      <button class="btn" on:click={toggleMode}>Toggle Mode ({mode})</button>
+    </div>
+
+    <div class="meta" style="margin-top: 0.5rem;">
+      <div><strong>DOM:</strong> theme=<code>{domTheme || '—'}</code> mode=<code>{domMode || '—'}</code></div>
+      <div><strong>Page:</strong> theme=<code>{String(theme)}</code> mode=<code>{mode}</code></div>
+    </div>
+
+    <div class="grid">
       <label class="field">
         <span>Theme</span>
-        <select bind:value={theme} on:change={apply}>
-          <option value="clothesline">clothesline</option>
-          <option value="timberline">timberline</option>
-          <option value="night-market">night-market</option>
-          <option value="retrograde">retrograde</option>
-          <option value="tidal-glass">tidal-glass</option>
-          <option value="copper-sun">copper-sun</option>
-          <option value="milkyway">milkyway</option>
-          <option value="bigsky">bigsky</option>
+        <select bind:value={theme} on:change={applyAll}>
+          {#each themes as t}
+            <option value={t}>{t}</option>
+          {/each}
         </select>
+        <small>Changing Theme here writes <code>data-theme</code> on <code>&lt;html&gt;</code>.</small>
       </label>
 
       <label class="field">
         <span>Mode</span>
-        <select bind:value={mode} on:change={apply}>
+        <select bind:value={mode} on:change={applyAll}>
           <option value="light">light</option>
           <option value="dark">dark</option>
         </select>
       </label>
 
       <label class="field">
-        <span>Vision</span>
-        <select bind:value={vision} on:change={apply}>
-          <option value="none">none</option>
-          <option value="protan">protan</option>
-          <option value="deutan">deutan</option>
-          <option value="tritan">tritan</option>
-          <option value="mono">mono</option>
-        </select>
-      </label>
-
-      <label class="field">
-        <span>Reading</span>
-        <select bind:value={reading} on:change={apply}>
-          <option value="none">none</option>
-          <option value="dyslexia">dyslexia</option>
-          <option value="plain">plain</option>
-        </select>
-      </label>
-
-      <label class="field">
-        <span>Motion</span>
-        <select bind:value={motion} on:change={apply}>
-          <option value="normal">normal</option>
-          <option value="reduced">reduced</option>
-          <option value="off">off</option>
-        </select>
-      </label>
-
-      <label class="field">
-        <span>Contrast</span>
-        <select bind:value={contrastKind} on:change={apply}>
-          <option value="normal">normal</option>
-          <option value="high">high</option>
-          <option value="custom">custom</option>
-        </select>
-      </label>
-
-      {#if contrastKind === 'custom'}
-        <label class="field">
-          <span>Factor {contrastFactor.toFixed(2)}</span>
+        <span>Contrast factor</span>
+        <div class="range">
           <input
             type="range"
-            min="0.80"
-            max="1.50"
+            min="1"
+            max="1.25"
             step="0.01"
             bind:value={contrastFactor}
-            on:input={apply}
+            on:input={applyKnobsOnly}
           />
-        </label>
-      {/if}
+          <output>{contrastFactor.toFixed(2)}</output>
+        </div>
+        <small>Does NOT touch <code>data-theme</code>; only sets <code>--contrast-factor</code>.</small>
+      </label>
 
       <label class="field">
-        <span>Typescale {typescale.toFixed(2)}×</span>
-        <input type="range" min="0.90" max="1.30" step="0.01" bind:value={typescale} on:input={apply} />
+        <span>Vision preset (debug)</span>
+        <select bind:value={visionPreset} on:change={applyKnobsOnly}>
+          <option value="none">none</option>
+          <option value="protanopia">protanopia</option>
+          <option value="deuteranopia">deuteranopia</option>
+          <option value="tritanopia">tritanopia</option>
+          <option value="monochromacy">monochromacy</option>
+        </select>
+      </label>
+
+      <label class="field">
+        <span>Role</span>
+        <select bind:value={selectedRole} on:change={applyKnobsOnly} disabled={showAllRoles}>
+          {#each roles as r}
+            <option value={r}>{r}</option>
+          {/each}
+        </select>
+        <small>Default shows one role.</small>
+      </label>
+
+      <label class="field">
+        <span>Preview options</span>
+        <div class="checks">
+          <label class="check">
+            <input type="checkbox" bind:checked={showAllRoles} on:change={applyKnobsOnly} />
+            <span>Show all roles</span>
+          </label>
+          <label class="check">
+            <input type="checkbox" bind:checked={useCompactSteps} on:change={applyKnobsOnly} />
+            <span>Compact steps</span>
+          </label>
+        </div>
+      </label>
+
+      <label class="field">
+        <span>Stages (replaces “final” with “role”)</span>
+        <div class="chips">
+          {#each stages as s}
+            <button
+              type="button"
+              class="chip"
+              class:is-active={activeStages.includes(s.id)}
+              on:click={() => {
+                const next = activeStages.includes(s.id)
+                  ? activeStages.filter((x) => x !== s.id)
+                  : [...activeStages, s.id];
+
+                activeStages = next.length ? next : activeStages;
+                applyKnobsOnly();
+              }}
+              title={s.id === 'role' ? 'Alias: --color-*-* (no suffix)' : `Suffix: ${s.suffix}`}
+            >
+              {s.label}
+            </button>
+          {/each}
+        </div>
+        <small><code>role</code> = <code>--color-*-*</code> alias (no <code>-final</code>).</small>
       </label>
     </div>
 
-    <div class="row checks">
-      <label class="check"><input type="checkbox" bind:checked={focus} on:change={apply} /> Focus emphasis</label>
-      <label class="check"><input type="checkbox" bind:checked={rtl} on:change={apply} /> RTL</label>
-
-      <div class="group">
-        <div class="group-title">UI</div>
-        <label class="check"><input type="checkbox" bind:checked={uiSimplified} on:change={apply} /> simplified</label>
-        <label class="check"><input type="checkbox" bind:checked={uiVisualAlerts} on:change={apply} /> visual-alerts</label>
-        <label class="check"><input type="checkbox" bind:checked={uiCaptions} on:change={apply} /> captions</label>
-      </div>
-
-      <div class="group">
-        <div class="group-title">Motor</div>
-        <label class="check"><input type="checkbox" bind:checked={motorLargeHit} on:change={apply} /> large-hit</label>
-        <label class="check"><input type="checkbox" bind:checked={motorKbd} on:change={apply} /> kbd</label>
-        <label class="check"><input type="checkbox" bind:checked={motorSticky} on:change={apply} /> sticky-controls</label>
-      </div>
-
-      <div class="group">
-        <div class="group-title">Dev</div>
-        <label class="check"><input type="checkbox" bind:checked={devA11y} on:change={apply} /> a11y-debug</label>
-        <label class="check"><input type="checkbox" bind:checked={devGrid} on:change={apply} /> grid</label>
-        <label class="check"><input type="checkbox" bind:checked={devTokens} on:change={apply} /> tokens</label>
+    <div class="meta">
+      <div><strong>Computed:</strong> {computedAt || '—'}</div>
+      <div class="pill">
+        <strong>Missing vars:</strong> {missing.length}
+        <button class="link" on:click={() => copy(missing.join('\n'))} disabled={missing.length === 0}>
+          Copy list
+        </button>
       </div>
     </div>
 
-    <div class="row actions">
-      <button type="button" on:click={apply}>Apply</button>
-      <button type="button" on:click={snapshot}>Snapshot</button>
-      <button type="button" on:click={resetToSafeDefaults}>Reset</button>
-    </div>
-  </section>
-
-  <section class="card">
-    <div class="card-title">DOM attributes</div>
-    <div class="mono">{htmlAttrs}</div>
-    <div class="mono">inline --contrast-factor: {inlineContrast}</div>
-  </section>
-
-  <section class="card">
-    <div class="card-title">Computed tokens (proof)</div>
-
-    <table class="tbl">
-      <thead><tr><th>Token</th><th>Computed</th></tr></thead>
-      <tbody>
-        {#each Object.entries(computed) as [k, v]}
-          <tr>
-            <td class="k"><code>{k}</code></td>
-            <td class="v">
-              <code>{v}</code>
-              {#if k.startsWith('--color-')}
-                <span class="swatch" style={`background:${v}`}></span>
-              {/if}
-            </td>
-          </tr>
+    <details class="details">
+      <summary>Computed sample (base → ct → vis → role)</summary>
+      <div class="sample">
+        {#each sampleVars as v}
+          <div class="sample-row">
+            <code class="name">{v.name}</code>
+            <code class="value">{v.value || '(empty)'}</code>
+            <button class="btn small" on:click={() => copy(`${v.name}: ${v.value}`)}>Copy</button>
+          </div>
         {/each}
-      </tbody>
-    </table>
+      </div>
+    </details>
+  </header>
 
-    <div class="notes">
-      <div><strong>Quick interpretation:</strong></div>
-      <ul>
-        <li>If <code>--color-*-ct</code> values are <code>(unset)</code>, your vision layer cannot transform ramps yet.</li>
-        <li>If <code>--k-ct</code> never changes, your contrast CSS isn’t wired to <code>data-contrast</code>/<code>--contrast-factor</code>.</li>
-        <li>If <code>--font-family-base</code> doesn’t change but <code>data-reading=dyslexia</code> does, you’re missing the reading CSS override.</li>
-      </ul>
+  {#if missing.length > 0}
+    <section class="panel warn">
+      <h2>Missing variables</h2>
+      <p>
+        These variables resolved to an empty string in <code>getComputedStyle()</code>. That typically means the theme CSS
+        isn’t loaded for this route, the selector doesn’t match (<code>data-theme</code>/<code>data-mode</code>), or the token
+        doesn’t exist yet.
+      </p>
+      <div class="missing">
+        {#each missing as m}
+          <button class="chip" on:click={() => copy(m)} title="Click to copy">{m}</button>
+        {/each}
+      </div>
+    </section>
+  {/if}
+
+  <section class="panel">
+    <h2>Ramp preview</h2>
+    <p class="sub">
+      Each step renders the selected stages. <strong>role</strong> is your alias <code>--color-*-*</code> (no suffix).
+    </p>
+
+    {#each (showAllRoles ? roles : [selectedRole]) as r}
+      <div class="role">
+        <div class="role-head">
+          <h3>{r}</h3>
+          <div class="role-badges">
+            <span class="badge" style={`background: var(--color-${r}-500); color: var(--on-primary);`}>500</span>
+            <span class="badge" style={`background: var(--color-${r}-700); color: var(--on-primary);`}>700</span>
+          </div>
+        </div>
+
+        <div class="ramp" aria-label={`ramp ${r}`}>
+          {#each steps as s}
+            <div class="cell">
+              <div class="step">{s}</div>
+
+              <div class="swatches" style={`grid-template-columns: repeat(${activeStages.length}, 1fr);`}>
+                {#each activeStages as st}
+                  <div
+                    class="swatch"
+                    style={`background: var(${tokenName(r, s, st)});`}
+                    title={`${tokenName(r, s, st)}`}
+                  ></div>
+                {/each}
+              </div>
+
+              <button class="link small" on:click={() => copy(`--color-${r}-${s}`)}>
+                Copy var
+              </button>
+            </div>
+          {/each}
+        </div>
+      </div>
+    {/each}
+  </section>
+
+  <section class="panel">
+    <h2>On-color roles</h2>
+    <div class="oncolor">
+      <div class="oncard" style="background: var(--color-primary-600); color: var(--on-primary);">
+        <strong>Primary</strong>
+        <code>--on-primary</code>
+      </div>
+      <div class="oncard" style="background: var(--color-secondary-600); color: var(--on-secondary);">
+        <strong>Secondary</strong>
+        <code>--on-secondary</code>
+      </div>
+      <div class="oncard" style="background: var(--color-tertiary-600); color: var(--on-tertiary);">
+        <strong>Tertiary</strong>
+        <code>--on-tertiary</code>
+      </div>
+      <div class="oncard" style="background: var(--color-success-600); color: var(--on-success);">
+        <strong>Success</strong>
+        <code>--on-success</code>
+      </div>
+      <div class="oncard" style="background: var(--color-warning-500); color: var(--on-warning);">
+        <strong>Warning</strong>
+        <code>--on-warning</code>
+      </div>
+      <div class="oncard" style="background: var(--color-error-600); color: var(--on-error);">
+        <strong>Error</strong>
+        <code>--on-error</code>
+      </div>
+      <div class="oncard" style="background: var(--color-info-600); color: var(--on-info);">
+        <strong>Info</strong>
+        <code>--on-info</code>
+      </div>
     </div>
   </section>
 </div>
 
 <style>
-  .wrap { display:grid; gap: 12px; max-width: 1100px; }
-  .controls { padding:12px; border:1px solid var(--border-default-color, #ddd); border-radius:12px; display:grid; gap: 12px; }
-  .row { display:flex; gap: 10px; flex-wrap:wrap; align-items:end; }
-  .field { display:flex; flex-direction:column; gap: 4px; min-width: 160px; }
-  .field > span { font-size: 12px; opacity: .8; font-weight: 600; }
+  .page { padding: 1.25rem; display: grid; gap: 1rem; }
 
-  select, input[type="range"] {
-    height: 36px;
-    padding: 0 10px;
-    border: 1px solid var(--border-default-color, #d1d5db);
-    border-radius: 10px;
-    background: var(--background-panel, white);
-    color: inherit;
+  .panel {
+    border: 1px solid color-mix(in oklab, currentColor 12%, transparent);
+    border-radius: 12px;
+    padding: 1rem;
+    background: color-mix(in oklab, currentColor 3%, transparent);
   }
-  input[type="range"] { padding: 0; height: 28px; }
 
-  .checks { align-items:flex-start; }
-  .check { display:inline-flex; align-items:center; gap: .5rem; font-size: 13px; opacity: .9; padding: 4px 0; }
-  .group { border-left: 1px solid var(--border-default-color, #e5e7eb); padding-left: 10px; display:grid; gap: 4px; }
-  .group-title { font-size: 12px; opacity: .75; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; }
+  .warn {
+    border-color: color-mix(in oklab, red 35%, transparent);
+    background: color-mix(in oklab, red 8%, transparent);
+  }
 
-  .actions button {
-    height: 36px;
-    padding: 0 12px;
+  h1 { margin: 0; font-size: 1.25rem; }
+  h2 { margin: 0 0 0.5rem; font-size: 1.05rem; }
+  h3 { margin: 0; font-size: 1rem; text-transform: capitalize; }
+
+  .row { display: flex; align-items: center; gap: 0.5rem; }
+  .spacer { flex: 1; }
+
+  .grid {
+    margin-top: 0.75rem;
+    display: grid;
+    gap: 0.75rem;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  }
+
+  .field span { display: block; font-weight: 600; margin-bottom: 0.25rem; }
+  .field small { display: block; opacity: 0.8; margin-top: 0.25rem; }
+  select, input[type="range"] { width: 100%; }
+
+  .range { display: flex; align-items: center; gap: 0.5rem; }
+  output { min-width: 3.5ch; text-align: right; }
+
+  .btn {
+    border: 1px solid color-mix(in oklab, currentColor 18%, transparent);
+    background: color-mix(in oklab, currentColor 6%, transparent);
+    color: inherit;
     border-radius: 10px;
-    border: 1px solid var(--border-default-color, #d1d5db);
-    background: var(--background-panel, white);
+    padding: 0.45rem 0.65rem;
     cursor: pointer;
   }
+  .btn.small { padding: 0.25rem 0.45rem; border-radius: 8px; }
 
-  .card { padding:12px; border:1px solid var(--border-default-color, #ddd); border-radius:12px; }
-  .card-title { font-weight: 800; margin-bottom: 6px; }
-  .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; }
+  .link {
+    border: none;
+    background: none;
+    color: inherit;
+    text-decoration: underline;
+    cursor: pointer;
+    opacity: 0.9;
+    padding: 0;
+  }
+  .link.small { font-size: 0.85rem; }
 
-  .tbl { width:100%; border-collapse: collapse; margin-top: 8px; }
-  th, td { text-align:left; padding:.5rem; border-bottom: 1px solid var(--border-default-color, #e5e7eb); vertical-align: middle; }
-  .v { display:flex; align-items:center; gap:.5rem; }
-  .swatch { width:16px; height:16px; border-radius:4px; border: 1px solid rgba(0,0,0,.15); }
+  .meta {
+    margin-top: 0.75rem;
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    opacity: 0.95;
+  }
 
-  .notes { margin-top: 10px; font-size: 13px; opacity: .85; }
-  .notes code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+  .pill {
+    display: inline-flex;
+    gap: 0.5rem;
+    align-items: center;
+    border: 1px solid color-mix(in oklab, currentColor 18%, transparent);
+    border-radius: 999px;
+    padding: 0.35rem 0.6rem;
+  }
+
+  .details { margin-top: 0.75rem; }
+  .sample { margin-top: 0.5rem; display: grid; gap: 0.35rem; }
+  .sample-row {
+    display: grid;
+    grid-template-columns: 1fr 2fr auto;
+    gap: 0.5rem;
+    align-items: center;
+  }
+  .name { opacity: 0.95; }
+  .value { opacity: 0.85; overflow: auto; }
+
+  .missing { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-top: 0.5rem; }
+  .chips { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+
+  .chip {
+    border: 1px dashed color-mix(in oklab, currentColor 22%, transparent);
+    background: transparent;
+    color: inherit;
+    border-radius: 999px;
+    padding: 0.25rem 0.5rem;
+    cursor: pointer;
+    font-size: 0.85rem;
+    opacity: 0.95;
+  }
+  .chip.is-active {
+    border-style: solid;
+    background: color-mix(in oklab, currentColor 7%, transparent);
+  }
+
+  .checks { display: grid; gap: 0.35rem; }
+  .check { display: flex; align-items: center; gap: 0.5rem; }
+
+  .sub { margin: 0 0 0.75rem; opacity: 0.85; }
+
+  .role { margin-top: 1rem; }
+  .role-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-bottom: 0.5rem;
+  }
+  .role-badges { display: flex; gap: 0.35rem; }
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 2.5rem;
+    padding: 0.2rem 0.45rem;
+    border-radius: 999px;
+    font-weight: 700;
+    font-size: 0.85rem;
+  }
+
+  .ramp {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(140px, 160px);
+    gap: 0.5rem;
+    overflow-x: auto;
+    padding-bottom: 0.5rem;
+  }
+
+  .cell {
+    border: 1px solid color-mix(in oklab, currentColor 14%, transparent);
+    border-radius: 10px;
+    padding: 0.6rem;
+    display: grid;
+    gap: 0.45rem;
+    background: color-mix(in oklab, currentColor 4%, transparent);
+  }
+
+  .step { font-weight: 700; opacity: 0.9; }
+  .swatches { display: grid; gap: 0.4rem; }
+
+  .swatch {
+    height: 38px;
+    border-radius: 10px;
+    border: 1px solid color-mix(in oklab, black 15%, transparent);
+  }
+
+  .oncolor {
+    display: grid;
+    gap: 0.75rem;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  }
+
+  .oncard {
+    border-radius: 12px;
+    padding: 0.85rem;
+    border: 1px solid color-mix(in oklab, black 18%, transparent);
+    display: grid;
+    gap: 0.25rem;
+  }
+
+  code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    font-size: 0.9em;
+  }
 </style>

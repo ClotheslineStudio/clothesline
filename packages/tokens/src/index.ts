@@ -33,10 +33,12 @@ export { zIndexTokens } from './primitives/z-index.ts';
 ---------------------------------------------- */
 import { textTokens } from './text/text.ts';
 import { linkTokens } from './link/link.ts';
+import { semanticColorTokens } from './colors/semantic.ts';
 
-// Named exports for semantic tokens
 export { textTokens } from './text/text.ts';
 export { linkTokens } from './link/link.ts';
+export { semanticColorTokens } from './colors/semantic.ts';
+
 
 /* ---------------------------------------------
    COMPONENT TOKENS
@@ -62,6 +64,7 @@ import { focusTokens } from './focus/focus.ts';
 import { borderStyleTokens } from './borders/border-styles.ts';
 import { focusStyleTokens } from './focus/focus-styles.ts';
 
+
 // Named exports for components
 export { avatarTokens } from './components/avatar.ts';
 export { buttonTokens } from './components/button.ts';
@@ -83,6 +86,7 @@ export { iconTokens } from './components/icons.ts';
 export { focusTokens } from './focus/focus.ts';
 export { borderStyleTokens } from './borders/border-styles.ts';
 export { focusStyleTokens } from './focus/focus-styles.ts';
+
 
 /* ---------------------------------------------
    BASE TOKENS (for theme builder)

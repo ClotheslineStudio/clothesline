@@ -7,12 +7,12 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 // Tokens + utilities
-import { baseTokens } from "../../tokens/src/index.js";
+import { baseTokens, semanticColorTokens } from "../../tokens/src/index.js";
 import type { ThemeConfig } from "./types.ts";
 import type { OklchColor } from "../../tokens/utils/colorEngine.js";
 import { toOklch } from "../../tokens/utils/colorEngine.js";
 import { generateRampFromSeed } from "../../tokens/utils/generateRamps.js";
-import { renderVision } from "./utils/renderVision.js";
+
 
 // Theme configs
 import { clotheslineTheme } from "../configs/clothesline.ts";
@@ -27,7 +27,7 @@ import { bigSkyTheme } from "../configs/bigsky.ts";
 // Spacing
 import {
   spacingScale,
-  spacingSemantic
+  spacingSemantic,
 } from "../../tokens/src/spacing/spacing.ts";
 
 // Radius
@@ -35,7 +35,7 @@ import {
   radiusScale,
   radiusSemantic,
   type RadiusScaleKey,
-  type RadiusSemanticKey
+  type RadiusSemanticKey,
 } from "../../tokens/src/radius/radius.ts";
 
 // Scaling + motion
@@ -45,19 +45,16 @@ import {
   motionEase,
   motionScale,
   scalingBase,
-  scalingPresets
+  scalingPresets,
 } from "../../tokens/src/scaling/scaling.ts";
 
 // Sizes
-import {
-  sizeScale,
-  sizeSemantic
-} from "../../tokens/src/sizes/sizes.ts";
+import { sizeScale, sizeSemantic } from "../../tokens/src/sizes/sizes.ts";
 
 // Borders
 import {
   borderScale,
-  borderSemantic
+  borderSemantic,
 } from "../../tokens/src/borders/borders.ts";
 
 // Typography
@@ -67,7 +64,7 @@ import {
   typeRoles,
   typeScale,
   typeTracking,
-  typeWeights
+  typeWeights,
 } from "../../tokens/src/typography/typography.ts";
 
 // Opacity
@@ -75,7 +72,7 @@ import {
   opacityScale,
   opacitySemantic,
   type OpacityScaleKey,
-  type OpacitySemanticKey
+  type OpacitySemanticKey,
 } from "../../tokens/src/primitives/opacity.ts";
 
 // Z-index
@@ -83,7 +80,7 @@ import {
   zIndexScale,
   zIndexSemantic,
   type ZIndexScaleKey,
-  type ZIndexSemanticKey
+  type ZIndexSemanticKey,
 } from "../../tokens/src/primitives/z-index.ts";
 
 // Elevation
@@ -91,18 +88,13 @@ import {
   elevationScale,
   elevationSemantic,
   type ElevationScaleKey,
-  type ElevationSemanticKey
+  type ElevationSemanticKey,
 } from "../../tokens/src/primitives/elevation.ts";
 
 import { textTokens } from "../../tokens/src/text/text.ts";
 import { linkTokens } from "../../tokens/src/link/link.ts";
 
-import {
-  focusScale,
-  focusSemantic
-} from "../../tokens/src/focus/focus.ts";
-
-
+import { focusScale, focusSemantic } from "../../tokens/src/focus/focus.ts";
 
 // ============================================================================
 // Helpers
@@ -139,8 +131,6 @@ function filterBaseTokensForComponents(tokens: Record<string, any>) {
   return out;
 }
 
-
-
 function textVars(): string {
   return toCSSVars(textTokens as any);
 }
@@ -148,7 +138,6 @@ function textVars(): string {
 function linkVars(): string {
   return toCSSVars(linkTokens as any);
 }
-
 
 function section(title: string, content: string): string {
   if (!content.trim()) return "";
@@ -160,6 +149,7 @@ ${content}
 `;
 }
 
+
 // ============================================================================
 // Setup
 // ============================================================================
@@ -170,8 +160,36 @@ type Step = 50 | 100 | 200 | 300 | 400 | 500 | 600 | 700 | 800 | 900 | 950;
 const SHADES: Step[] = [50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950];
 const SHADE_ORDER_REV: Step[] = [...SHADES].reverse() as Step[];
 
+function pickContrastShades(ramp: Record<Step, string>): { light: Step; dark: Step } {
+  let light: Step = 50;
+  let dark: Step = 950;
+
+  let maxL = -1;
+  let minL = 2;
+
+  for (const shade of SHADES) {
+    const parsed = toOklch(ramp[shade]);
+    if (!parsed) continue;
+
+    if (parsed.l > maxL) {
+      maxL = parsed.l;
+      light = shade;
+    }
+    if (parsed.l < minL) {
+      minL = parsed.l;
+      dark = shade;
+    }
+  }
+
+  return { light, dark };
+}
+
+
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const distDir = path.resolve(__dirname, "../dist");
+const distRoot = path.resolve(__dirname, "../dist");
+const cssDir = path.join(distRoot, "css");
+const cssThemesDir = path.join(cssDir, "themes");
+const manifestDir = path.join(distRoot, "manifest");
 const modesCssPath = path.resolve(__dirname, "./modes.css");
 
 const ROLES = [
@@ -184,7 +202,7 @@ const ROLES = [
   "info",
   "accent",
   "neutral",
-  "surface"
+  "surface",
 ] as const;
 
 type RoleName = (typeof ROLES)[number];
@@ -223,7 +241,7 @@ function getRoleSeed(
         mode: "oklch",
         l: surfaceSeed.l,
         c: surfaceSeed.c,
-        h: surfaceSeed.h
+        h: surfaceSeed.h,
       };
     }
   }
@@ -249,8 +267,7 @@ function getRoleSeed(
   // { hue, chroma }
   if (typeof seedNode.hue === "number") {
     const h = seedNode.hue;
-    const c =
-      typeof seedNode.chroma === "number" ? seedNode.chroma : 0.12;
+    const c = typeof seedNode.chroma === "number" ? seedNode.chroma : 0.12;
     const l =
       (theme as any).seeds?.[role]?.l ??
       (theme as any).seeds?.[role]?.light?.l ??
@@ -287,11 +304,17 @@ function rampsForTheme(
     const ramp = generateRampFromSeed(seed);
 
     if (role === "surface") {
-      // Surface ramp is identical in both modes
-      result[role] = ramp;
-    } else {
-      result[role] = mode === "dark" ? flipRampForDark(ramp) : ramp;
+      const surfaceSeeds = (theme as any).seeds?.surface;
+      const hasExplicitDarkSeed =
+        surfaceSeeds && typeof surfaceSeeds === "object" && surfaceSeeds.dark;
+
+      result[role] =
+        mode === "dark" && !hasExplicitDarkSeed ? flipRampForDark(ramp) : ramp;
+
+      continue;
     }
+
+    result[role] = ramp;
   }
 
   return result;
@@ -332,16 +355,18 @@ function toCSSVars(
   const groupNames = Object.keys(groups).sort();
 
   const blocks = groupNames.map((group) => {
-  const collator = new Intl.Collator("en", { numeric: true, sensitivity: "base" });
+    const collator = new Intl.Collator("en", {
+      numeric: true,
+      sensitivity: "base",
+    });
 
-  const lines = groups[group]
-    .sort((a, b) => collator.compare(a[0], b[0]))
-    .map(([k, v]) => `  ${k.startsWith("--") ? k : `--${k}`}: ${v};`)
-    .join("\n");
+    const lines = groups[group]
+      .sort((a, b) => collator.compare(a[0], b[0]))
+      .map(([k, v]) => `  ${k.startsWith("--") ? k : `--${k}`}: ${v};`)
+      .join("\n");
 
-  return `  /* ${group.toUpperCase()} */\n${lines}`;
-});
-
+    return `  /* ${group.toUpperCase()} */\n${lines}`;
+  });
 
   return blocks.join("\n\n");
 }
@@ -353,37 +378,46 @@ function toCSSVars(
 function roleVars(theme: ThemeConfig, mode: ThemeMode): string {
   const ramps = rampsForTheme(theme, mode);
   const pole = mode === "dark" ? "white" : "black";
-  const lines: string[] = [];
 
-  for (const role of Object.keys(ramps)) {
-    const ramp = ramps[role] as Record<Step, string>;
-    for (const shade of SHADES) {
+  const base: string[] = [];
+  const rel: string[] = [];
+
+ for (const role of Object.keys(ramps)) {
+  const ramp = ramps[role] as Record<Step, string>;
+
+  // ✅ Add these two vars per role (Skeleton-style)
+  const picks = pickContrastShades(ramp);
+  base.push(`  --color-${role}-contrast-light: var(--color-${role}-${picks.light}-vis);`);
+  base.push(`  --color-${role}-contrast-dark: var(--color-${role}-${picks.dark}-vis);`);
+  base.push("");
+
+  for (const shade of SHADES) {
+
       const value = ramp[shade];
 
-      // Base ramp
-      lines.push(`  --color-${role}-${shade}: ${value};`);
+      base.push(`  --color-${role}-${shade}: ${value};`);
 
-      // Contrast-adjusted ramp (driven by --contrast-factor → --k-ct)
-      lines.push(
+      base.push(
         `  --color-${role}-${shade}-ct: color-mix(in oklab, var(--color-${role}-${shade}) calc(100% - var(--k-ct)), ${pole} var(--k-ct));`
       );
 
-      // Vision-adjusted ramp (dynamic, per-role)
-      // NOTE:
-      //   These depend on variables defined by renderVision(), e.g.:
-      //     --vision-${role}-l-shift: 0%;
-      //     --vision-${role}-c-scale: 1;
-      //     --vision-${role}-h-shift: 0deg;
-      //
-      //   Each [data-vision="..."] mode can override those.
-      lines.push(
-        `  --color-${role}-${shade}-vis: oklch(from var(--color-${role}-${shade}-ct) calc(l + var(--vision-${role}-l-shift, 0%)) calc(c * var(--vision-${role}-c-scale, 1)) calc(h + var(--vision-${role}-h-shift, 0deg)));`
+      base.push(`  --color-${role}-${shade}-vis: var(--color-${role}-${shade}-ct);`);
+
+      rel.push(
+        `  --color-${role}-${shade}-vis: oklch(from var(--color-${role}-${shade}-ct) l c h);`
       );
     }
+    base.push("");
   }
 
-  return lines.join("\n");
+  base.push(
+    `@supports (color: oklch(from white l c h)) {\n${rel.join("\n")}\n}`
+  );
+
+  return base.join("\n").trimEnd();
 }
+
+
 
 // ============================================================================
 // 5b. Vision defaults (per-role base values for -vis)
@@ -391,11 +425,13 @@ function roleVars(theme: ThemeConfig, mode: ThemeMode): string {
 
 function visionDefaults(): string {
   return ROLES.map(
-    (role) => `  --vision-${role}-l-shift: 0%;
+    (role) =>
+      `  --vision-${role}-l-shift: 0%;
   --vision-${role}-c-scale: 1;
   --vision-${role}-h-shift: 0deg;`
   ).join("\n");
 }
+
 
 // ============================================================================
 // 6. Spacing tokens
@@ -441,7 +477,6 @@ function radiusVars(): string {
 
   return toCSSVars(out);
 }
-
 
 // ============================================================================
 // 8. Scaling + motion tokens
@@ -558,13 +593,10 @@ function typographyVars(): string {
     out[`type-${role}-size`] = `var(--type-scale-${config.size})`;
     out[`type-${role}-weight`] = `var(--type-weight-${config.weight})`;
     out[`type-${role}-leading`] = `var(--type-leading-${config.leading})`;
-    out[`type-${role}-tracking`] =
-      `var(--type-tracking-${config.tracking})`;
+    out[`type-${role}-tracking`] = `var(--type-tracking-${config.tracking})`;
     out[`type-${role}-family`] = `var(--type-family-${config.family})`;
     out[`type-${role}-transform`] = config.transform;
   }
-
- 
 
   return toCSSVars(out);
 }
@@ -596,7 +628,6 @@ function opacityVars(): string {
   return toCSSVars(out);
 }
 
-
 // ============================================================================
 // 13. Z-index tokens
 // ============================================================================
@@ -618,7 +649,6 @@ function zIndexVars(): string {
   return toCSSVars(out);
 }
 
-
 // ============================================================================
 // X. Focus tokens (width + offset)
 // ============================================================================
@@ -636,17 +666,15 @@ function focusVars(): string {
     const scaleKey = focusSemantic[key as keyof typeof focusSemantic];
 
     // scaleKey may be "2" or "offset-2"
-    const ref =
-      scaleKey.startsWith("offset-")
-        ? `var(--focus-${scaleKey})`
-        : `var(--focus-${scaleKey})`;
+    const ref = scaleKey.startsWith("offset-")
+      ? `var(--focus-${scaleKey})`
+      : `var(--focus-${scaleKey})`;
 
     out[key] = ref;
   }
 
   return toCSSVars(out);
 }
-
 
 // ============================================================================
 // 14. Elevation (shadow) tokens
@@ -694,12 +722,32 @@ function onVars(mode: ThemeMode): string {
 // ============================================================================
 
 function themeCSS(theme: ThemeConfig): string {
-  const baseTokensCss = toCSSVars(filterBaseTokensForComponents(baseTokens as any));
+  const baseTokensCss = toCSSVars(
+    filterBaseTokensForComponents(baseTokens as any)
+  );
+
+const light = `
+html[data-theme='${theme.name}'][data-mode='light'] {
+${section("COLOR RAMPS", roleVars(theme, "light"))}
+}
+`;
+
+const dark = `
+html[data-theme='${theme.name}'][data-mode='dark'] {
+${section("COLOR RAMPS", roleVars(theme, "dark"))}
+}
+`;
 
 
-  // Shared across light/dark for this theme
-  const shared = `
-html[data-theme='${theme.name}'] {
+  return light + dark;
+}
+
+function foundationsCSS(): string {
+  return `
+/* ============================================================================
+   Clothesline Foundations (global, theme-agnostic)
+============================================================================ */
+html {
 ${section("SPACING", spacingVars())}
 ${section("RADIUS", radiusVars())}
 ${section("SIZE", sizeVars())}
@@ -712,33 +760,56 @@ ${section("LINK", linkVars())}
 ${section("OPACITY", opacityVars())}
 ${section("Z-INDEX", zIndexVars())}
 ${section("ELEVATION", elevationVars())}
+}
+
+/* Defaults that should not be duplicated per-theme */
+html[data-mode='light'],
+html[data-mode='dark']{
+  --k-ct: clamp(0%, calc((var(--contrast-factor, 1) - 1) * 120%), 25%);
+}
+
+/* Vision defaults can be global; modes.css can still override per vision mode */
+html{
+${section("VISION DEFAULTS", visionDefaults())}
+}
+`;
+}
+
+function componentsCSS(): string {
+  const baseTokensCss = toCSSVars(
+    filterBaseTokensForComponents(baseTokens as any)
+  );
+
+  return `
+/* ============================================================================
+   Clothesline Component Tokens (global contract)
+============================================================================ */
+html{
 ${section("BASE TOKENS", baseTokensCss)}
 }
 `;
+}
 
-  const light = `
-html[data-theme='${theme.name}'][data-mode='light'] {
-  --k-ct: clamp(0%, calc((var(--contrast-factor, 1) - 1) * 120%), 25%);
-${section("VISION DEFAULTS", visionDefaults())}
-${section("COLOR RAMPS", roleVars(theme, "light"))}
-${section("ON-COLOR ROLES", onVars("light"))}
+function semanticColorsCSS(): string {
+  const lightVars = toCSSVars((semanticColorTokens as any).light);
+  const darkVars = toCSSVars((semanticColorTokens as any).dark);
+
+  return `
+/* ============================================================================
+   Clothesline Semantic Color Layer (global, theme-agnostic)
+   - References theme-provided ramps + contrast picks.
+============================================================================ */
+
+html[data-mode='light']{
+${lightVars}
+}
+
+html[data-mode='dark']{
+${darkVars}
 }
 `;
-
-  const dark = `
-html[data-theme='${theme.name}'][data-mode='dark'] {
-  --k-ct: clamp(0%, calc((var(--contrast-factor, 1) - 1) * 120%), 25%);
-${section("VISION DEFAULTS", visionDefaults())}
-${section("COLOR RAMPS", roleVars(theme, "dark"))}
-${section("ON-COLOR ROLES", onVars("dark"))}
 }
-`;
 
-  // Global vision mode CSS (defines higher-level [data-vision=...] overrides)
-  const vision = renderVision();
-
-  return `${shared}\n${light}\n${dark}\n${vision}\n`;
-}
 
 // ============================================================================
 // 17. Build + output files
@@ -746,13 +817,16 @@ ${section("ON-COLOR ROLES", onVars("dark"))}
 
 async function buildTheme(theme: ThemeConfig) {
   const css = themeCSS(theme);
-  const file = path.join(distDir, `${theme.name}.css`);
+  const file = path.join(cssThemesDir, `${theme.name}.css`);
+
   await fs.outputFile(file, css);
   console.log(`Built ${path.relative(process.cwd(), file)}`);
 }
 
 async function copyModes() {
-  const dest = path.join(distDir, "modes.css");
+  const dest = path.join(cssDir, "modes.css");
+
+
   if (await fs.pathExists(modesCssPath)) {
     await fs.copy(modesCssPath, dest);
   }
@@ -763,9 +837,10 @@ async function writeManifest(themes: ThemeConfig[]) {
     name: t.name,
     roles: t.roles,
     defaults: t.modes?.defaults ?? { mode: "light" },
-    presets: t.modes?.presets ?? {}
+    presets: t.modes?.presets ?? {},
   }));
-  const file = path.join(distDir, "themes.json");
+  const file = path.join(manifestDir, "themes.json");
+
   await fs.outputJson(file, manifest, { spaces: 2 });
 }
 
@@ -782,13 +857,22 @@ async function run() {
     tidalGlassTheme,
     copperSunTheme,
     milkywayTheme,
-    bigSkyTheme
+    bigSkyTheme,
   ];
 
-  await fs.ensureDir(distDir);
+  await fs.ensureDir(cssThemesDir);
+await fs.ensureDir(manifestDir);
+// formats dir is handled by build-formats.ts already
+
+ await fs.outputFile(path.join(cssDir, "foundations.css"), foundationsCSS());
+await fs.outputFile(path.join(cssDir, "semantic-colors.css"), semanticColorsCSS());
+await fs.outputFile(path.join(cssDir, "components.css"), componentsCSS());
+
+
   await Promise.all(themes.map(buildTheme));
   await copyModes();
   await writeManifest(themes);
+  
 
   console.log("Done.");
 }
@@ -797,17 +881,3 @@ run().catch((err) => {
   console.error("Build failed:", err);
   process.exit(1);
 });
-
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -25,3 +25,44 @@ html[data-theme][data-mode='dark'] {
   --border-muted-color:    var(--color-surface-800);
   --ring-offset-color:     var(--color-surface-900);
 }
+
+/* Vision presets: these are intentionally GLOBAL defaults.
+   Themes do NOT need to provide anything unless you want per-theme tuning. */
+
+html[data-theme][data-vision="protanopia"] {
+  --vision-primary-h-shift: -12deg;
+  --vision-primary-c-scale: 0.85;
+
+  --vision-secondary-h-shift: -6deg;
+  --vision-secondary-c-scale: 0.9;
+
+  --vision-tertiary-c-scale: 0.9;
+  --vision-accent-c-scale: 0.9;
+}
+
+html[data-theme][data-vision="deuteranopia"] {
+  --vision-primary-h-shift: -8deg;
+  --vision-primary-c-scale: 0.88;
+
+  --vision-secondary-h-shift: -4deg;
+  --vision-secondary-c-scale: 0.92;
+}
+
+html[data-theme][data-vision="tritanopia"] {
+  --vision-primary-h-shift: 10deg;
+  --vision-primary-c-scale: 0.9;
+
+  --vision-secondary-h-shift: 14deg;
+  --vision-secondary-c-scale: 0.9;
+}
+
+html[data-theme][data-vision="monochromacy"] {
+  /* Force near-grayscale by crushing chroma.
+     Keep lightness/hue stable to avoid weird shifts. */
+  --vision-primary-c-scale: 0.05;
+  --vision-secondary-c-scale: 0.05;
+  --vision-tertiary-c-scale: 0.05;
+  --vision-accent-c-scale: 0.05;
+  --vision-neutral-c-scale: 0.05;
+  --vision-surface-c-scale: 0.02;
+}
