@@ -31,10 +31,103 @@ export type OklchSeed = { l: number; c: number; h: number };
 export type OklchSeedPair = { light: OklchSeed; dark: OklchSeed };
 
 /** ──────────────────────────────────────────────────────────────────────────
+ *  Values / maps used by builders
+ *  ────────────────────────────────────────────────────────────────────────── */
+
+export type CSSVarValue = string | number;
+
+/**
+ * Skeleton-style “single selector” theme output pattern:
+ * - light value is written to `--token`
+ * - dark value is written to `--token-dark`
+ *
+ * Example:
+ * { light: 'var(--color-surface-950)', dark: 'var(--color-surface-50)' }
+ * => --base-font-color: var(--color-surface-950);
+ * => --base-font-color-dark: var(--color-surface-50);
+ */
+export type DualModeValue<T extends CSSVarValue = CSSVarValue> = {
+  light: T;
+  dark: T;
+};
+
+export type ThemeVarValue<T extends CSSVarValue = CSSVarValue> = T | DualModeValue<T>;
+
+/** CSS custom properties map (must be written as `--foo`). */
+export type ThemeVarMap = Record<`--${string}`, ThemeVarValue>;
+
+/** ──────────────────────────────────────────────────────────────────────────
+ *  Foundation config — to generate “non-color” theme vars in the single theme file
+ *  (spacing, radii, typography, base semantics, etc.)
+ *  ────────────────────────────────────────────────────────────────────────── */
+
+export interface FontBlock {
+  color?: ThemeVarValue; // usually var(--color-surface-950) / var(--color-surface-50)
+  family?: ThemeVarValue;
+  size?: ThemeVarValue;
+  lineHeight?: ThemeVarValue;
+  weight?: ThemeVarValue;
+  style?: ThemeVarValue;
+  letterSpacing?: ThemeVarValue;
+  transform?: ThemeVarValue;
+}
+
+export interface AnchorBlock extends FontBlock {
+  textDecoration?: ThemeVarValue;
+  textDecorationHover?: ThemeVarValue;
+  textDecorationActive?: ThemeVarValue;
+  textDecorationFocus?: ThemeVarValue;
+}
+
+export interface ThemeFoundationConfig {
+  /**
+   * Matches Skeleton’s `--text-scaling`.
+   * You can also override via modes (typescale) at runtime if desired.
+   */
+  textScaling?: ThemeVarValue<number>;
+
+  /** Base/root text tokens (Skeleton-style `--base-*`) */
+  base?: FontBlock;
+
+  /** Heading tokens (Skeleton-style `--heading-*`) */
+  heading?: FontBlock;
+
+  /** Anchor/link tokens (Skeleton-style `--anchor-*`) */
+  anchor?: AnchorBlock;
+
+  /**
+   * A single spacing unit (Skeleton uses `--spacing: 0.25rem`).
+   * You can still keep your detailed spacing scale elsewhere; this is the theme’s “unit.”
+   */
+  spacingUnit?: ThemeVarValue;
+
+  /** Primary radii knobs (Skeleton uses base + container). */
+  radii?: {
+    base?: ThemeVarValue;
+    container?: ThemeVarValue;
+  };
+
+  /** Global border/ring widths (Skeleton uses these defaults). */
+  borders?: {
+    defaultBorderWidth?: ThemeVarValue;
+    defaultDivideWidth?: ThemeVarValue;
+    defaultRingWidth?: ThemeVarValue;
+  };
+
+  /** Body/background semantic (Skeleton uses `--body-background-color` + `-dark`). */
+  bodyBackgroundColor?: ThemeVarValue;
+
+  /**
+   * Escape hatch: additional theme-level vars to output into the *same selector*.
+   * Prefer this over ad-hoc extra CSS files when you want a single theme file.
+   */
+  vars?: ThemeVarMap;
+}
+
+/** ──────────────────────────────────────────────────────────────────────────
  *  Mode delta description types (builder metadata; real behavior lives in CSS)
  *  ────────────────────────────────────────────────────────────────────────── */
 
-/** Minimal description of CSS variable changes for a given mode delta. */
 export type CSSVarMap = Record<string, string | number>;
 
 export interface TokenDelta {
@@ -48,10 +141,6 @@ export interface TokenDelta {
   note?: string;
 }
 
-/**
- * Non-token adjustments that are still tiny/scoped (selectors you’ll target in modes.css).
- * This type is intentionally light; real CSS lives in `modes.css`.
- */
 export interface UtilityDelta {
   /** Optional list of selector hooks you plan to affect in CSS (for docs/reference). */
   selectors?: string[];
@@ -59,10 +148,6 @@ export interface UtilityDelta {
   note?: string;
 }
 
-/**
- * A registry of deltas the theme can expose per mode bucket.
- * Each entry represents a tiny, scoped override (variables/utilities) for that mode.
- */
 export interface ModeDeltas {
   // Visual accessibility
   vision?: Partial<Record<Exclude<Vision, 'none'>, TokenDelta>>;
@@ -70,17 +155,9 @@ export interface ModeDeltas {
   contrast?: {
     normal?: TokenDelta;
     high?: TokenDelta;
-    /**
-     * Custom contrast deltas should be multiplicative and read the runtime var
-     * `--contrast-factor`; keep this empty or with doc notes.
-     */
     custom?: TokenDelta;
   };
 
-  /**
-   * Reading: typescale is scalar (runtime via setTheme -> --typeset-scale);
-   * dyslexia/plain can have token & utility tweaks.
-   */
   reading?: {
     dyslexia?: TokenDelta & UtilityDelta;
     plain?: UtilityDelta;
@@ -116,13 +193,8 @@ export interface ModeDeltas {
   };
 }
 
-/**
- * Preset named states you want to ship with a theme,
- * e.g., { "accessible": { contrast: 'high', typescale: 1.1, ui: ['simplified'] } }
- */
 export type ModePresets = Record<string, ModeState>;
 
-/** Default/initial state a theme recommends (can be overridden by the app at runtime). */
 export interface ModeDefaults extends Required<Pick<ModeState, 'mode'>> {
   theme?: string;
   vision?: Vision;
@@ -146,6 +218,12 @@ export interface ThemeConfig {
   name: string;
 
   /**
+   * Foundations: generates the “top” variables you see in Skeleton-like theme files:
+   * spacing unit, radii knobs, typography, base/heading/link semantics, etc.
+   */
+  foundation?: ThemeFoundationConfig;
+
+  /**
    * Source-of-truth OKLCH seeds used to generate ramps.
    * Optional but preferred over `roles`.
    */
@@ -157,6 +235,12 @@ export interface ThemeConfig {
    */
   roles?: Partial<Record<SemanticColorRole, RoleConfig>>;
 
+  /**
+   * Escape hatch: additional variables to emit at the theme selector level.
+   * If you use DualModeValue here, your builder should emit `-dark` suffixes.
+   */
+  vars?: ThemeVarMap;
+
   /** Stackable modes: presets, deltas (tiny overrides), and defaults */
   modes?: {
     presets?: ModePresets;
@@ -164,6 +248,7 @@ export interface ThemeConfig {
     defaults?: ModeDefaults;
   };
 }
+
 
 
 

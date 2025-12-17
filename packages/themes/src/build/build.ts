@@ -148,6 +148,25 @@ ${content}
 `;
 }
 
+type ThemeVarValue = string | number | { light: string | number; dark: string | number };
+type ThemeVarMap = Record<`--${string}`, ThemeVarValue>;
+
+function emitThemeVarMap(map: ThemeVarMap | undefined): string {
+  if (!map) return "";
+  const lines: string[] = [];
+
+  for (const [k, v] of Object.entries(map)) {
+    if (v && typeof v === "object" && "light" in v && "dark" in v) {
+      lines.push(`  ${k}: ${v.light};`);
+      lines.push(`  ${k}-dark: ${v.dark};`);
+    } else {
+      lines.push(`  ${k}: ${v as any};`);
+    }
+  }
+
+  return lines.join("\n");
+}
+
 // ============================================================================
 // Setup
 // ============================================================================
@@ -384,52 +403,38 @@ function toCSSVars(
 // 5. Role color vars (base + contrast + vision-adjusted)
 // ============================================================================
 
-function roleVars(theme: ThemeConfig, mode: ThemeMode): string {
-  const ramps = rampsForTheme(theme, mode);
-  const pole = mode === "dark" ? "white" : "black";
-
+function roleVars(theme: ThemeConfig): string {
+  const ramps = rampsForTheme(theme, "light"); // canonical ramps from “light” seeds
   const base: string[] = [];
   const rel: string[] = [];
 
   for (const role of Object.keys(ramps)) {
     const ramp = ramps[role] as Record<Step, string>;
 
-    // ✅ Add these two vars per role (Skeleton-style)
     const picks = pickContrastShades(ramp);
-    base.push(
-      `  --color-${role}-contrast-light: var(--color-${role}-${picks.light}-vis);`
-    );
-    base.push(
-      `  --color-${role}-contrast-dark: var(--color-${role}-${picks.dark}-vis);`
-    );
+    base.push(`  --color-${role}-contrast-light: var(--color-${role}-${picks.light}-vis);`);
+    base.push(`  --color-${role}-contrast-dark: var(--color-${role}-${picks.dark}-vis);`);
     base.push("");
 
     for (const shade of SHADES) {
-      const value = ramp[shade];
-
-      base.push(`  --color-${role}-${shade}: ${value};`);
-
+      base.push(`  --color-${role}-${shade}: ${ramp[shade]};`);
       base.push(
-        `  --color-${role}-${shade}-ct: color-mix(in oklab, var(--color-${role}-${shade}) calc(100% - var(--k-ct)), ${pole} var(--k-ct));`
+        `  --color-${role}-${shade}-ct: color-mix(in oklab, var(--color-${role}-${shade}) calc(100% - var(--k-ct)), var(--ct-pole) var(--k-ct));`
       );
-
-      base.push(
-        `  --color-${role}-${shade}-vis: var(--color-${role}-${shade}-ct);`
-      );
+      base.push(`  --color-${role}-${shade}-vis: var(--color-${role}-${shade}-ct);`);
 
       rel.push(
         `  --color-${role}-${shade}-vis: oklch(from var(--color-${role}-${shade}-ct) l c h);`
       );
     }
+
     base.push("");
   }
 
-  base.push(
-    `@supports (color: oklch(from white l c h)) {\n${rel.join("\n")}\n}`
-  );
-
+  base.push(`@supports (color: oklch(from white l c h)) {\n${rel.join("\n")}\n}`);
   return base.join("\n").trimEnd();
 }
+
 
 // ============================================================================
 // 5b. Vision defaults (per-role base values for -vis)
@@ -706,6 +711,58 @@ function elevationVars(): string {
   return toCSSVars(out);
 }
 
+
+function foundationVarMap(theme: ThemeConfig): ThemeVarMap {
+  const f = theme.foundation ?? {};
+  const out: ThemeVarMap = {};
+
+  if (f.textScaling != null) out["--text-scaling"] = f.textScaling as any;
+
+  const base = f.base ?? {};
+  if (base.color) out["--base-font-color"] = base.color as any;
+  if (base.family) out["--base-font-family"] = base.family as any;
+  if (base.size) out["--base-font-size"] = base.size as any;
+  if (base.lineHeight) out["--base-line-height"] = base.lineHeight as any;
+  if (base.weight) out["--base-font-weight"] = base.weight as any;
+  if (base.style) out["--base-font-style"] = base.style as any;
+  if (base.letterSpacing) out["--base-letter-spacing"] = base.letterSpacing as any;
+
+  const heading = f.heading ?? {};
+  if (heading.color) out["--heading-font-color"] = heading.color as any;
+  if (heading.family) out["--heading-font-family"] = heading.family as any;
+  if (heading.weight) out["--heading-font-weight"] = heading.weight as any;
+  if (heading.style) out["--heading-font-style"] = heading.style as any;
+  if (heading.letterSpacing) out["--heading-letter-spacing"] = heading.letterSpacing as any;
+
+  const a = f.anchor ?? {};
+  if (a.color) out["--anchor-font-color"] = a.color as any;
+  if (a.family) out["--anchor-font-family"] = a.family as any;
+  if (a.textDecoration) out["--anchor-text-decoration"] = a.textDecoration as any;
+  if (a.textDecorationHover) out["--anchor-text-decoration-hover"] = a.textDecorationHover as any;
+  if (a.textDecorationActive) out["--anchor-text-decoration-active"] = a.textDecorationActive as any;
+  if (a.textDecorationFocus) out["--anchor-text-decoration-focus"] = a.textDecorationFocus as any;
+
+  if (f.spacingUnit) out["--spacing"] = f.spacingUnit as any;
+
+  const r = f.radii ?? {};
+  if (r.base) out["--radius-base"] = r.base as any;
+  if (r.container) out["--radius-container"] = r.container as any;
+
+  const b = f.borders ?? {};
+  if (b.defaultBorderWidth) out["--default-border-width"] = b.defaultBorderWidth as any;
+  if (b.defaultDivideWidth) out["--default-divide-width"] = b.defaultDivideWidth as any;
+  if (b.defaultRingWidth) out["--default-ring-width"] = b.defaultRingWidth as any;
+
+  if (f.bodyBackgroundColor) out["--body-background-color"] = f.bodyBackgroundColor as any;
+
+  // escape hatch
+  Object.assign(out, f.vars ?? {});
+  // per-theme escape hatch (ThemeConfig.vars)
+  Object.assign(out, theme.vars ?? {});
+
+  return out;
+}
+
 // ============================================================================
 // 15. On-color tokens
 // ============================================================================
@@ -733,24 +790,16 @@ function onVars(mode: ThemeMode): string {
 // ============================================================================
 
 function themeCSS(theme: ThemeConfig): string {
-  const baseTokensCss = toCSSVars(
-    filterBaseTokensForComponents(baseTokens as any)
-  );
+  const foundationCss = emitThemeVarMap(foundationVarMap(theme));
 
-  const light = `
-html[data-theme='${theme.name}'][data-mode='light'] {
-${section("COLOR RAMPS", roleVars(theme, "light"))}
+  return `
+html[data-theme='${theme.name}'] {
+${section("FOUNDATION", foundationCss)}
+${section("COLOR RAMPS", roleVars(theme))}
 }
-`;
+`.trimStart();
+}
 
-  const dark = `
-html[data-theme='${theme.name}'][data-mode='dark'] {
-${section("COLOR RAMPS", roleVars(theme, "dark"))}
-}
-`;
-
-  return light + dark;
-}
 
 function foundationsCSS(): string {
   return `

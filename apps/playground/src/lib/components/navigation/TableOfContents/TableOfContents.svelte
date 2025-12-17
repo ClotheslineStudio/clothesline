@@ -100,137 +100,163 @@
 </nav>
 
 <style>
-  /* ---- Theme-aware color hooks (with sensible fallbacks) ---- */
+  /* ==========================================================================
+     TOC — semantic-token-only
+     - Text: on-surface semantic roles
+     - Surfaces/borders: surface ramp + border width tokens
+     - Accents: secondary/accent ramps (vis-aware when available)
+  ========================================================================== */
+
   .cl-toc {
-    --toc-blue:    var(--color-secondary-600, #367be6);
-    --toc-blue-50: var(--color-secondary-50,  #edf3ff);
-    --toc-orange:  var(--color-accent-500,    #e55a01);
-    --toc-ink:     var(--color-surface-950,   #0a0a0a);
-    --toc-muted:   var(--color-surface-700,   #666);
-    --toc-border:  var(--color-neutral-200,   #e6e6e6);
-    --toc-bg:      var(--color-surface-50,    #ffffff);
-    --toc-tint:    color-mix(in oklab, var(--toc-orange) 12%, transparent);
-    --toc-blue-tint: color-mix(in oklab, var(--toc-blue) 16%, transparent);
-    --toc-focus:   var(--color-info-900, #2eaadf);
+    /* Accent choices (theme-dependent, vision-aware if you generate *-vis vars) */
+    --toc-accent-1: var(--color-secondary-600-vis, var(--color-secondary-600));
+    --toc-accent-2: var(--color-accent-500-vis,   var(--color-accent-500));
+
+    /* Text roles (semantic) */
+    --toc-ink:   var(--on-surface-strong, var(--color-surface-950));
+    --toc-text:  var(--on-surface,        var(--color-surface-900));
+    --toc-muted: var(--on-surface-muted,  var(--color-surface-700));
+
+    /* Surfaces + borders */
+    --toc-surface: var(--background-surface, var(--color-surface-50));
+    --toc-border:  var(--border-color-default, var(--color-surface-300));
+    --toc-border-w: var(--border-width-divider, var(--border-1));
+
+    /* Interaction tints */
+    --toc-hover-tint:  color-mix(in oklab, var(--toc-ink) calc(var(--opacity-interactive-hover) * 100%), transparent);
+    --toc-active-tint: color-mix(in oklab, var(--toc-accent-2) calc(var(--opacity-interactive-active) * 100%), transparent);
+
+    /* Focus ring */
+    --toc-focus: var(--color-info-500-vis, var(--color-info-500));
+
     position: relative;
+    padding-left: var(--spacing-4);
+    font-size: var(--type-body-size);
+    color: var(--toc-text);
   }
 
-  /* Left gradient rail */
+  /* Left gradient rail (semantic accents, not “blue/orange”) */
   .cl-toc::before {
     content: "";
     position: absolute;
-    left: -1px;
+    left: 0;
     top: 0;
     bottom: 0;
     width: 3px;
     background: linear-gradient(
       180deg,
-      var(--toc-blue) 0%,
-      color-mix(in oklab, var(--toc-blue) 70%, var(--toc-orange)) 60%,
-      var(--toc-orange) 100%
+      var(--toc-accent-1) 0%,
+      color-mix(in oklab, var(--toc-accent-1) 65%, var(--toc-accent-2)) 60%,
+      var(--toc-accent-2) 100%
     );
-    border-radius: 3px;
-    opacity: .9;
-  }
-
-  .cl-toc {
-    padding-left: 1rem;
-    font-size: 0.9375rem;
-    color: var(--toc-ink);
+    border-radius: var(--radius-focus-ring, var(--radius-1));
+    opacity: var(--opacity-90);
   }
 
   .toc-title {
-    font-weight: 700;
-    margin-bottom: .5rem;
-    background: linear-gradient(90deg, var(--toc-blue) 0%, var(--toc-orange) 80%);
+    font-weight: var(--type-weight-bold);
+    margin-bottom: var(--spacing-2);
+    letter-spacing: var(--type-tracking-tight);
+    background: linear-gradient(90deg, var(--toc-accent-1) 0%, var(--toc-accent-2) 80%);
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
-    letter-spacing: .01em;
   }
 
   .cl-toc ul { list-style: none; margin: 0; padding: 0; }
-  .cl-toc li { margin: .25rem 0; position: relative; }
+  .cl-toc li { margin: var(--spacing-1) 0; position: relative; }
 
   /* Link base */
   .cl-toc a {
-    --dot: var(--toc-blue);
+    --dot: var(--toc-accent-1);
+
     display: inline-flex;
-    gap: .5rem;
+    gap: var(--spacing-2);
     align-items: center;
+
     text-decoration: none;
-    color: var(--toc-ink);
-    opacity: .88;
-    padding: .25rem .5rem .25rem .25rem;
-    border-radius: .5rem;
-    transition: color .15s ease, background-color .15s ease, opacity .15s ease, transform .15s ease;
+    color: var(--toc-text);
+    opacity: var(--opacity-90);
+
+    padding: var(--spacing-1) var(--spacing-2) var(--spacing-1) var(--spacing-1);
+    border-radius: var(--radius-interactive);
+    transition: background-color var(--motion-duration-fast) var(--motion-ease),
+                opacity var(--motion-duration-fast) var(--motion-ease),
+                color var(--motion-duration-fast) var(--motion-ease);
   }
 
-  /* Colored dot */
+  /* Colored dot (accent-driven) */
   .cl-toc a::before {
     content: "";
-    width: .5rem;
-    height: .5rem;
-    border-radius: 50%;
-    background: radial-gradient(circle at 30% 30%, var(--dot), color-mix(in oklab, var(--dot) 30%, #0000));
-    box-shadow: 0 0 0 2px color-mix(in oklab, var(--dot) 25%, transparent);
+    width: var(--size-2);
+    height: var(--size-2);
+    border-radius: var(--radius-full);
+    background: radial-gradient(
+      circle at 30% 30%,
+      var(--dot),
+      color-mix(in oklab, var(--dot) 30%, transparent)
+    );
+    box-shadow: 0 0 0 var(--border-width-default, var(--border-1))
+      color-mix(in oklab, var(--dot) 35%, transparent);
     flex: 0 0 auto;
-    translate: 0 .5px;
+    translate: 0 0.5px;
   }
 
-  /* Level-specific colors (more interesting) */
-  .cl-toc .level-1 > a { --dot: var(--toc-blue); }
-  .cl-toc .level-2 > a { --dot: var(--toc-orange); font-size: .92em; padding-left: .5rem; }
+  /* Level-specific accents */
+  .cl-toc .level-1 > a { --dot: var(--toc-accent-1); }
+  .cl-toc .level-2 > a {
+    --dot: var(--toc-accent-2);
+    font-size: var(--type-scale-sm);
+    padding-left: var(--spacing-3);
+  }
 
   /* Hover/focus */
   .cl-toc a:hover {
-    opacity: 1;
-    background: var(--toc-blue-50);
+    opacity: var(--opacity-100);
+    background: var(--toc-hover-tint);
     text-decoration: underline;
     text-underline-offset: 3px;
     text-decoration-thickness: 2px;
   }
+
   .cl-toc a:focus-visible {
-    outline: 2px solid var(--toc-focus);
-    outline-offset: 2px;
-    background: var(--toc-blue-50);
+    outline: var(--focus-width, var(--focus-2)) solid var(--toc-focus);
+    outline-offset: var(--focus-offset, var(--focus-2));
+    background: var(--toc-hover-tint);
   }
 
-  /* Active item highlight */
+  /* Active item */
   .cl-toc a.active {
-    opacity: 1;
-    font-weight: 700;
+    opacity: var(--opacity-100);
+    font-weight: var(--type-weight-semibold);
     color: var(--toc-ink);
-    background: var(--toc-tint);
+    background: var(--toc-active-tint);
     position: relative;
   }
+
   .cl-toc a.active::after {
     content: "";
     position: absolute;
-    left: -0.75rem;
+    left: calc(-1 * var(--spacing-3));
     top: 50%;
     translate: 0 -50%;
     width: 3px;
-    height: 1.25rem;
-    border-radius: 3px;
-    background: var(--dot); /* matches dot color per level */
-    box-shadow: 0 0 0 2px color-mix(in oklab, var(--dot) 25%, transparent);
+    height: calc(var(--size-control-sm) + var(--spacing-2));
+    border-radius: var(--radius-focus-ring, var(--radius-1));
+    background: var(--dot);
+    box-shadow: 0 0 0 var(--border-width-default, var(--border-1))
+      color-mix(in oklab, var(--dot) 35%, transparent);
   }
 
-  /* “Section” indent line for level-2 items (subtle) */
+  /* Subsection indent rail (uses borders + muted) */
   .cl-toc .level-2 {
-    border-left: 1px dashed color-mix(in oklab, var(--toc-blue) 25%, var(--toc-border));
-    margin-left: .5rem;
-    padding-left: .75rem;
+    border-left: var(--toc-border-w) dashed color-mix(in oklab, var(--toc-muted) 35%, var(--toc-border));
+    margin-left: var(--spacing-2);
+    padding-left: var(--spacing-3);
   }
 
-  /* Muted title color if tokens missing */
-  .cl-toc :is(.toc-title) {
-    -webkit-text-stroke: 0 transparent; /* crisp on Windows */
-  }
-
-  /* Reduced motion: keep it calm */
   @media (prefers-reduced-motion: reduce) {
     .cl-toc a { transition: none; }
   }
 </style>
+

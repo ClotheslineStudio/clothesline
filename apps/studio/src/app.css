@@ -1,4 +1,8 @@
 /* === Theme Imports === */
+@import '@clothesline/themes/css/foundations.css';
+@import '@clothesline/themes/css/components.css';
+@import '@clothesline/themes/css/semantic-colors.css';
+
 @import '@clothesline/themes/css/themes/clothesline.css';
 @import '@clothesline/themes/css/themes/timberline.css';
 @import '@clothesline/themes/css/themes/retrograde.css';
@@ -7,10 +11,9 @@
 @import '@clothesline/themes/css/themes/tidal-glass.css';
 @import '@clothesline/themes/css/themes/night-market.css';
 @import '@clothesline/themes/css/themes/bigsky.css';
+
 @import '@clothesline/themes/css/modes.css';
-@import '@clothesline/themes/css/foundations.css';
-@import '@clothesline/themes/css/components.css';
-@import '@clothesline/themes/css/semantic-colors.css';
+
 
 /* Tailwind v4 */
 @import "tailwindcss";

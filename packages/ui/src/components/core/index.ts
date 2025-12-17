@@ -5,6 +5,7 @@ export { default as Checkbox } from './Checkbox/Checkbox.svelte';
 export { default as Chip } from './Chip/Chip.svelte';
 export { default as Divider } from './Divider/Divider.svelte';
 export { default as Icon } from './Icon/Icon.svelte';
+export * from './Icon/registry';
 
 export { default as Radio } from './Radio/Radio.svelte';
 export { default as Switch } from './Switch/Switch.svelte';

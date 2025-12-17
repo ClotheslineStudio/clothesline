@@ -1,10 +1,13 @@
 // packages/themes/configs/bigsky.ts
 import type { ThemeConfig } from '../src/types.js';
 
-
 /**
  * Big Sky — calibrated OKLCH seeds.
  * Each value is a measured color (no computed averages).
+ *
+ * NOTE on "full ramp" generation:
+ * Keep `seeds.surface` as a single OKLCH seed ({ l, c, h }) so the builder generates
+ * a full surface ramp (e.g., 50–950). Do NOT provide { light, dark } here.
  */
 const seeds = {
   primary:   { l: 0.6981, c: 0.1714, h: 243.77 },
@@ -16,7 +19,9 @@ const seeds = {
   error:     { l: 0.5793, c: 0.1601, h: 29.71  },
   info:      { l: 0.6789, c: 0.1001, h: 220.58 },
   neutral:   { l: 0.3797, c: 0.0608, h: 59.6   },
-  surface: { l: 0.58, c: 0.03, h: 236 }
+
+  // Single seed => full ramp generation
+  surface:   { l: 0.58, c: 0.03, h: 236 }
 } as const;
 
 /**
@@ -32,16 +37,70 @@ const roles = {
   error:     { hue: seeds.error.h,     chroma: seeds.error.c },
   info:      { hue: seeds.info.h,      chroma: seeds.info.c },
   neutral:   { hue: seeds.neutral.h,   chroma: seeds.neutral.c },
-  surface:   { hue: seeds.surface.h, chroma: seeds.surface.c }
+  surface:   { hue: seeds.surface.h,   chroma: seeds.surface.c }
 } as const;
 
 /**
- * Big Sky — full ThemeConfig (with both seeds + roles)
+ * Big Sky — full ThemeConfig
+ * (seeds + roles + foundation + modes)
  */
 export const bigSkyTheme: ThemeConfig = {
   name: 'bigsky',
-  seeds,  // ← THIS was missing
+  seeds,
   roles,
+
+  /**
+   * FOUNDATION
+   * References your global foundations (html { ... }) and generated ramps.
+   * Bigsky “feel”: slightly roomier spacing + rounder containers + slightly larger type.
+   */
+  foundation: {
+    // Slightly larger default readability than clothesline
+    textScaling: 1.03,
+
+    // Roomier rhythm (semantic token from your foundations)
+    spacingUnit: 'var(--spacing-lg)',
+
+    radii: {
+      // Rounder than clothesline, but still within your semantic tokens
+      base: 'var(--radius-interactive)',
+      container: 'var(--radius-xl)'
+    },
+
+    borders: {
+      defaultBorderWidth: 'var(--border-width-default)',
+      defaultDivideWidth: 'var(--border-width-divider)',
+      defaultRingWidth: 'var(--focus-width)'
+    },
+
+    base: {
+      color: { light: 'var(--color-surface-950)', dark: 'var(--color-surface-50)' },
+      family: 'var(--type-body-family)',
+      size: 'var(--type-body-size)',
+      lineHeight: 'var(--type-body-leading)',
+      weight: 'var(--type-body-weight)',
+      letterSpacing: 'var(--type-body-tracking)'
+    },
+
+    heading: {
+      color: { light: 'var(--color-surface-950)', dark: 'var(--color-surface-50)' },
+      family: 'var(--type-heading-family)',
+      weight: 'var(--type-heading-weight)',
+      letterSpacing: 'var(--type-heading-tracking)'
+    },
+
+    anchor: {
+      color: { light: 'var(--anchor-color)', dark: 'var(--anchor-color)' },
+      textDecoration: 'var(--anchor-decoration)',
+      textDecorationHover: 'var(--anchor-decoration-hover)',
+      textDecorationFocus: 'var(--anchor-decoration-hover)'
+    },
+
+    bodyBackgroundColor: {
+      light: 'var(--color-surface-50)',
+      dark: 'var(--color-surface-950)'
+    }
+  },
 
   modes: {
     defaults: {
@@ -75,4 +134,5 @@ export const bigSkyTheme: ThemeConfig = {
 };
 
 export default bigSkyTheme;
+
 

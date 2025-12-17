@@ -77,38 +77,56 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
+
     width: var(--btn-size);
     height: var(--btn-size);
-    border-radius: var(--btn-radius);
-    border: 1px solid var(--color-surface-300);
-    background: color-mix(in oklab, var(--color-surface-100) 90%, transparent);
+    border-radius: var(--button-radius, var(--radius-interactive));
+
+    /* Surface + border derived from semantic "on-surface" */
+    background: var(--background-elevation-1, var(--color-surface-100-vis));
+    border: var(--border-width-default) solid
+      var(--border-color-default, var(--color-surface-300-vis) var(--opacity-border), transparent);
+
     color: var(--on-surface);
-    transition: background .15s ease, border-color .15s ease, transform .08s ease;
-  }
-  .mode-btn:hover {
-    background: color-mix(in oklab, var(--color-surface-100) 100%, transparent);
-    border-color: var(--color-surface-400);
-  }
-  .mode-btn:active { transform: translateY(1px); }
-  .mode-btn:focus-visible {
-    outline: 2px solid var(--color-info-500);
-    outline-offset: 2px;
+
+    transition:
+      background var(--motion-duration-fast) var(--motion-ease),
+      border-color var(--motion-duration-fast) var(--motion-ease),
+      transform var(--motion-duration-fast) var(--motion-ease);
   }
 
-  .icon { opacity: .95; }
-  .sun  { transform-origin: 50% 50%; }
+  .mode-btn:hover {
+    background: var(--background-elevation-2, var(--color-surface-200-vis));
+    border-color: var(--border-color-hover, var(--color-primary-300-vis) calc(var(--opacity-border) * 1.5), transparent);
+  }
+
+  .mode-btn:active {
+    transform: translateY(1px);
+  }
+
+  .mode-btn:focus-visible {
+    outline: var(--focus-width) solid
+      color-mix(in oklab, var(--on-surface) var(--opacity-focus), transparent);
+    outline-offset: var(--focus-offset-2);
+  }
+
+  .icon { opacity: 0.95; }
+  .sun,
   .moon { transform-origin: 50% 50%; }
 
   @media (prefers-reduced-motion: no-preference) {
-    .sun  { animation: spin-in .25s ease both; }
-    .moon { animation: pop-in  .20s ease both; }
+    .sun  { animation: spin-in var(--motion-duration-fast) var(--motion-ease) both; }
+    .moon { animation: pop-in  var(--motion-duration-fast) var(--motion-ease) both; }
   }
+
   @keyframes spin-in {
-    from { opacity: 0; rotate: -90deg; scale: .8; }
-    to   { opacity: 1; rotate: 0deg;    scale: 1; }
+    from { opacity: 0; rotate: -90deg; scale: 0.8; }
+    to   { opacity: 1; rotate: 0deg;   scale: 1; }
   }
+
   @keyframes pop-in {
-    from { opacity: 0; scale: .85; }
+    from { opacity: 0; scale: 0.85; }
     to   { opacity: 1; scale: 1; }
   }
 </style>
+

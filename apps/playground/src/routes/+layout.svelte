@@ -48,8 +48,6 @@
     { title: 'Checkbox', path: '/form/checkbox' },
     { title: 'Radio', path: '/form/radio' },
     { title: 'DatePicker', path: '/form/datepicker' },
-    { title: 'Dropdown', path: '/form/dropdown' },
-    { title: 'Input', path: '/form/input' },
     { title: 'Select', path: '/form/select' },
     { title: 'Switch', path: '/form/switch' },
     { title: 'Textarea', path: '/form/textarea' },
@@ -62,7 +60,7 @@
     { title: 'Pagination', path: '/navigation/pagination' },
     { title: 'NavGroup', path: '/navigation/navgroup' },
     { title: 'Link', path: '/navigation/link' },
-    { title: 'MobileNav', path: '/navigation/mobile-nav' },
+    
     { title: 'Image', path: '/media/image' },
     { title: 'AudioPlayer', path: '/media/audioplayer' },
     { title: 'Avatar', path: '/media/avatar' },
@@ -76,13 +74,14 @@
     { title: 'MediaPlayer', path: '/media/mediaplayer' },
     { title: 'MediaPreview', path: '/media/mediapreview' },
     { title: 'VideoPlayer', path: '/media/videoplayer' },
-    { title: 'ThreeColumn', path: '/layout/threecolumn' },
-    { title: 'MainLayout', path: '/layout/mainlayout' },
-    { title: 'Sidebar', path: '/layout/sidebar' },
-    { title: 'Footer', path: '/layout/footer' },
+    
+    
+    
+   
     { title: 'Heading', path: '/typography/heading' },
     { title: 'Paragraph', path: '/typography/paragraph' },
-    { title: 'AppBar', path: '/navigation/appbar' }
+    { title: 'AppBar', path: '/navigation/appbar' },
+    { title: 'Modes-Test', path: '/modes-test' }
   ];
 </script>
 
@@ -102,7 +101,6 @@
 
         <a href="/" class="brand-link">
           <img src="/Logo-01.svg" alt="Logo" class="brand-logo" />
-          <span class="brand-name">Clothesline UI</span>
         </a>
       </div>
 
@@ -173,71 +171,186 @@
 
 <style>
   /* Brand */
-  .brand { display: flex; align-items: center; gap: var(--spacing-2); }
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-2);
+  }
+
   .brand-link {
-    display: flex; align-items: center; gap: var(--spacing-2);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-2);
     color: var(--on-surface-strong);
     text-decoration: none;
   }
-  .brand-logo { height: var(--size-control-md); }
-  .brand-name { font-weight: 700; }
+
+  .brand-logo {
+    height: var(--size-control-md);
+  }
+
 
   /* Center nav */
-  .main-nav { display: flex; gap: var(--spacing-4); font-size: 0.9rem; }
+  .main-nav {
+    display: flex;
+    gap: var(--spacing-4);
+    font-size: var(--type-scale-sm);
+  }
+
   .main-nav a {
     text-decoration: none;
     color: var(--on-surface);
     opacity: 0.92;
     padding: var(--spacing-1) var(--spacing-2);
     border-radius: var(--radius-interactive);
-    transition: background var(--motion-duration-fast) var(--motion-ease),
-                opacity var(--motion-duration-fast) var(--motion-ease);
+    transition:
+      background var(--motion-duration-fast) var(--motion-ease),
+      opacity var(--motion-duration-fast) var(--motion-ease),
+      outline-color var(--motion-duration-fast) var(--motion-ease);
   }
+
   .main-nav a:hover {
     opacity: 1;
-    background: color-mix(in oklab, var(--on-surface) 10%, transparent);
+    background: color-mix(
+      in oklab,
+      var(--on-surface) calc(var(--opacity-hover) * 100%),
+      transparent
+    );
+  }
+
+  .main-nav a:focus-visible {
+    outline: var(--focus-width) solid color-mix(
+      in oklab,
+      var(--on-surface) calc(var(--opacity-focus) * 100%),
+      transparent
+    );
+    outline-offset: var(--focus-offset-2);
   }
 
   /* Right actions */
-  .actions { display: flex; align-items: center; gap: var(--spacing-2); }
+  .actions {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-2);
+  }
 
   .icon-btn,
   .icon-link {
-    display: inline-flex; align-items: center; justify-content: center;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     width: var(--size-control-md);
     height: var(--size-control-md);
     border-radius: var(--radius-interactive);
+
     color: var(--on-surface);
     opacity: 0.95;
-    transition: background var(--motion-duration-fast) var(--motion-ease),
-                opacity var(--motion-duration-fast) var(--motion-ease);
+
+    transition:
+      background var(--motion-duration-fast) var(--motion-ease),
+      opacity var(--motion-duration-fast) var(--motion-ease),
+      outline-color var(--motion-duration-fast) var(--motion-ease);
   }
+
+  /* Normalize button reset */
+  .icon-btn {
+    background: transparent;
+    border: 0;
+    padding: 0;
+    cursor: pointer;
+  }
+
   .icon-btn:hover,
   .icon-link:hover {
     opacity: 1;
-    background: color-mix(in oklab, var(--background-scrim) 12%, transparent);
+    /* Replaces --background-scrim */
+    background: color-mix(
+      in oklab,
+      var(--on-surface) calc(var(--opacity-hover) * 100%),
+      transparent
+    );
   }
 
-  /* Search (token driven; no mode-specific overrides) */
+  .icon-btn:focus-visible,
+  .icon-link:focus-visible {
+    outline: var(--focus-width) solid color-mix(
+      in oklab,
+      var(--on-surface) calc(var(--opacity-focus) * 100%),
+      transparent
+    );
+    outline-offset: var(--focus-offset-2);
+  }
+
+  /* Search (token-driven; replaces background/border tokens you aren't emitting) */
   .search {
-    display: flex; align-items: center; gap: var(--spacing-2);
-    border: var(--border-1) solid var(--border-color-default);
-    background: var(--background-surface);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-2);
+
+    border: var(--border-1) solid color-mix(
+      in oklab,
+      var(--on-surface) calc(var(--opacity-border) * 100%),
+      transparent
+    );
+
+    /* Replaces --background-surface: use a subtle overlay so it works on any base */
+    background: color-mix(
+      in oklab,
+      var(--on-surface) calc(var(--opacity-surface-overlay) * 100%),
+      transparent
+    );
+
     padding: var(--spacing-1) var(--spacing-2);
     border-radius: var(--radius-interactive);
   }
+
+  .search:focus-within {
+    outline: var(--focus-width) solid color-mix(
+      in oklab,
+      var(--on-surface) calc(var(--opacity-focus) * 100%),
+      transparent
+    );
+    outline-offset: var(--focus-offset-2);
+  }
+
   .search input {
-    border: 0; outline: 0; background: transparent;
+    border: 0;
+    outline: 0;
+    background: transparent;
+
     color: var(--on-surface);
-    font-size: 0.9rem;
+    font-size: var(--type-scale-sm);
     min-width: 12ch;
   }
-  .search input::placeholder { color: var(--on-surface-muted); }
+
+  .search input::placeholder {
+    color: var(--on-surface-muted);
+  }
 
   /* Footer nav */
-  .footer-nav { display: flex; gap: var(--spacing-4); font-size: 0.8rem; opacity: 0.92; }
-  .footer-nav a { text-decoration: none; color: var(--on-surface); }
+  .footer-nav {
+    display: flex;
+    gap: var(--spacing-4);
+    font-size: var(--type-scale-xs);
+    opacity: 0.92;
+  }
+
+  .footer-nav a {
+    text-decoration: none;
+    color: var(--on-surface);
+  }
+
+  .footer-nav a:focus-visible {
+    outline: var(--focus-width) solid color-mix(
+      in oklab,
+      var(--on-surface) calc(var(--opacity-focus) * 100%),
+      transparent
+    );
+    outline-offset: var(--focus-offset-2);
+    border-radius: var(--radius-interactive);
+  }
 </style>
+
 
 
 

@@ -60,15 +60,27 @@
 
 <style>
   .sidebar {
-    background: var(--sidebar-bg);
-    border-right: none;
-    padding: var(--spacing-8);
-    gap: var(--spacing-8);
+    
+    color: var(--on-surface);
+
+    font-family: var(--base-font-family, var(--type-body-family));
+    font-size: var(--base-font-size, var(--type-body-size));
+    line-height: var(--base-line-height, var(--type-body-leading));
+    letter-spacing: var(--base-letter-spacing, var(--type-body-tracking));
+
     width: 16rem;
     height: 100%;
     overflow-y: auto;
-    font-family: var(--type-body-family);
+
+    padding: var(--spacing-8);
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-8);
+
+    border-right: var(--border-width-default) solid
+      color-mix(in oklab, var(--on-surface) var(--opacity-border), transparent);
   }
+
 
   /* GROUP HEADER */
   .group-header {
@@ -76,52 +88,90 @@
     align-items: center;
     gap: var(--spacing-6);
     width: 100%;
-    padding: var(--spacing-3) 0;
-    color: var(--sidebar-header-color);
+
+    padding: var(--spacing-3) var(--spacing-2);
+
+    color: var(--on-surface-strong);
     font-weight: var(--type-weight-semibold);
+
     background: none;
     border: none;
     cursor: pointer;
     text-align: left;
+
+    border-radius: var(--radius-interactive);
+    opacity: 0.92;
+
+    transition:
+      opacity var(--motion-duration-fast) var(--motion-ease),
+      background var(--motion-duration-fast) var(--motion-ease);
+  }
+
+  .group-header:hover {
+    opacity: 1;
+    background: color-mix(in oklab, var(--on-surface) var(--opacity-hover), transparent);
+  }
+
+  .group-header:focus-visible {
+    outline: var(--focus-width) solid
+      color-mix(in oklab, var(--on-surface) var(--opacity-focus), transparent);
+    outline-offset: var(--focus-offset-2);
   }
 
   .group-header :global(.chev) {
     width: 1rem;
     height: 1rem;
     transition: transform 0.18s ease;
-    color: var(--text-muted);
+    color: var(--on-surface-muted);
   }
 
   /* LIST */
   .list {
     margin: var(--spacing-1) 0 var(--spacing-3);
-    padding: var(spacing-2) 0;
+    padding: var(--spacing-2) 0;
     list-style: none;
   }
 
   .link {
     display: block;
-    padding: var(--spacing-2) 0;
+    padding: var(--spacing-2) var(--spacing-2);
     padding-left: var(--spacing-4);
+
     text-decoration: none;
-    color: var(--sidebar-link-color);
-    border-radius: var(--radius-sm);
-    font-size: var(--type-scale-base);
+    color: var(--on-surface);
+    opacity: 0.92;
+
+    border-radius: var(--radius-interactive);
+    font-size: var(--type-body-size);
+
+    transition:
+      opacity var(--motion-duration-fast) var(--motion-ease),
+      background var(--motion-duration-fast) var(--motion-ease);
   }
 
   .link:hover {
-    color: var(--base-font-color);
+    opacity: 1;
+    background: color-mix(in oklab, var(--on-surface) var(--opacity-hover), transparent);
+  }
+
+  .link:focus-visible {
+    outline: var(--focus-width) solid
+      color-mix(in oklab, var(--on-surface) var(--opacity-focus), transparent);
+    outline-offset: var(--focus-offset-2);
   }
 
   .link.active {
-    color: var(--base-font-color);
+    opacity: 1;
+    color: var(--on-surface-strong);
     font-weight: var(--type-weight-medium);
+    background: color-mix(in oklab, var(--on-surface) var(--opacity-active), transparent);
   }
 
   .group + .group {
     margin-top: var(--spacing-3);
   }
 </style>
+
 
 
 

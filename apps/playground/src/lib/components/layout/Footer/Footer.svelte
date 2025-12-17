@@ -22,7 +22,7 @@
     gap: var(--gap-base, 1rem);
     padding: var(--spacing-4, 1rem);
     background-color: var(--background-panel, #f9f9f9);
-    border-top: var(--border-subtle, 1px) solid var(--border-default-color, #ccc);
+
     color: var(--base-font-color, #333);
     font-size: var(--font-size-sm, 0.875rem);
   }

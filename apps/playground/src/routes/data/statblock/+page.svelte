@@ -1,5 +1,5 @@
 <script lang="ts">
-  import StateBlock from '$lib/components/data/StatBlock/StateBlock.svelte';
+  import StateBlock from '$lib/components/data/StatBlock/StatBlock.svelte';
 
   const iconUrl = 'https://cdn.jsdelivr.net/gh/tabler/tabler-icons/icons/circle.svg'; // placeholder SVG
 </script>
