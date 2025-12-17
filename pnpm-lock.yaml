@@ -661,6 +661,9 @@ importers:
 
   packages/ui:
     devDependencies:
+      '@clothesline/icons':
+        specifier: workspace:^
+        version: link:../icons
       '@clothesline/themes':
         specifier: workspace:^
         version: link:../themes
