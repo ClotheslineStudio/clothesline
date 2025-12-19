@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import {
-  rampNames,
+  colorShades,
   generateColorRampFromSeed
 } from '../dist/colors/index.js';
 
@@ -13,8 +13,7 @@ describe('generateColorRampFromSeed (gamut-safe)', () => {
       c: 0.5,   // high chroma -> forces snapping
       h: 145
     });
-
-    for (const step of rampNames) {
+    for (const step of colorShades) {
       const val = ramp[step];
       expect(typeof val).toBe('string');
       expect(val.startsWith('oklch(')).toBe(true);

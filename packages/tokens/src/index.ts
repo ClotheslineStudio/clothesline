@@ -1,3 +1,5 @@
+// Canonical color ramp utilities (for consistent import)
+export { generateColorRampFromSeed, colorShades } from '../colors/index.js';
 /**
  * index.ts
  * Master export of all design tokens for the Clothesline system.

@@ -25,15 +25,30 @@
   ];
 </script>
 
-<section class="py-16 sm:py-20">
-  <header class="mb-6 space-y-2">
-    <h2 class="text-3xl font-bold text-(--color-accent-500) sm:text-4xl">Skills & Tools</h2>
-    <p class="max-w-2xl text-sm sm:text-base text-(--color-surface-600)">
+<section style="padding-block: var(--spacing-section, var(--spacing-8));">
+  <header style="margin-bottom: var(--spacing-6, 1.5rem); display: flex; flex-direction: column; gap: var(--spacing-2, 0.5rem);">
+    <h2 style="
+      color: var(--color-accent-500);
+      font-size: var(--type-heading-size, 1.25rem);
+      font-family: var(--heading-font-family, var(--type-heading-family));
+      font-weight: var(--heading-font-weight, 700);
+      letter-spacing: var(--heading-letter-spacing, -0.01em);
+      line-height: var(--type-heading-leading, 1.1);
+    ">Skills & Tools</h2>
+    <p style="
+      max-width: 40rem;
+      color: var(--on-surface-muted, var(--color-surface-600));
+      font-size: var(--type-body-size, 1rem);
+      font-family: var(--base-font-family, var(--type-body-family));
+      font-weight: var(--base-font-weight, 400);
+      letter-spacing: var(--base-letter-spacing, 0em);
+      line-height: var(--base-line-height, 1.5);
+    ">
       The stack I use day-to-day across design systems, product UI, and content.
     </p>
   </header>
 
-  <div class="flex flex-wrap gap-3">
+  <div style="display: flex; flex-wrap: wrap; gap: var(--spacing-3, 0.75rem);">
     {#each skills as skill (skill.label)}
       <SkillBadge
         label={skill.label}

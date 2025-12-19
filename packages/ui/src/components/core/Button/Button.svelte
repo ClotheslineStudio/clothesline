@@ -166,17 +166,7 @@
   .cl-button--color-neutral   { --cl-role: neutral;   }
 
   /* Solid role mapping (keeps semantics in one place) */
-  .cl-button--color-primary,
-  .cl-button--color-secondary,
-  .cl-button--color-success,
-  .cl-button--color-warning,
-  .cl-button--color-error,
-  .cl-button--color-info,
-  .cl-button--color-neutral {
-    /* Defaults assume your token file defines these.
-       If you later generate role-specific button tokens (recommended),
-       replace these with --button-bg-role etc. */
-  }
+  /* (Removed empty ruleset for color role classes to avoid empty ruleset warning) */
 
   /* =========================
      Variants

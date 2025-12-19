@@ -1,6 +1,5 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { browser } from '$app/environment';
   import { setTheme } from '@clothesline/themes';
   import { Tooltip } from '@clothesline/ui';
   import { Github, Laptop, Tablet, Smartphone, Sun, Moon, Clipboard } from 'lucide-svelte';
@@ -16,18 +15,17 @@
   let alignment: 'left' | 'center' | 'right' = 'center';
   let mode: 'light' | 'dark' = 'light';
 
+
   onMount(() => {
-    if (!browser) return;
+    if (typeof window === 'undefined') return;
     const m = document.documentElement.getAttribute('data-mode');
     mode = (m === 'dark' || m === 'light') ? (m as any) : 'light';
   });
 
-  function toggleMode() {
-    if (!browser) return;
-    function toggleMode() {
-  mode = mode === 'light' ? 'dark' : 'light';
-}
 
+  function toggleMode() {
+    if (typeof window === 'undefined') return;
+    mode = mode === 'light' ? 'dark' : 'light';
     const html = document.documentElement;
     const theme = html.getAttribute('data-theme') || 'clothesline';
     const va = html.getAttribute('data-vision');
@@ -37,7 +35,7 @@
   }
 
   async function copyCode() {
-    if (!browser || !code) return;
+    if (typeof window === 'undefined' || !code) return;
     try { await navigator.clipboard.writeText(code); } catch {}
   }
 

@@ -11,8 +11,7 @@
   // Theme controls from themes package
   import { onMount } from 'svelte';
   import { setTheme, getTheme, type ModeState } from '@clothesline/themes';
-  import ModeToggle from '$lib/components/ModeToggle.svelte';
-  import ThemePicker from '$lib/components/ThemePicker.svelte';
+  import { ModeToggle, ThemePicker } from '@clothesline/ui';
 
   
   import { page } from '$app/stores';
@@ -100,7 +99,7 @@
         <img
           src="/image/clotheslinestudio-logo.svg"
           alt="Clothesline Studio"
-          class="h-32 w-32 rounded-md object-contain"
+          class="h-8 w-8 rounded-md object-contain"
         />
        
       </a>
@@ -233,10 +232,17 @@
     );
   }
 
-  /* Keep header inner width in sync with page width */
+  /* Keep header inner width in sync with page width, but make it more compact */
   :global(.cl-header--page .cl-header__inner) {
     max-width: var(--layout-page-width);
-    padding-inline: var(--layout-page-padding-inline);
+    padding-inline: 0.75rem;
+    gap: 0.5rem;
+  }
+
+  /* Make the header itself more compact */
+  :global(.cl-header__inner) {
+    padding-block: 0.25rem;
+    min-height: 2.5rem;
   }
 </style>
 

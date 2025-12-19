@@ -2,6 +2,7 @@
   import { onMount } from 'svelte';
   import { gsap } from 'gsap';
   import swipe from 'svelte-gestures/swipe';
+  import { Card } from '@clothesline/ui';
 
   type Challenge = { title: string; solution: string };
 
@@ -144,7 +145,8 @@
   </div>
 
   <!-- Card -->
-  <section
+  <Card
+    as="section"
     bind:this={cardEl}
     use:swipe
     on:swipe={({ detail }: { detail: { direction: 'LEFT' | 'RIGHT' } }) => {
@@ -153,7 +155,12 @@
     }}
     role="group"
     aria-label="Portfolio project details"
-    class="rounded-2xl bg-[#171123] p-8 text-white shadow-xl outline-none transition"
+    tone="surface"
+    padding="lg"
+    shadow="lg"
+    rounded={true}
+    border={true}
+    className="outline-none transition"
   >
     <div class="mb-4 space-y-1">
       <h3 class="text-2xl font-bold text-orange-400">{activeProject.title}</h3>
@@ -246,5 +253,5 @@
       Next →
     </button>
   </div>
-</section>
+  </Card>
 </section>

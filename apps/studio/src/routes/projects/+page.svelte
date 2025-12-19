@@ -2,7 +2,7 @@
   import { onMount } from 'svelte';
   import { gsap } from 'gsap';
   // Update the path below to the correct relative location if needed, e.g.:
-  import RichTooltip from '../../lib/components/RichTooltip.svelte';
+  import { Tooltip } from '@clothesline/ui';
 
   type Tab = 'summary' | 'role' | 'tools' | 'challenges' | 'outcomes' | 'skills';
 
@@ -268,24 +268,74 @@
   });
 </script>
 
-<section class="py-16 sm:py-20 text-(--color-surface-600)">
-  <h1 class="mb-8 text-5xl font-bold text-(--color-accent-500)">Selected Work</h1>
-  <p class="mb-16 max-w-2xl text-lg opacity-80">
+<section style="
+  padding-block: var(--spacing, 2rem) var(--spacing-10, 2.5rem);
+  color: var(--base-font-color, #0f172a);
+  font-family: var(--base-font-family);
+  font-size: var(--base-font-size);
+  font-weight: var(--base-font-weight);
+  line-height: var(--base-line-height);
+  letter-spacing: var(--base-letter-spacing);
+">
+  <h1 style="
+    margin-bottom: var(--spacing-8, 2rem);
+    font-family: var(--heading-font-family);
+    font-size: var(--type-5xl-size, 3rem);
+    font-weight: var(--heading-font-weight, 800);
+    letter-spacing: var(--heading-letter-spacing);
+    color: var(--color-accent-500, #f59e42);
+    line-height: var(--type-heading-leading, 1.1);
+  ">Selected Work</h1>
+  <p style="
+    margin-bottom: var(--spacing-10, 2.5rem);
+    max-width: 40rem;
+    font-family: var(--base-font-family);
+    font-size: var(--base-font-size);
+    font-weight: var(--base-font-weight);
+    letter-spacing: var(--base-letter-spacing);
+    line-height: var(--base-line-height);
+    color: var(--base-font-color, #0f172a);
+    opacity: 0.8;
+  ">
     A cross-disciplinary look at 10+ years of experience in design, development, accessibility, and
     education systems.
   </p>
 
-  <div class="space-y-16">
+  <div style="display: flex; flex-direction: column; gap: var(--spacing-10, 2.5rem);">
     <!-- Studio Projects -->
     <div>
-      <h2 class="mb-6 text-3xl font-semibold text-(--color-accent-500)">Studio Projects</h2>
-      <div class="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+      <h2 style="
+        margin-bottom: var(--spacing-6, 1.5rem);
+        font-family: var(--heading-font-family);
+        font-size: var(--type-3xl-size, 1.875rem);
+        font-weight: var(--heading-font-weight, 700);
+        letter-spacing: var(--heading-letter-spacing);
+        color: var(--color-accent-500, #f59e42);
+        line-height: var(--type-heading-leading, 1.1);
+      ">Studio Projects</h2>
+      <div style="display: grid; gap: var(--spacing-8, 2rem); grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));">
         {#each studioProjects as project}
           <button
             type="button"
             tabindex="0"
             on:click={() => openModal(project)}
-            class="project-card group relative flex cursor-pointer flex-col overflow-hidden rounded-2xl border border-(--color-plum) bg-(--color-bg) shadow-lg transition-transform hover:scale-105 hover:shadow-2xl text-left"
+            style="
+              position: relative;
+              display: flex;
+              flex-direction: column;
+              cursor: pointer;
+              overflow: hidden;
+              border-radius: var(--radius-2xl, 1rem);
+              border: var(--default-border-width, 1px) solid var(--color-plum, #a78bfa);
+              background: var(--color-bg, #fff);
+              box-shadow: var(--elevation-2, 0 4px 12px rgba(0,0,0,0.10));
+              transition: transform 0.2s, box-shadow 0.2s;
+              text-align: left;
+            "
+            on:mouseover={(e) => { e.currentTarget.style.transform = 'scale(1.05)'; e.currentTarget.style.boxShadow = 'var(--elevation-3, 0 8px 24px rgba(0,0,0,0.12))'; }}
+            on:mouseout={(e) => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = 'var(--elevation-2, 0 4px 12px rgba(0,0,0,0.10))'; }}
+            on:focus={(e) => { e.currentTarget.style.transform = 'scale(1.05)'; e.currentTarget.style.boxShadow = 'var(--elevation-3, 0 8px 24px rgba(0,0,0,0.12))'; }}
+            on:blur={(e) => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = 'var(--elevation-2, 0 4px 12px rgba(0,0,0,0.10))'; }}
           >
             <img
               src={project.image}
@@ -294,15 +344,29 @@
                 const target = e.currentTarget as HTMLImageElement;
                 target.src = '/image/resume.png';
               }}
-              class="h-48 w-full object-cover"
+              style="height: 12rem; width: 100%; object-fit: cover;"
             />
-            <div class="p-5">
-              <h3 class="mb-1 text-xl font-bold text-(--color-primary-500) group-hover:underline">
-                {project.title}
-              </h3>
-              <p class="text-sm text-(--color-surface-600) opacity-80">
-                {project.description}
-              </p>
+            <div style="padding: var(--spacing-5, 1.25rem);">
+              <h3 style="
+                margin-bottom: var(--spacing-1, 0.25rem);
+                font-family: var(--heading-font-family);
+                font-size: var(--type-xl-size, 1.25rem);
+                font-weight: var(--heading-font-weight, 700);
+                letter-spacing: var(--heading-letter-spacing);
+                color: var(--color-accent-500, #f59e42);
+                line-height: var(--type-heading-leading, 1.1);
+                text-decoration: underline transparent;
+                transition: text-decoration 0.2s;
+              ">{project.title}</h3>
+              <p style="
+                font-family: var(--base-font-family);
+                font-size: var(--base-font-size);
+                font-weight: var(--base-font-weight);
+                letter-spacing: var(--base-letter-spacing);
+                line-height: var(--base-line-height);
+                color: var(--base-font-color, #0f172a);
+                opacity: 0.8;
+              ">{project.description}</p>
             </div>
           </button>
         {/each}
@@ -439,38 +503,21 @@
             <p class="mb-3 leading-relaxed">
               State-hosted special education data management and reporting application built on
               {' '}
-              <RichTooltip
-                label="CEDS"
-                title="Common Education Data Standards"
-                href="https://ceds.ed.gov/"
-              >
-                A national collaborative effort to define a shared vocabulary, data model, and
-                connections that make it easier for education agencies to exchange, integrate, and
-                report data consistently across systems.
-              </RichTooltip>
+              <Tooltip text="Common Education Data Standards: A national collaborative effort to define a shared vocabulary, data model, and connections that make it easier for education agencies to exchange, integrate, and report data consistently across systems." position="bottom">
+                CEDS
+              </Tooltip>
               {' '}
               to automate
               {' '}
-              <RichTooltip
-                label="IDEA"
-                title="Individuals with Disabilities Education Act"
-                href="https://sites.ed.gov/idea/"
-              >
-                The federal special education law that sets requirements for how states and
-                districts provide services and report on outcomes for children with disabilities.
-              </RichTooltip>
+              <Tooltip text="Individuals with Disabilities Education Act: The federal special education law that sets requirements for how states and districts provide services and report on outcomes for children with disabilities." position="bottom">
+                IDEA
+              </Tooltip>
               {' '}
               EDFacts and
               {' '}
-              <RichTooltip
-                label="SPP/APR"
-                title="State Performance Plan / Annual Performance Report"
-                href="https://osep.grads360.org"
-              >
-                OSEP’s performance plan and annual reporting framework that states use to report
-                on special education indicators, heavily informed by data from systems like
-                Generate.
-              </RichTooltip>
+              <Tooltip text="State Performance Plan / Annual Performance Report: OSEP’s performance plan and annual reporting framework that states use to report on special education indicators, heavily informed by data from systems like Generate." position="bottom">
+                SPP/APR
+              </Tooltip>
               {' '}
               reporting for state education agencies.
             </p>
@@ -485,15 +532,9 @@
               Served as project lead on a multi-state and vendor workgroup to create, refine, and
               publish a new set of accessibility-related definitions into
               {' '}
-              <RichTooltip
-                label="CEDS"
-                title="Common Education Data Standards"
-                href="https://ceds.ed.gov/"
-              >
-                A standardized education data vocabulary and model used by states, vendors, and the
-                U.S. Department of Education to make education data more interoperable and
-                reusable across systems.
-              </RichTooltip>
+              <Tooltip text="Common Education Data Standards: A standardized education data vocabulary and model used by states, vendors, and the U.S. Department of Education to make education data more interoperable and reusable across systems." position="bottom">
+                CEDS
+              </Tooltip>
               .
               This work aligned 23 states and 4 vendors and resulted in definitions that are now
               published and in use.
