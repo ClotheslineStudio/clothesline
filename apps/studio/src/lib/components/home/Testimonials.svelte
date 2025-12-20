@@ -1,9 +1,9 @@
 <script lang="ts">
   import { Linkedin, Github, Quote } from 'lucide-svelte';
   import {
-    testimonials as allTestimonials,
-    type Testimonial as ContentTestimonial
+    testimonials as allTestimonials
   } from '$lib/content/testimonials';
+  import type { testimonials as ContentTestimonial } from '$lib/content/testimonials';
 
   type HomeTestimonial = {
     quote: string;
@@ -16,7 +16,7 @@
 
   // Use the first 3 testimonials from the shared content file
   const testimonials: HomeTestimonial[] = allTestimonials.slice(0, 3).map(
-    (t: ContentTestimonial): HomeTestimonial => {
+    (t: any): HomeTestimonial => {
       const [namePart, ...rest] = t.author.split(',');
       return {
         quote: t.text,

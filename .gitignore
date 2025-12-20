@@ -18,3 +18,9 @@ Thumbs.db
 
 *storybook.log
 storybook-static
+
+# Ignore all env files except .env.example
+.env*
+!.env.example
+apps/*/.env*
+!apps/*/.env.example

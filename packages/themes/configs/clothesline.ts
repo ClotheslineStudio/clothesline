@@ -90,7 +90,7 @@ export const clotheslineTheme: ThemeConfig = {
       color: { light: 'var(--color-surface-950)', dark: 'var(--color-surface-50)' },
 
       family: 'var(--type-body-family)',
-      size: 'var(--type-body-size)',
+      size: 'inherit',
       lineHeight: 'var(--type-body-leading)',
       weight: 'var(--type-body-weight)',
       letterSpacing: 'var(--type-body-tracking)'

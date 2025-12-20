@@ -88,7 +88,7 @@
   </div>
 
   <div style="margin-top: var(--spacing-lg, 2rem); display: flex; justify-content: center;">
-    <Button href="/blog" variant="outline" color="accent" size="lg" ariaLabel="View all posts">
+    <Button href="/blog" variant="outline" color="primary" size="lg" ariaLabel="View all posts">
       <span>View all posts</span>
       <ArrowRight slot="icon-right" style="height: 1.25rem; width: 1.25rem;" />
     </Button>

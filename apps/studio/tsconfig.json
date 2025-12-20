@@ -12,13 +12,14 @@
     "sourceMap": true,
     "strict": true,
     "moduleResolution": "bundler",
-    "verbatimModuleSyntax": true, // 👈 required for Svelte + TS
-    "baseUrl": ".",
-    "paths": {
-      "$content/*": ["src/lib/content/*"]
-    }
+    "verbatimModuleSyntax": true
   }
   // Path aliases are handled by SvelteKit config, except $lib
+,
+"include": [
+  "src",
+  "src/types"
+]
 }
 
   

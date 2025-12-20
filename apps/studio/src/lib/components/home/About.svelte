@@ -90,7 +90,7 @@
     >
       <div class="flex items-start" style="gap: var(--spacing-4);">
         <div>
-          <Compass class="h-6 w-6" style="color: var(--color-primary-500)" />
+          <Compass  style="width: 32px; height: 32px; color: var(--color-primary-500-vis)" />
         </div>
         <div class="min-w-0">
           <h3 style="
@@ -131,7 +131,7 @@
     >
       <div class="flex items-start" style="gap: var(--spacing-4);">
         <div>
-          <Code class="h-6 w-6" style="color: var(--color-primary-500)" />
+          <Code style="width: 32px; height: 32px; color: var(--color-primary-500)" />
         </div>
         <div class="min-w-0">
           <h3 style="
@@ -172,7 +172,7 @@
     >
       <div class="flex items-start" style="gap: var(--spacing-4);">
         <div>
-          <Layers class="h-6 w-6" style="color: var(--color-primary-500)" />
+          <Layers  style="width: 32px; height: 32px; color: var(--color-primary-500)" />
         </div>
         <div class="min-w-0">
           <h3 style="

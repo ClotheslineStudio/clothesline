@@ -23,7 +23,7 @@
 
   let activeProjectIndex = 0;
   let activeSectionIndex = 0;
-  let cardEl: HTMLDivElement = null;
+  let cardEl: HTMLElement | null = null;
 
   let prefersReducedMotion = false;
 
@@ -147,14 +147,6 @@
   <!-- Card -->
   <Card
     as="section"
-    bind:this={cardEl}
-    use:swipe
-    on:swipe={({ detail }: { detail: { direction: 'LEFT' | 'RIGHT' } }) => {
-      if (detail.direction === 'LEFT') nextSection();
-      if (detail.direction === 'RIGHT') prevSection();
-    }}
-    role="group"
-    aria-label="Portfolio project details"
     tone="surface"
     padding="lg"
     shadow="lg"
@@ -162,7 +154,15 @@
     border={true}
     className="outline-none transition"
   >
-    <div class="mb-4 space-y-1">
+    <div
+      class="mb-4 space-y-1"
+      bind:this={cardEl}
+      use:swipe
+      on:swipe={({ detail }: { detail: { direction: 'LEFT' | 'RIGHT' } }) => {
+        if (detail.direction === 'LEFT') nextSection();
+        if (detail.direction === 'RIGHT') prevSection();
+      }}
+    >
       <h3 class="text-2xl font-bold text-orange-400">{activeProject.title}</h3>
       {#if activeProject.org || activeProject.timeframe}
         <p class="text-sm text-slate-300">

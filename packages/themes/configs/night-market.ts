@@ -66,56 +66,6 @@ export const nightMarketTheme: ThemeConfig = {
       // a touch heavier reads better over neon chroma
       weight: 'calc(var(--type-body-weight) + 100)',
       letterSpacing: 'var(--type-body-tracking)'
-    },
-
-    heading: {
-      color: { light: 'var(--color-surface-950)', dark: 'var(--color-surface-50)' },
-      family: 'var(--type-heading-family)',
-      // punchy headers
-      weight: 'calc(var(--type-heading-weight) + 200)',
-      letterSpacing: 'calc(var(--type-heading-tracking) + 0.01em)'
-    },
-
-    anchor: {
-      color: { light: 'var(--anchor-color)', dark: 'var(--anchor-color)' },
-      textDecoration: 'var(--anchor-decoration)',
-      textDecorationHover: 'var(--anchor-decoration-hover)',
-      textDecorationFocus: 'var(--anchor-decoration-hover)'
-    },
-
-    bodyBackgroundColor: {
-      light: 'var(--color-surface-50)',
-      // darker baseline makes the “night” preset feel immediate
-      dark: 'var(--color-surface-950)'
-    }
-  },
-
-  modes: {
-    defaults: {
-      mode: 'light',
-      vision: 'none',
-      contrast: 'normal',
-      typescale: 1.0,
-      ui: [],
-      motor: [],
-      focus: true
-    },
-
-    presets: {
-      accessible: { contrast: 'high', typescale: 1.08, ui: ['simplified'], motor: ['kbd'] },
-      reading:    { reading: 'dyslexia', typescale: 1.06, motion: 'reduced', focus: true },
-      night:      { mode: 'dark', contrast: 'normal' }
-    },
-
-    deltas: {
-      contrast: {
-        high: { vars: { '--focus-ring': 'oklch(85% 0.24 30)' } }
-      },
-      motor: {
-        kbd: { selectors: [':focus-visible'], note: 'Stronger outline defined in modes.css' }
       }
     }
-  }
-};
-
-export default nightMarketTheme;
+  };

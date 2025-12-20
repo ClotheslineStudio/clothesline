@@ -36,5 +36,17 @@ export const semanticColorTokens = {
     "on-surface-muted":  "var(--color-surface-200-vis)",
     "on-surface-subtle": "var(--color-surface-300-vis)",
     "on-surface-disabled":"var(--color-surface-400-vis)",
+    // Neon/glossy effect tokens for night-market theme
+    "neon-pink":   "oklch(75% 0.28 340)",
+    "neon-blue":   "oklch(70% 0.25 250)",
+    "neon-green":  "oklch(80% 0.30 140)",
+    "neon-purple": "oklch(68% 0.22 300)",
+    "neon-yellow": "oklch(90% 0.22 100)",
+    "neon-cyan":   "oklch(80% 0.25 210)",
+    "neon-red":    "oklch(70% 0.28 30)",
+    "glossy-surface": "rgba(20,20,30,0.85)",
+    "neon-glow":   "0 0 24px 4px oklch(80% 0.30 140)",
+    "glass-blur":  "blur(12px)",
+    "glass-opacity": "0.85"
   }
 } as const;

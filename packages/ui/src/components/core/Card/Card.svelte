@@ -1,6 +1,6 @@
 <script>
   /** Polymorphic element tag */
-  export let as = 'div';
+  export let asTag = 'div';
 
   /** Background/foreground palette */
   export let tone = 'surface';
@@ -19,18 +19,45 @@
   export let className = '';
 </script>
 
-<svelte:element
-  this={as}
-  class={`cl-card ${className}`}
-  part="card"
-  data-tone={tone}
-  data-padding={padding}
-  data-shadow={shadow}
-  data-rounded={rounded}
-  data-border={border}
->
-  <slot />
-</svelte:element>
+{#if asTag === 'div'}
+  <div
+    class={`cl-card ${className}`}
+    part="card"
+    data-tone={tone}
+    data-padding={padding}
+    data-shadow={shadow}
+    data-rounded={rounded}
+    data-border={border}
+  >
+    <slot />
+  </div>
+{:else if asTag === 'section'}
+  <section
+    class={`cl-card ${className}`}
+    part="card"
+    data-tone={tone}
+    data-padding={padding}
+    data-shadow={shadow}
+    data-rounded={rounded}
+    data-border={border}
+  >
+    <slot />
+  </section>
+{:else if asTag === 'article'}
+  <article
+    class={`cl-card ${className}`}
+    part="card"
+    data-tone={tone}
+    data-padding={padding}
+    data-shadow={shadow}
+    data-rounded={rounded}
+    data-border={border}
+  >
+    <slot />
+  </article>
+{:else}
+  {@html `<${asTag} class="cl-card ${className}" part="card" data-tone="${tone}" data-padding="${padding}" data-shadow="${shadow}" data-rounded="${rounded}" data-border="${border}"><slot></slot></${asTag}>`}
+{/if}
 
 <style>
   /* Base — compute everything from local vars that we override per data-* */

@@ -1,59 +1,57 @@
+
 <script lang="ts">
-  import SkillBadge from '$lib/components/SkillBadge.svelte';
+  import ToolBadge from '$lib/components/ToolBadge.svelte';
+  import { tools, type ToolItem } from '$lib/data/tools';
 
-  type Skill = { label: string; iconSrc: string; alt?: string };
+  // Group tools by stack
+  const stacks = [
+    'Build + Ship',
+    'Design',
+    'Delivery',
+    'Data'
+  ] as const;
 
-  // Keep it clean + scalable: use iconSrc instead of HTML strings
-  const skills: Skill[] = [
-    { label: 'SvelteKit', iconSrc: '/icons/svelte-svgrepo-com.svg', alt: 'Svelte' },
-    { label: 'TypeScript', iconSrc: '/icons/typescript-svgrepo-com.svg', alt: 'TypeScript' },
-    { label: 'HTML', iconSrc: '/icons/html5-svgrepo-com.svg', alt: 'HTML5' },
-    { label: 'CSS', iconSrc: '/icons/css3-svgrepo-com.svg', alt: 'CSS3' },
-    { label: 'Tailwind', iconSrc: '/icons/tailwind-svgrepo-com.svg', alt: 'Tailwind CSS' },
-
-    { label: 'GitHub', iconSrc: '/icons/github-142-svgrepo-com.svg', alt: 'GitHub' },
-    { label: 'Markdown', iconSrc: '/icons/markdown-svgrepo-com.svg', alt: 'Markdown' },
-
-    { label: 'Illustrator', iconSrc: '/icons/adobe-illustrator-svgrepo-com.svg', alt: 'Adobe Illustrator' },
-    { label: 'Photoshop', iconSrc: '/icons/adobe-photoshop-svgrepo-com.svg', alt: 'Adobe Photoshop' },
-    { label: 'Premiere Pro', iconSrc: '/icons/adobe-premiere-svgrepo-com.svg', alt: 'Adobe Premiere Pro' },
-    { label: 'After Effects', iconSrc: '/icons/adobe-after-effects-svgrepo-com.svg', alt: 'Adobe After Effects' },
-
-    { label: 'Linux', iconSrc: '/icons/linux-svgrepo-com.svg', alt: 'Linux' },
-    { label: 'Trello', iconSrc: '/icons/trello-svgrepo-com.svg', alt: 'Trello' },
-    { label: 'Mailchimp', iconSrc: '/icons/mailchimp-svgrepo-com (1).svg', alt: 'Mailchimp' }
-  ];
+  function toolsByStack(stack: ToolItem['stack']) {
+    return tools.filter(t => t.stack === stack);
+  }
 </script>
 
 <section style="padding-block: var(--spacing-section, var(--spacing-8));">
-  <header style="margin-bottom: var(--spacing-6, 1.5rem); display: flex; flex-direction: column; gap: var(--spacing-2, 0.5rem);">
-    <h2 style="
+    <header style="margin-bottom: var(--spacing-7); display: flex; flex-direction: column; gap: var(--spacing-3);">
+    <h1 style="
       color: var(--color-accent-500);
-      font-size: var(--type-heading-size, 1.25rem);
+      font-size: clamp(2.2rem, 5vw, 3.5rem);
       font-family: var(--heading-font-family, var(--type-heading-family));
-      font-weight: var(--heading-font-weight, 700);
+      font-weight: var(--heading-font-weight, 800);
       letter-spacing: var(--heading-letter-spacing, -0.01em);
-      line-height: var(--type-heading-leading, 1.1);
-    ">Skills & Tools</h2>
-    <p style="
-      max-width: 40rem;
-      color: var(--on-surface-muted, var(--color-surface-600));
-      font-size: var(--type-body-size, 1rem);
-      font-family: var(--base-font-family, var(--type-body-family));
-      font-weight: var(--base-font-weight, 400);
-      letter-spacing: var(--base-letter-spacing, 0em);
-      line-height: var(--base-line-height, 1.5);
-    ">
-      The stack I use day-to-day across design systems, product UI, and content.
-    </p>
+      line-height: var(--type-heading-leading, 1.08);
+      margin-bottom: 0.25em;
+    ">Design Engineer</h1>
+      <p style="
+        max-width: 40rem;
+        color: var(--on-surface-muted);
+        font-size: var(--type-body-lg, 1.25rem);
+        font-family: var(--base-font-family);
+        font-weight: var(--base-font-weight);
+        letter-spacing: var(--base-letter-spacing);
+        line-height: var(--base-line-height);
+      ">
+        Pixel-to-polish UI, design systems, and websites built to ship.
+      </p>
   </header>
 
-  <div style="display: flex; flex-wrap: wrap; gap: var(--spacing-3, 0.75rem);">
-    {#each skills as skill (skill.label)}
-      <SkillBadge
-        label={skill.label}
-        icon={`<img src="${skill.iconSrc}" alt="${skill.alt ?? skill.label}" class="h-5 w-5" loading="lazy" />`}
-      />
+  <div style="display: flex; flex-direction: column; gap: var(--spacing-6, 2rem);">
+      {#each stacks as stack}
+      {#if toolsByStack(stack).length}
+        <div class="stack-card" style="padding: var(--spacing-5); border-radius: var(--radius-card); background: var(--color-surface-2); box-shadow: var(--elevation-1);">
+          <h2 style="margin-bottom: var(--spacing-3); color: var(--color-accent-400); font-size: var(--type-heading-md, 1.1rem); font-weight: var(--heading-font-weight); letter-spacing: var(--heading-letter-spacing);">{stack}</h2>
+          <div style="display: flex; flex-wrap: wrap; gap: var(--spacing-3);">
+            {#each toolsByStack(stack) as tool (tool.id)}
+              <ToolBadge {...tool} />
+            {/each}
+          </div>
+        </div>
+      {/if}
     {/each}
   </div>
 </section>

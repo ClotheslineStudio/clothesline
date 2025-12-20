@@ -1,5 +1,11 @@
 <script context="module" lang="ts">
   // Optional header semantics variant, in case you want to reuse as a toolbar.
+</script>
+
+<script lang="ts">
+  /**
+   * Optional header semantics variant, in case you want to reuse as a toolbar.
+   */
   type HeaderAs = 'header' | 'div' | 'nav';
 
   /**
@@ -9,9 +15,6 @@
    * - 'prose'  : narrower, good for docs/blog headers.
    */
   type HeaderWidth = 'full' | 'page' | 'prose';
-</script>
-
-<script lang="ts">
   /**
    * Clothesline Header
    *
