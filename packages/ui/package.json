@@ -21,11 +21,11 @@
     "build": "svelte-package --input src --output dist"
   },
   "peerDependencies": {
-    "svelte": "^5.0.0"
+    "svelte": "^5.0.0",
+    "@clothesline/icons": "workspace:^"
   },
   "devDependencies": {
     "@clothesline/themes": "workspace:^",
-    "@clothesline/icons": "workspace:^",
     "@sveltejs/package": "^2.3.12",
     "@testing-library/dom": "^10.4.1",
     "@testing-library/jest-dom": "^6.9.1",
