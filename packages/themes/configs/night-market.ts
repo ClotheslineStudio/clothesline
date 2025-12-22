@@ -45,7 +45,7 @@ export const nightMarketTheme: ThemeConfig = {
    */
   foundation: {
     textScaling: 1,
-    spacingUnit: 'var(--spacing-md)',
+    spacingUnit: 'var(--spacing-2)',
 
     radii: {
       base: 'var(--radius-3)',

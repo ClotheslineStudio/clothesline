@@ -69,7 +69,7 @@ export const clotheslineTheme: ThemeConfig = {
     textScaling: 1,
 
     // Global “unit” knob (uses your semantic spacing token)
-    spacingUnit: 'var(--spacing-md)',
+    spacingUnit: 'var(--spacing-2)',
 
     radii: {
       // semantic radii tokens from your foundations

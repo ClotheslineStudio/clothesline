@@ -56,10 +56,10 @@ export const bigSkyTheme: ThemeConfig = {
    */
   foundation: {
     // Slightly larger default readability than clothesline
-    textScaling: 1.03,
+    textScaling: 1,
 
     // Roomier rhythm (semantic token from your foundations)
-    spacingUnit: 'var(--spacing-lg)',
+    spacingUnit: 'var(--spacing-2)',
 
     radii: {
       // Rounder than clothesline, but still within your semantic tokens

@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { gsap } from 'gsap';
-  import swipe from 'svelte-gestures/swipe';
+  // ...existing imports...
   import { Card } from '@clothesline/ui';
 
   type Challenge = { title: string; solution: string };
@@ -120,7 +120,7 @@
   <header class="mb-6 space-y-2">
     <h2 class="text-2xl font-bold text-(--color-accent)">Selected Work (AEM)</h2>
     <p class="text-sm text-slate-500 dark:text-slate-300">
-      Swipe, click, or use ←/→ to browse what I built and what changed as a result.
+      Click or use ←/→ to browse what I built and what changed as a result.
     </p>
   </header>
 
@@ -157,11 +157,6 @@
     <div
       class="mb-4 space-y-1"
       bind:this={cardEl}
-      use:swipe
-      on:swipe={({ detail }: { detail: { direction: 'LEFT' | 'RIGHT' } }) => {
-        if (detail.direction === 'LEFT') nextSection();
-        if (detail.direction === 'RIGHT') prevSection();
-      }}
     >
       <h3 class="text-2xl font-bold text-orange-400">{activeProject.title}</h3>
       {#if activeProject.org || activeProject.timeframe}

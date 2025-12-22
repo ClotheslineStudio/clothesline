@@ -3,6 +3,7 @@
 
   // UI kit header
   import { Header as ClHeader } from '@clothesline/ui';
+  import Logo from '$lib/components/Logo.svelte';
 
   // Shared components
   import Footer from '$lib/components/Footer.svelte';
@@ -96,11 +97,7 @@
         href="/"
         class="flex items-center gap-2 rounded-lg font-extrabold tracking-tight text-(--base-font-color) hover:text-(--color-accent) transition focus:outline-none focus:ring-2 focus:ring-(--color-accent) focus:ring-offset-2 focus:ring-offset-[var(--background-app, var(--color-surface-50))]"
       >
-        <img
-          src="/image/clotheslinestudio-logo.svg"
-          alt="Clothesline Studio"
-          class="h-8 w-8 rounded-md object-contain"
-        />
+       <Logo size="3.25rem" class="cl-footer__logo" aria-hidden="true" focusable="false" />
        
       </a>
     </svelte:fragment>
@@ -156,7 +153,7 @@
   {#if mobileOpen}
     <div class="border-b border-(--border-muted-color) bg-[color-mix(in_oklab,var(--background-panel) 85%,transparent)] backdrop-blur-md md:hidden">
       <nav
-        class="mx-auto flex w-full flex-col gap-1 px-(--layout-page-padding-inline) pb-3 pt-2"
+        class="mx-auto flex w-full flex-col gap-1 px-(--layout-container-padding-inline) pb-3 pt-2"
         aria-label="Mobile navigation"
       >
         {#each links as link}
@@ -180,7 +177,7 @@
   <main
     class="flex-1 w-full mx-auto pb-10"
     style="
-      max-width: var(--layout-page-width);
+      max-width: var(--layout-container-max);
       padding-inline: var(--layout-page-padding-inline);
       padding-top: 2.5rem;
     "
@@ -192,7 +189,7 @@
   <div
     class="mx-auto w-full pb-10"
     style="
-      max-width: var(--layout-page-width);
+      max-width: var(--layout-container-max);
       padding-inline: var(--layout-page-padding-inline);
     "
   >
@@ -234,15 +231,15 @@
 
   /* Keep header inner width in sync with page width, but make it more compact */
   :global(.cl-header--page .cl-header__inner) {
-    max-width: var(--layout-page-width);
-    padding-inline: 0.75rem;
-    gap: 0.5rem;
+    max-width: var(--layout-container-max) !important;
+    padding-inline: 0.75rem !important;
+    gap: 0.5rem !important;
   }
 
   /* Make the header itself more compact */
   :global(.cl-header__inner) {
-    padding-block: 0.25rem;
-    min-height: 2.5rem;
+    padding-block: 0.25rem !important;
+    min-height: 4.5rem !important;
   }
 </style>
 

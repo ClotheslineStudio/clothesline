@@ -57,7 +57,7 @@ export const timberlineTheme: ThemeConfig = {
   foundation: {
     textScaling: 1,
 
-    spacingUnit: 'var(--spacing-md)',
+    spacingUnit: 'var(--spacing-2)',
 
     radii: {
       // Softer roundness than the default theme (interactive + containers)

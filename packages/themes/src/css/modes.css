@@ -1,221 +1,173 @@
 /* packages/themes/src/css/modes.css */
 
-/* ============================================================================
+/* =============================================================================
    Clothesline Modes
-   - Loaded AFTER theme css files so it wins by order.
-   - Equal specificity to theme selector: html[data-theme][data-mode='...']
-   - Purpose:
-     1) Apply -dark suffix vars when in dark mode
-     2) Apply global mode aliases (background/text/borders)
-     3) Apply vision + contrast + accessibility deltas
-============================================================================ */
+   Loaded AFTER theme CSS so it can:
+   1) Swap *-dark tokens when data-mode="dark"
+   2) Provide global semantic aliases (background/text/borders/rings)
+   3) Apply vision + contrast + accessibility deltas
 
-/* ---------------------------------------------------------------------------
-   0) Contrast pole for color-mix in ramps
---------------------------------------------------------------------------- */
-/* ============================================================================
-   Clothesline Modes (global)
-   - Must be loaded AFTER theme CSS files so it can swap -dark vars reliably.
-============================================================================ */
+   Specificity strategy:
+   - Use html[data-theme][data-mode="..."] so it matches theme selector weight.
+============================================================================= */
 
-/* Color-scheme is per mode */
+/* -----------------------------------------------------------------------------
+   0) Browser color-scheme + contrast pole for ramp mixing
+----------------------------------------------------------------------------- */
 html[data-mode='light'] { color-scheme: light; }
 html[data-mode='dark']  { color-scheme: dark;  }
 
-/* Contrast pole used by your -ct mixing */
+/* Used by theme ramp "-ct" mixing: color-mix(..., var(--ct-pole) ...) */
 html[data-theme][data-mode='light'] { --ct-pole: black; }
 html[data-theme][data-mode='dark']  { --ct-pole: white; }
 
-/* ──────────────────────────────────────────────────────────
-   Dark-mode variable swaps (Skeleton-style)
-   Only swap variables you actually emit with a -dark suffix.
-────────────────────────────────────────────────────────── */
+/* -----------------------------------------------------------------------------
+   1) Dark-mode variable swaps (Skeleton-style)
+   Only swap variables that actually have a "-dark" companion.
+----------------------------------------------------------------------------- */
 html[data-theme][data-mode='dark'] {
-  --base-font-color:        var(--base-font-color-dark, var(--base-font-color));
-  --heading-font-color:     var(--heading-font-color-dark, var(--heading-font-color));
-  --anchor-font-color:      var(--anchor-font-color-dark, var(--anchor-font-color));
-  --body-background-color:  var(--body-background-color-dark, var(--body-background-color));
+  --base-font-color:       var(--base-font-color-dark, var(--base-font-color));
+  --heading-font-color:    var(--heading-font-color-dark, var(--heading-font-color));
+  --anchor-font-color:     var(--anchor-font-color-dark, var(--anchor-font-color));
+  --body-background-color: var(--body-background-color-dark, var(--body-background-color));
 }
 
-/* ──────────────────────────────────────────────────────────
-   Mode aliases that should be consistent across ALL themes
-   (these reference ramps, so they automatically adapt by theme)
-────────────────────────────────────────────────────────── */
+/* -----------------------------------------------------------------------------
+   2) Global semantic aliases (per mode)
+   These reference each theme’s ramps, so they adapt automatically.
+----------------------------------------------------------------------------- */
+
+/* Light mode */
 html[data-theme][data-mode='light'] {
-  /* page / backgrounds */
+  /* Backgrounds */
   --background-app:         var(--color-surface-50-vis);
   --background-panel:       var(--color-surface-100-vis);
   --background-elevation-1: var(--color-surface-100-vis);
   --background-elevation-2: var(--color-surface-200-vis);
 
-  /* text */
-  --on-surface-strong:      var(--color-surface-950-vis);
-  --on-surface:             var(--color-surface-800-vis);
-  --on-surface-muted:       var(--color-surface-700-vis);
-  --on-surface-subtle:      var(--color-surface-600-vis);
-  --on-surface-disabled:    var(--color-surface-500-vis);
+  /* Text */
+  --on-surface-strong:   var(--color-surface-950-vis);
+  --on-surface:          var(--color-surface-800-vis);
+  --on-surface-muted:    var(--color-surface-700-vis);
+  --on-surface-subtle:   var(--color-surface-600-vis);
+  --on-surface-disabled: var(--color-surface-500-vis);
 
-  /* borders / rings */
-  --border-default-color:   var(--color-surface-200-vis);
-  --border-muted-color:     var(--color-surface-100-vis);
-  --ring-offset-color:      var(--color-surface-50-vis);
+  /* Borders / rings (canonical names) */
+  --border-color-default: var(--color-surface-200-vis);
+  --border-color-muted:   var(--color-surface-100-vis);
+  --ring-offset-color:    var(--color-surface-50-vis);
+
+  /* Back-compat aliases (optional; remove once migrated) */
+  --border-default-color: var(--border-color-default);
+  --border-muted-color:   var(--border-color-muted);
 }
 
+/* Dark mode */
 html[data-theme][data-mode='dark'] {
-  /* page / backgrounds */
+  /* Backgrounds */
   --background-app:         var(--color-surface-950-vis);
   --background-panel:       var(--color-surface-900-vis);
   --background-elevation-1: var(--color-surface-900-vis);
   --background-elevation-2: var(--color-surface-800-vis);
 
-  /* text */
-  --on-surface-strong:      var(--color-surface-50-vis);
-  --on-surface:             var(--color-surface-200-vis);
-  --on-surface-muted:       var(--color-surface-400-vis);
-  --on-surface-subtle:      var(--color-surface-500-vis);
-  --on-surface-disabled:    var(--color-surface-600-vis);
+  /* Text */
+  --on-surface-strong:   var(--color-surface-50-vis);
+  --on-surface:          var(--color-surface-200-vis);
+  --on-surface-muted:    var(--color-surface-400-vis);
+  --on-surface-subtle:   var(--color-surface-500-vis);
+  --on-surface-disabled: var(--color-surface-600-vis);
 
-  /* borders / rings */
-  --border-default-color:   var(--color-surface-700-vis);
-  --border-muted-color:     var(--color-surface-800-vis);
-  --ring-offset-color:      var(--color-surface-900-vis);
+  /* Borders / rings (canonical names) */
+  --border-color-default: var(--color-surface-700-vis);
+  --border-color-muted:   var(--color-surface-800-vis);
+  --ring-offset-color:    var(--color-surface-900-vis);
+
+  /* Back-compat aliases (optional; remove once migrated) */
+  --border-default-color: var(--border-color-default);
+  --border-muted-color:   var(--border-color-muted);
 }
 
-/* ──────────────────────────────────────────────────────────
-   Vision presets (global defaults)
-────────────────────────────────────────────────────────── */
-html[data-theme][data-vision="protanopia"] {
-  --vision-primary-h-shift: -12deg;
-  --vision-primary-c-scale: 0.85;
-
-  --vision-secondary-h-shift: -6deg;
-  --vision-secondary-c-scale: 0.9;
-
-  --vision-tertiary-c-scale: 0.9;
-  --vision-accent-c-scale: 0.9;
-}
-
-html[data-theme][data-vision="deuteranopia"] {
-  --vision-primary-h-shift: -8deg;
-  --vision-primary-c-scale: 0.88;
-
-  --vision-secondary-h-shift: -4deg;
-  --vision-secondary-c-scale: 0.92;
-}
-
-html[data-theme][data-vision="tritanopia"] {
-  --vision-primary-h-shift: 10deg;
-  --vision-primary-c-scale: 0.9;
-
-  --vision-secondary-h-shift: 14deg;
-  --vision-secondary-c-scale: 0.9;
-}
-
-html[data-theme][data-vision="monochromacy"] {
-  --vision-primary-c-scale: 0.05;
-  --vision-secondary-c-scale: 0.05;
-  --vision-tertiary-c-scale: 0.05;
-  --vision-accent-c-scale: 0.05;
-  --vision-neutral-c-scale: 0.05;
-  --vision-surface-c-scale: 0.02;
-}
-
-
-/* ---------------------------------------------------------------------------
-   3) Vision presets (GLOBAL defaults)
-   Your builder already emits per-role knobs:
+/* -----------------------------------------------------------------------------
+   3) Vision presets (global deltas)
+   Your builder emits per-role knobs:
    --vision-<role>-l-shift / c-scale / h-shift
-   We keep these small + predictable here.
---------------------------------------------------------------------------- */
-
-html[data-theme][data-vision="protanopia"] {
-  --vision-primary-h-shift: -12deg;
-  --vision-primary-c-scale: 0.85;
+   Here we set small, predictable adjustments only.
+----------------------------------------------------------------------------- */
+html[data-theme][data-vision='protanopia'] {
+  --vision-primary-h-shift:   -12deg;
+  --vision-primary-c-scale:   0.85;
 
   --vision-secondary-h-shift: -6deg;
-  --vision-secondary-c-scale: 0.9;
+  --vision-secondary-c-scale: 0.90;
 
-  --vision-tertiary-c-scale: 0.9;
-  --vision-accent-c-scale: 0.9;
+  --vision-tertiary-c-scale:  0.90;
+  --vision-accent-c-scale:    0.90;
 }
 
-html[data-theme][data-vision="deuteranopia"] {
-  --vision-primary-h-shift: -8deg;
-  --vision-primary-c-scale: 0.88;
+html[data-theme][data-vision='deuteranopia'] {
+  --vision-primary-h-shift:   -8deg;
+  --vision-primary-c-scale:   0.88;
 
   --vision-secondary-h-shift: -4deg;
   --vision-secondary-c-scale: 0.92;
 }
 
-html[data-theme][data-vision="tritanopia"] {
-  --vision-primary-h-shift: 10deg;
-  --vision-primary-c-scale: 0.9;
+html[data-theme][data-vision='tritanopia'] {
+  --vision-primary-h-shift:   10deg;
+  --vision-primary-c-scale:   0.90;
 
   --vision-secondary-h-shift: 14deg;
-  --vision-secondary-c-scale: 0.9;
+  --vision-secondary-c-scale: 0.90;
 }
 
-html[data-theme][data-vision="monochromacy"] {
-  --vision-primary-c-scale: 0.05;
+html[data-theme][data-vision='monochromacy'] {
+  --vision-primary-c-scale:   0.05;
   --vision-secondary-c-scale: 0.05;
-  --vision-tertiary-c-scale: 0.05;
-  --vision-accent-c-scale: 0.05;
-  --vision-neutral-c-scale: 0.05;
-  --vision-surface-c-scale: 0.02;
+  --vision-tertiary-c-scale:  0.05;
+  --vision-accent-c-scale:    0.05;
+  --vision-neutral-c-scale:   0.05;
+  --vision-surface-c-scale:   0.02;
 }
 
-/* ---------------------------------------------------------------------------
+/* -----------------------------------------------------------------------------
    4) Contrast
-   - Your ramps read --k-ct derived from --contrast-factor (already in foundations.css)
-   - So contrast modes only need to set --contrast-factor.
---------------------------------------------------------------------------- */
-html[data-theme][data-contrast="normal"] { --contrast-factor: 1; }
-html[data-theme][data-contrast="high"]   { --contrast-factor: 1.25; }
+   Ramps read --k-ct derived from --contrast-factor (defined in foundations.css).
+----------------------------------------------------------------------------- */
+html[data-theme][data-contrast='normal'] { --contrast-factor: 1; }
+html[data-theme][data-contrast='high']   { --contrast-factor: 1.25; }
 
-/* Optional: if you support custom contrast numerically via inline style/JS:
-   document.documentElement.style.setProperty('--contrast-factor', '1.15')
-   (no selector needed)
-*/
-
-/* ---------------------------------------------------------------------------
+/* -----------------------------------------------------------------------------
    5) Reading modes
---------------------------------------------------------------------------- */
-html[data-theme][data-reading="dyslexia"] {
-  /* You can wire these to tokens later; keep it minimal for now */
+----------------------------------------------------------------------------- */
+html[data-theme][data-reading='dyslexia'] {
   --base-letter-spacing: 0.02em;
   --base-line-height:    1.6;
 }
 
-html[data-theme][data-reading="plain"] {
-  /* no-op, acts as explicit state */
+html[data-theme][data-reading='plain'] {
+  /* explicit no-op */
 }
 
-/* ---------------------------------------------------------------------------
+/* -----------------------------------------------------------------------------
    6) Motion
---------------------------------------------------------------------------- */
-html[data-theme][data-motion="reduced"] {
-  --motion-scale: 0.5;
-}
+   Components should multiply durations/distances by --motion-scale.
+----------------------------------------------------------------------------- */
+html[data-theme][data-motion='reduced'] { --motion-scale: 0.5; }
+html[data-theme][data-motion='off']     { --motion-scale: 0; }
 
-html[data-theme][data-motion="off"] {
-  --motion-scale: 0;
-}
-
-/* ---------------------------------------------------------------------------
+/* -----------------------------------------------------------------------------
    7) Focus helpers
---------------------------------------------------------------------------- */
-html[data-theme][data-focus="off"] {
-  /* example: components can read this if you want to suppress outlines */
-  --focus-enabled: 0;
-}
-html[data-theme]:not([data-focus="off"]) {
-  --focus-enabled: 1;
-}
+   Components may read --focus-enabled to suppress outlines if you allow that.
+----------------------------------------------------------------------------- */
+html[data-theme][data-focus='off'] { --focus-enabled: 0; }
+html[data-theme]:not([data-focus='off']) { --focus-enabled: 1; }
 
-/* ---------------------------------------------------------------------------
-   8) RTL (pick one approach)
---------------------------------------------------------------------------- */
-html[data-theme][dir="rtl"],
-html[data-theme][data-rtl="true"] {
+/* -----------------------------------------------------------------------------
+   8) RTL
+   Support either dir="rtl" or a toggle attribute.
+----------------------------------------------------------------------------- */
+html[data-theme][dir='rtl'],
+html[data-theme][data-rtl='true'] {
   direction: rtl;
 }
+

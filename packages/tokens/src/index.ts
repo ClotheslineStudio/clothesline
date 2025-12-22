@@ -18,6 +18,7 @@ import { typographyTokens } from './typography/typography.ts';
 import { sizeTokens } from './sizes/sizes.ts';
 import { opacityTokens } from './primitives/opacity.ts';
 import { zIndexTokens } from './primitives/z-index.ts';
+import { layoutTokens } from './primitives/layout.ts';
 
 // Named exports for primitives
 export { backgroundTokens } from './backgrounds/backgrounds.ts';
@@ -29,6 +30,7 @@ export { typographyTokens } from './typography/typography.ts';
 export { sizeTokens } from './sizes/sizes.ts';
 export { opacityTokens } from './primitives/opacity.ts';
 export { zIndexTokens } from './primitives/z-index.ts';
+export { layoutTokens } from './primitives/layout.ts';
 
 /* ---------------------------------------------
    SEMANTIC TOKENS

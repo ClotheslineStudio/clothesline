@@ -3,84 +3,20 @@
 </script>
 
 <script lang="ts">
-  /**
-   * Optional header semantics variant, in case you want to reuse as a toolbar.
-   */
   type HeaderAs = 'header' | 'div' | 'nav';
-
-  /**
-   * Controls the max-width of the inner content.
-   * - 'full'   : spans the full viewport width.
-   * - 'page'   : constrained to a typical app/page width.
-   * - 'prose'  : narrower, good for docs/blog headers.
-   */
   type HeaderWidth = 'full' | 'page' | 'prose';
-  /**
-   * Clothesline Header
-   *
-   * A generic app/page header shell.
-   * - Uses left / center / right named slots for flexible composition.
-   * - Visual styling is driven by design tokens (colors, spacing, shadows).
-   * - Does NOT own theme/mode/vision logic. That belongs to the consuming app.
-   *
-   * Example usage:
-   *
-   * <Header sticky elevated>
-   *   <div slot="left">Clothesline Icons</div>
-   *   <div slot="center">Search / breadcrumbs</div>
-   *   <div slot="right">
-   *     <ThemeToggle />
-   *     <a href="https://github.com/...">GitHub</a>
-   *   </div>
-   * </Header>
-   */
 
-  /**
-   * Which HTML element should be used.
-   * Default: 'header' for semantic page/app headers.
-   */
   export let as: HeaderAs = 'header';
-
-  /**
-   * When true, the header is positioned sticky at the top.
-   * This is for app shells, docks, or persistent toolbars.
-   */
   export let sticky: boolean = false;
-
-  /**
-   * When true, adds a bottom border to the header.
-   */
   export let bordered: boolean = false;
-
-  /**
-   * When true, adds elevation shadow to the header.
-   */
   export let elevated: boolean = true;
-
-  /**
-   * Controls the max-width of the inner content.
-   * - 'full'   : spans the full viewport width.
-   * - 'page'   : constrained to a typical app/page width.
-   * - 'prose'  : narrower, good for docs/blog headers.
-   */
   export let maxWidth: HeaderWidth = 'page';
-
-  /**
-   * Additional classes to append to the root element.
-   * Allows apps to add layout tweaks without forking the component.
-   */
   export let className: string = '';
 
-  // Internal decision for the HTML tag via svelte:element
   const Tag = as as keyof HTMLElementTagNameMap;
 
-  /**
-   * Compute the full class string for the root element.
-   * We keep this logic in script so Tailwind users can
-   * swap these classes later if desired.
-   */
   $: rootClasses = [
-    'cl-header',                   // base identifier for theming/debugging
+    'cl-header',
     sticky && 'cl-header--sticky',
     bordered && 'cl-header--bordered',
     elevated && 'cl-header--elevated',
@@ -94,70 +30,47 @@
 
 <svelte:element this={Tag} class={rootClasses}>
   <div class="cl-header__inner">
-    <!--
-      Left slot:
-      Usually logo, app name, navigation trigger, or breadcrumbs.
-    -->
     <div class="cl-header__section cl-header__section--left">
-      <slot name="left" />
+      <div class="cl-header__slot cl-header__slot--left">
+        <slot name="left" />
+      </div>
     </div>
 
-    <!--
-      Center slot:
-      Ideal for search, tabs, or page title.
-      This section flexes to fill available space.
-    -->
     <div class="cl-header__section cl-header__section--center">
-      <slot name="center" />
+      <div class="cl-header__slot cl-header__slot--center">
+        <slot name="center" />
+      </div>
     </div>
 
-    <!--
-      Right slot:
-      Commonly used for actions: theme toggles, profile menu, links.
-    -->
     <div class="cl-header__section cl-header__section--right">
-      <slot name="right" />
+      <div class="cl-header__slot cl-header__slot--right">
+        <slot name="right" />
+      </div>
     </div>
   </div>
 </svelte:element>
 
 <style>
-  /**
-   * Core design tokens used:
-   *
-   * These should be defined by your theme system:
-   * - --color-surface-100 / 900 : background ramp
-   * - --color-surface-300 / 700 : borders
-   * - --base-font-color / --base-font-color-dark : text
-   * - --shadow-sm / --shadow-none : elevation
-   * - --spacing-* : layout spacing
-   *
-   * We provide sensible fallbacks so the component
-   * doesn't explode if tokens are missing.
-   */
-
   .cl-header {
-    /* Background + foreground depend on your theme tokens */
+    /* Theme-driven visual tokens (safe to override) */
     --cl-header-bg: var(--color-surface-100, #f8fafc);
     --cl-header-fg: var(--base-font-color, #020617);
     --cl-header-border: var(--color-surface-300, #cbd5f5);
     --cl-header-shadow: var(--shadow-sm, 0 1px 0 rgba(15, 23, 42, 0.08));
 
     position: relative;
-    z-index: 10;
+    z-index: var(--z-sticky-header, 500);
 
     display: block;
     width: 100%;
     color: var(--cl-header-fg);
-    background:
-      linear-gradient(
-        to bottom,
-        color-mix(in oklab, var(--cl-header-bg) 90%, transparent),
-        var(--cl-header-bg)
-      );
+    background: linear-gradient(
+      to bottom,
+      color-mix(in oklab, var(--cl-header-bg) 90%, transparent),
+      var(--cl-header-bg)
+    );
   }
 
-  /* Dark mode variant driven by html[data-mode="dark"] */
   :global(html[data-mode="dark"]) .cl-header {
     --cl-header-bg: var(--color-surface-900, #020617);
     --cl-header-fg: var(--base-font-color-dark, #e2e8f0);
@@ -165,72 +78,112 @@
     --cl-header-shadow: 0 1px 0 rgba(15, 23, 42, 0.9);
   }
 
-  /* Optional sticky behavior */
   .cl-header--sticky {
     position: sticky;
     top: 0;
   }
 
-  /* Optional border + elevation */
   .cl-header--bordered {
-    border-bottom: 1px solid var(--cl-header-border);
+    border-bottom: var(--border-width-divider, 1px) solid var(--cl-header-border);
   }
 
   .cl-header--elevated {
     box-shadow: var(--cl-header-shadow);
   }
 
-  /* Inner layout: horizontal alignment and max-width options */
+  /**
+   * Hard layout constraints (resistant to slot content).
+   * - grid prevents overlap by construction
+   * - minmax(0,1fr) allows center to shrink
+   */
   .cl-header__inner {
-    display: flex;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
     align-items: center;
+
     gap: var(--spacing-3, 0.75rem);
     padding-inline: var(--spacing-7, 1.5rem);
     padding-block: var(--spacing-3, 0.75rem);
+
     margin-inline: auto;
-  }
-
-  /* Max-width presets */
-  .cl-header--page .cl-header__inner {
-    max-width: 1120px;
-  }
-
-  .cl-header--prose .cl-header__inner {
-    max-width: 768px;
-  }
-
-  /* Sections */
-  .cl-header__section {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-2, 0.5rem);
-    min-width: 0; /* helps keep slots from overflowing */
-  }
-
-  .cl-header__section--left {
-    justify-content: flex-start;
-  }
-
-  .cl-header__section--center {
-    flex: 1;
-    justify-content: center;
-  }
-
-  .cl-header__section--right {
-    justify-content: flex-end;
-  }
-
-  /* When center slot is empty, keep the layout balanced */
-  .cl-header__section--center:empty {
-    flex: 0;
+    width: 100%;
   }
 
   /**
-   * High contrast adjustment:
-   * You can tune this further in your theme CSS.
+   * Use YOUR container scale tokens (no magic px).
+   * - page uses layout-container-max (defaults to xl in your foundations)
+   * - prose uses md
    */
-  :global(html[data-contrast="high"]) .cl-header {
-    --cl-header-bg: color-mix(in oklab, var(--cl-header-bg) 85%, transparent);
-    --cl-header-border: color-mix(in oklab, var(--cl-header-fg) 20%, var(--cl-header-border));
+  .cl-header--page .cl-header__inner {
+    max-width: var(--layout-container-max, var(--layout-container-xl, 72rem));
+  }
+
+  .cl-header--prose .cl-header__inner {
+    max-width: var(--layout-container-md, 48rem);
+  }
+
+  /**
+   * Sections are "boxes" that must not allow children to paint over siblings.
+   * The critical rule: overflow hidden.
+   */
+  .cl-header__section {
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  .cl-header__section--left {
+    justify-self: start;
+  }
+
+  .cl-header__section--center {
+    justify-self: stretch;
+  }
+
+  .cl-header__section--right {
+    justify-self: end;
+  }
+
+  /**
+   * Slot wrappers:
+   * - we control these even if the slotted element tries to be 100% wide or flex:1
+   * - max-width:100% + overflow hidden forces clipping inside the column
+   */
+  .cl-header__slot {
+    min-width: 0;
+    max-width: 100%;
+    overflow: hidden;
+  }
+
+  .cl-header__slot--left,
+  .cl-header__slot--right {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-2, 0.5rem);
+    white-space: nowrap; /* prevent accidental wrapping that causes height/overlap */
+  }
+
+  .cl-header__slot--center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-2, 0.5rem);
+
+    min-width: 0;
+    max-width: 100%;
+    overflow: hidden;
+
+    /* center content can wrap if it wants, but won't paint over */
+    white-space: nowrap;
+  }
+
+  /**
+   * Last line of defense: if the slot root sets width:100%,
+   * it can still fit within the center column (because the wrapper clips).
+   * This keeps "full-width search bars" from overlapping left/right.
+   */
+  .cl-header__slot--center > :global(*) {
+    min-width: 0;
+    max-width: 100%;
   }
 </style>
+

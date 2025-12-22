@@ -95,6 +95,15 @@ import { linkTokens } from "../../../tokens/src/link/link.ts";
 
 import { focusScale, focusSemantic } from "../../../tokens/src/focus/focus.ts";
 
+// Layout (containers)
+import {
+  layoutContainerScale,
+  layoutContainerSemantic,
+  type LayoutContainerScaleKey,
+  type LayoutContainerSemanticKey,
+} from "../../../tokens/src/primitives/layout.ts";
+
+
 // ============================================================================
 // Helpers
 // ============================================================================
@@ -107,6 +116,7 @@ function filterBaseTokensForComponents(tokens: Record<string, any>) {
     "opacity-",
     "z-",
     "elevation-",
+    "layout-",
     // If you're emitting TEXT/LINK as their own sections:
     "text-",
     "anchor-",
@@ -664,6 +674,28 @@ function zIndexVars(): string {
 
   return toCSSVars(out);
 }
+// ============================================================================
+// X. Layout tokens (container width scale + semantic selector)
+// ============================================================================
+
+function layoutVars(): string {
+  const out: Record<string, string> = {};
+
+  // Scale
+  for (const key in layoutContainerScale) {
+    out[`layout-container-${key}`] =
+      layoutContainerScale[key as LayoutContainerScaleKey];
+  }
+
+  // Semantic (max)
+  for (const key in layoutContainerSemantic) {
+    const semanticKey = key as LayoutContainerSemanticKey; // "max"
+    const scaleKey = layoutContainerSemantic[semanticKey]; // e.g. "xl"
+    out[`layout-container-${semanticKey}`] = `var(--layout-container-${scaleKey})`;
+  }
+
+  return toCSSVars(out);
+}
 
 // ============================================================================
 // X. Focus tokens (width + offset)
@@ -819,6 +851,7 @@ ${section("LINK", linkVars())}
 ${section("OPACITY", opacityVars())}
 ${section("Z-INDEX", zIndexVars())}
 ${section("ELEVATION", elevationVars())}
+${section("LAYOUT", layoutVars())}
 }
 
 /* Defaults that should not be duplicated per-theme */
@@ -933,6 +966,8 @@ async function run() {
   await writeManifest(themes);
 
   console.log("Done.");
+  console.log("BIGSKY textScaling:", bigSkyTheme.foundation?.textScaling);
+
 }
 
 run().catch((err) => {

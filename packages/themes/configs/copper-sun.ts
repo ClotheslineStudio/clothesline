@@ -52,7 +52,7 @@ export const copperSunTheme: ThemeConfig = {
     textScaling: 1,
 
     // Slightly larger rhythm feels more “book”
-    spacingUnit: 'var(--spacing-lg)',
+    spacingUnit: 'var(--spacing-sm)',
 
     radii: {
       base: 'var(--radius-6)',
