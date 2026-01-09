@@ -60,7 +60,7 @@
     { title: 'Pagination', path: '/navigation/pagination' },
     { title: 'NavGroup', path: '/navigation/navgroup' },
     { title: 'Link', path: '/navigation/link' },
-    
+
     { title: 'Image', path: '/media/image' },
     { title: 'AudioPlayer', path: '/media/audioplayer' },
     { title: 'Avatar', path: '/media/avatar' },
@@ -74,10 +74,7 @@
     { title: 'MediaPlayer', path: '/media/mediaplayer' },
     { title: 'MediaPreview', path: '/media/mediapreview' },
     { title: 'VideoPlayer', path: '/media/videoplayer' },
-    
-    
-    
-   
+
     { title: 'Heading', path: '/typography/heading' },
     { title: 'Paragraph', path: '/typography/paragraph' },
     { title: 'AppBar', path: '/navigation/appbar' },
@@ -88,9 +85,10 @@
 <AppShell
   {collapsed}
   collapsible={true}
-  sidebarWidth="272px"
-  contentMaxWidth="1200px"
-  pageGutterX="var(--spacing-4, 1rem)"
+  sidebarWidth="240px"
+  contentMaxWidth="var(--layout-container-max)"
+  pageGutterX="var(--layout-gutter-x)"
+  contentPaddingY="var(--layout-gutter-y)"
 >
   <div slot="header">
     <AppBar sticky border elevated>
@@ -139,12 +137,25 @@
   </div>
 
   <div slot="content">
-    <ThreeColumn maxWidth={920} tocWidth={280} stickyTop={16}>
-      <div slot="main">
+    <!-- NOTE:
+         - ThreeColumn no longer needs to be sticky; TOC component will be sticky.
+         - Drive spacing from layout tokens (with fallbacks in CSS below). -->
+    <ThreeColumn
+      maxWidth="min(100%, var(--layout-doc-max, 920px))"
+      tocWidth="var(--layout-toc-width, 280px)"
+      gap="var(--layout-gap)"
+      stickyTop="0px"
+      collapseMode="stack"
+    >
+      <div slot="main" class="main">
         <slot />
       </div>
+
       <div slot="toc">
-        <TableOfContents selector=".main" />
+        <TableOfContents
+          selector=".main"
+          stickyTop="var(--layout-sticky-top)"
+        />
       </div>
     </ThreeColumn>
   </div>
@@ -170,6 +181,21 @@
 </AppShell>
 
 <style>
+  /* --------------------------------------------------------------------------
+    Layout token defaults (local fallbacks).
+    You can move these into foundations.css once you’re ready.
+  -------------------------------------------------------------------------- */
+  :global(html) {
+    --layout-gutter-x: var(--spacing-4, 1rem);
+    --layout-gutter-y: var(--spacing-6, 1.5rem);
+    --layout-gap: var(--spacing-8, 2rem);
+    --layout-sticky-top: var(--spacing-6, 1.5rem);
+
+    /* Optional (doc page specifics) */
+    --layout-doc-max: 920px;
+    --layout-toc-width: 280px;
+  }
+
   /* Brand */
   .brand {
     display: flex;
@@ -188,7 +214,6 @@
   .brand-logo {
     height: var(--size-control-md);
   }
-
 
   /* Center nav */
   .main-nav {
@@ -263,7 +288,6 @@
   .icon-btn:hover,
   .icon-link:hover {
     opacity: 1;
-    /* Replaces --background-scrim */
     background: color-mix(
       in oklab,
       var(--on-surface) calc(var(--opacity-hover) * 100%),
@@ -281,7 +305,7 @@
     outline-offset: var(--focus-offset-2);
   }
 
-  /* Search (token-driven; replaces background/border tokens you aren't emitting) */
+  /* Search */
   .search {
     display: flex;
     align-items: center;
@@ -293,7 +317,6 @@
       transparent
     );
 
-    /* Replaces --background-surface: use a subtle overlay so it works on any base */
     background: color-mix(
       in oklab,
       var(--on-surface) calc(var(--opacity-surface-overlay) * 100%),
@@ -350,6 +373,7 @@
     border-radius: var(--radius-interactive);
   }
 </style>
+
 
 
 

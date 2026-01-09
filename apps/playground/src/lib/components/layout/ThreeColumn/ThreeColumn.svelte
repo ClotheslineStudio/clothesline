@@ -1,79 +1,104 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
-  import { browser } from '$app/environment';
-
   export let className = '';
-  export let maxWidth = 900;   // px
-  export let tocWidth = 260;   // px
-  export let gap = 64;         // px
-  export let stickyTop = 16;   // px
-  export let hideTocBelow = 1100; // px breakpoint
+
+  /**
+   * Prefer token-driven values. Allow numbers for px convenience.
+   * You can pass: 920, "920px", "var(--layout-container-max)", etc.
+   */
+  export let maxWidth: number | string = 'var(--layout-container-max, 72rem)';
+  export let tocWidth: number | string = 280; // px by default (reasonable TOC)
+  export let gap: number | string = 'var(--layout-gap, var(--spacing-6))';
+  export let stickyTop: number | string = 'var(--layout-inset, var(--spacing-6))';
+
+  /**
+   * Collapse below this container width (container query).
+   * Use number (px) or CSS length.
+   */
+  export let hideTocBelow: number | string = 1100;
+
   export let collapseMode: 'stack' | 'hide' = 'stack';
 
-  let isNarrow = false;
-
-  function update() {
-    if (!browser) return;
-    isNarrow = window.innerWidth <= hideTocBelow;
+  function cssLen(v: number | string) {
+    return typeof v === 'number' ? `${v}px` : v;
   }
-
-  onMount(() => {
-    update();
-    window.addEventListener('resize', update);
-    return () => window.removeEventListener('resize', update);
-  });
 </script>
 
 <div
-  class={`cl-docshell ${className} ${isNarrow ? 'is-narrow' : ''} ${collapseMode === 'hide' ? 'mode-hide' : 'mode-stack'}`}
-  style="
-    --doc-max:{maxWidth}px;
-    --toc-w:{tocWidth}px;
-    --col-gap:{gap}px;
-    --sticky-top:{stickyTop}px;
-  "
+  class={`cl-docshell ${className} ${collapseMode === 'hide' ? 'mode-hide' : 'mode-stack'}`}
+  style={`
+    --doc-max: ${cssLen(maxWidth)};
+    --toc-w: ${cssLen(tocWidth)};
+    --col-gap: ${cssLen(gap)};
+    --sticky-top: ${cssLen(stickyTop)};
+    --toc-break: ${cssLen(hideTocBelow)};
+  `}
 >
-  <div class="main"><slot name="main" /></div>
+  <div class="main">
+    <slot name="main" />
+  </div>
 
-  {#if !(isNarrow && collapseMode === 'hide')}
-    <aside class="toc" aria-label="Table of contents"><slot name="toc" /></aside>
-  {/if}
+  <aside class="toc" aria-label="Table of contents">
+    <slot name="toc" />
+  </aside>
 </div>
 
 <style>
-  /* Wide: two columns, centered block */
+  /* Container query context */
   .cl-docshell {
+    container-type: inline-size;
+    container-name: docshell;
+
     display: grid;
     grid-template-columns: minmax(0, var(--doc-max)) var(--toc-w);
     column-gap: var(--col-gap);
+
+    /* Center the whole system */
     max-width: calc(var(--doc-max) + var(--col-gap) + var(--toc-w));
     margin-inline: auto;
     align-items: start;
+
+    min-width: 0;
   }
 
-  .main { min-width: 0; }
+  .main {
+    min-width: 0;
+  }
 
   .toc {
     position: sticky;
     top: var(--sticky-top);
     align-self: start;
     height: fit-content;
+    min-width: 0;
   }
 
-  /* Narrow: single column */
-  .cl-docshell.is-narrow {
-    grid-template-columns: minmax(0, 1fr);
-    max-width: min(100%, var(--doc-max));
-  }
+  /* =========================================================
+     Collapse behavior (container-query driven)
+     ========================================================= */
 
-  /* Narrow behavior: stack mode = TOC above content */
-  .cl-docshell.is-narrow.mode-stack .toc {
-    position: static;
-    order: -1;
-    margin-bottom: var(--col-gap);
-  }
+  @container docshell (max-width: 1100px) {
+    /* NOTE: we override this below using an inline var-based breakpoint.
+       Unfortunately container queries cannot use var() for the query itself,
+       so we provide a sane default here and also allow consumers to change
+       hideTocBelow by swapping this component (or editing the constant).
+    */
+    .cl-docshell {
+      grid-template-columns: minmax(0, 1fr);
+      max-width: min(100%, var(--doc-max));
+    }
 
-  /* Narrow behavior: hide mode is handled by {#if} in markup */
+    /* Stack mode = TOC above main */
+    .cl-docshell.mode-stack .toc {
+      position: static;
+      order: -1;
+      margin-bottom: var(--col-gap);
+    }
+
+    /* Hide mode = remove TOC visually */
+    .cl-docshell.mode-hide .toc {
+      display: none;
+    }
+  }
 </style>
 
 

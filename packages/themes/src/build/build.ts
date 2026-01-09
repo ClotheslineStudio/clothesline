@@ -1,13 +1,22 @@
 // ============================================================================
-// Clothesline Theme Builder — Clean Unified Version (with dynamic vision)
+// Clothesline Theme Builder — Split Foundations vs Semantics vs Semantic Colors
+// - foundations.css: scales only
+// - semantic.css: NON-COLOR semantic aliases + structural/global helpers (no color decisions)
+// - semantic-colors.css: semantic COLOR layer (mode-dependent where applicable)
+// - components.css: component contract tokens only (baseTokens minus global semantics)
+//
+// NOTE:
+// Background/panel/border-color defaults are currently authored in modes.css.
+// This builder avoids re-emitting those same color semantics in semantic.css.
 // ============================================================================
 
 import fs from "fs-extra";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-// Tokens + utilities
 import { baseTokens, semanticColorTokens } from "../../../tokens/src/index.js";
+
+
 import type { ThemeConfig } from "../types.ts";
 import type { OklchColor } from "../../../tokens/utils/colorEngine.js";
 import { toOklch } from "../../../tokens/utils/colorEngine.js";
@@ -23,13 +32,9 @@ import { copperSunTheme } from "../../configs/copper-sun.ts";
 import { milkywayTheme } from "../../configs/milkyway.ts";
 import { bigSkyTheme } from "../../configs/bigsky.ts";
 
-// Spacing
-import {
-  spacingScale,
-  spacingSemantic,
-} from "../../../tokens/src/spacing/spacing.ts";
+// Scales + semantics
+import { spacingScale, spacingSemantic } from "../../../tokens/src/spacing/spacing.ts";
 
-// Radius
 import {
   radiusScale,
   radiusSemantic,
@@ -37,7 +42,6 @@ import {
   type RadiusSemanticKey,
 } from "../../../tokens/src/radius/radius.ts";
 
-// Scaling + motion
 import {
   componentScaling,
   motionDurations,
@@ -47,16 +51,10 @@ import {
   scalingPresets,
 } from "../../../tokens/src/scaling/scaling.ts";
 
-// Sizes
 import { sizeScale, sizeSemantic } from "../../../tokens/src/sizes/sizes.ts";
 
-// Borders
-import {
-  borderScale,
-  borderSemantic,
-} from "../../../tokens/src/borders/borders.ts";
+import { borderScale, borderSemantic } from "../../../tokens/src/borders/borders.ts";
 
-// Typography
 import {
   typeFamilies,
   typeLineHeight,
@@ -66,7 +64,6 @@ import {
   typeWeights,
 } from "../../../tokens/src/typography/typography.ts";
 
-// Opacity
 import {
   opacityScale,
   opacitySemantic,
@@ -74,7 +71,6 @@ import {
   type OpacitySemanticKey,
 } from "../../../tokens/src/primitives/opacity.ts";
 
-// Z-index
 import {
   zIndexScale,
   zIndexSemantic,
@@ -82,7 +78,6 @@ import {
   type ZIndexSemanticKey,
 } from "../../../tokens/src/primitives/z-index.ts";
 
-// Elevation
 import {
   elevationScale,
   elevationSemantic,
@@ -95,58 +90,22 @@ import { linkTokens } from "../../../tokens/src/link/link.ts";
 
 import { focusScale, focusSemantic } from "../../../tokens/src/focus/focus.ts";
 
-// Layout (containers)
 import {
   layoutContainerScale,
   layoutContainerSemantic,
+  layoutSpacingSemantic,
   type LayoutContainerScaleKey,
   type LayoutContainerSemanticKey,
 } from "../../../tokens/src/primitives/layout.ts";
 
+import { blurScale, type BlurScaleKey } from "../../../tokens/src/primitives/blur.ts";
+import { semanticEffectsTokens } from "../../../tokens/src/effects/semantic-effects.ts";
 
 // ============================================================================
 // Helpers
 // ============================================================================
-function filterBaseTokensForComponents(tokens: Record<string, any>) {
-  const omitPrefixes = [
-    "spacing-",
-    "radius-",
-    "size-",
-    "type-",
-    "opacity-",
-    "z-",
-    "elevation-",
-    "layout-",
-    // If you're emitting TEXT/LINK as their own sections:
-    "text-",
-    "anchor-",
 
-    // IMPORTANT: only omit border WIDTH tokens (emitted elsewhere)
-    "border-width-",
-
-    // If focus primitives/semantic are emitted in their own section:
-    // (keep this OFF if you still want focus style tokens inside BASE TOKENS)
-    // "focus-",
-  ];
-
-  const omitExact = new Set(["border-0", "border-1", "border-2", "border-4"]);
-
-  const out: Record<string, any> = {};
-  for (const [k, v] of Object.entries(tokens)) {
-    if (omitExact.has(k)) continue;
-    if (omitPrefixes.some((p) => k.startsWith(p))) continue;
-    out[k] = v;
-  }
-  return out;
-}
-
-function textVars(): string {
-  return toCSSVars(textTokens as any);
-}
-
-function linkVars(): string {
-  return toCSSVars(linkTokens as any);
-}
+const collator = new Intl.Collator("en", { numeric: true, sensitivity: "base" });
 
 function section(title: string, content: string): string {
   if (!content.trim()) return "";
@@ -158,23 +117,79 @@ ${content}
 `;
 }
 
-type ThemeVarValue = string | number | { light: string | number; dark: string | number };
-type ThemeVarMap = Record<`--${string}`, ThemeVarValue>;
+function toKebabCase(input: string): string {
+  return input.replace(/([a-z])([A-Z])/g, "$1-$2").toLowerCase();
+}
 
-function emitThemeVarMap(map: ThemeVarMap | undefined): string {
-  if (!map) return "";
-  const lines: string[] = [];
+/** Flatten nested token objects into [key,value] pairs like "foo-bar-baz" -> "..." */
+function flattenEntries(obj: Record<string, any>): [string, string][] {
+  const entries: [string, string][] = [];
 
-  for (const [k, v] of Object.entries(map)) {
-    if (v && typeof v === "object" && "light" in v && "dark" in v) {
-      lines.push(`  ${k}: ${v.light};`);
-      lines.push(`  ${k}-dark: ${v.dark};`);
-    } else {
-      lines.push(`  ${k}: ${v as any};`);
+  function walk(node: any, prefix = ""): void {
+    for (const [k, v] of Object.entries(node)) {
+      const key = prefix ? `${prefix}-${k}` : k;
+      if (typeof v === "string") entries.push([key, v]);
+      else if (v && typeof v === "object") walk(v, key);
     }
   }
 
-  return lines.join("\n");
+  walk(obj);
+  return entries;
+}
+
+/** Normalize to CSS var key (ensures it starts with --) */
+function asCssVarKey(k: string): string {
+  return k.startsWith("--") ? k : `--${k}`;
+}
+
+/** Sorted list output (no grouping) */
+function toCSSVarsSorted(obj: Record<string, any>): string {
+  const entries = flattenEntries(obj)
+    .map(([k, v]) => [asCssVarKey(k), v] as [string, string])
+    .sort((a, b) => collator.compare(a[0], b[0]));
+
+  return entries.map(([k, v]) => `  ${k}: ${v};`).join("\n");
+}
+
+/** Grouped output by first prefix (alert-*, button-*, etc.) */
+function toCSSVarsGroupedByPrefix(
+  obj: Record<string, any>,
+  opts?: { groupOrder?: string[] }
+): string {
+  const entries = flattenEntries(obj).map(([k, v]) => [asCssVarKey(k), v] as [string, string]);
+
+  const groups: Record<string, [string, string][]> = {};
+  for (const [k, v] of entries) {
+    const without = k.startsWith("--") ? k.slice(2) : k;
+    const group = without.split("-")[0] || "misc";
+    (groups[group] ??= []).push([k, v]);
+  }
+
+  const groupNames = Object.keys(groups);
+
+  const order = opts?.groupOrder?.length ? new Map(opts.groupOrder.map((g, i) => [g, i])) : null;
+
+  groupNames.sort((a, b) => {
+    if (order) {
+      const ai = order.has(a) ? (order.get(a) as number) : Number.POSITIVE_INFINITY;
+      const bi = order.has(b) ? (order.get(b) as number) : Number.POSITIVE_INFINITY;
+      if (ai !== bi) return ai - bi;
+    }
+    return collator.compare(a, b);
+  });
+
+  const blocks: string[] = [];
+
+  for (const g of groupNames) {
+    const lines = groups[g]
+      .sort((a, b) => collator.compare(a[0], b[0]))
+      .map(([k, v]) => `  ${k}: ${v};`)
+      .join("\n");
+
+    blocks.push(`  /* ${g.toUpperCase()} */\n${lines}`);
+  }
+
+  return blocks.join("\n\n");
 }
 
 // ============================================================================
@@ -187,10 +202,22 @@ type Step = 50 | 100 | 200 | 300 | 400 | 500 | 600 | 700 | 800 | 900 | 950;
 const SHADES: Step[] = [50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950];
 const SHADE_ORDER_REV: Step[] = [...SHADES].reverse() as Step[];
 
-function pickContrastShades(ramp: Record<Step, string>): {
-  light: Step;
-  dark: Step;
-} {
+const ROLES = [
+  "primary",
+  "secondary",
+  "tertiary",
+  "success",
+  "warning",
+  "error",
+  "info",
+  "accent",
+  "neutral",
+  "surface",
+] as const;
+
+type RoleName = (typeof ROLES)[number];
+
+function pickContrastShades(ramp: Record<Step, string>): { light: Step; dark: Step } {
   let light: Step = 50;
   let dark: Step = 950;
 
@@ -214,73 +241,21 @@ function pickContrastShades(ramp: Record<Step, string>): {
   return { light, dark };
 }
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-
-// Package root (…/packages/themes)
-const pkgRoot = path.resolve(__dirname, '../..');
-
-// dist root (…/packages/themes/dist)
-const distRoot = path.join(pkgRoot, 'dist');
-
-const cssDir = path.join(distRoot, 'css');
-const cssThemesDir = path.join(cssDir, 'themes');
-const manifestDir = path.join(distRoot, 'manifest');
-
-// modes.css source (…/packages/themes/src/css/modes.css)
-const modesCssPath = path.join(pkgRoot, 'src', 'css', 'modes.css');
-
-
-const ROLES = [
-  "primary",
-  "secondary",
-  "tertiary",
-  "success",
-  "warning",
-  "error",
-  "info",
-  "accent",
-  "neutral",
-  "surface",
-] as const;
-
-type RoleName = (typeof ROLES)[number];
-
-// ============================================================================
-// 1. Flip a ramp for dark mode
-// ============================================================================
-
 function flipRampForDark(ramp: Record<Step, string>): Record<Step, string> {
   const out = {} as Record<Step, string>;
   for (let i = 0; i < SHADES.length; i++) {
-    const lightStep = SHADES[i];
-    const darkStep = SHADE_ORDER_REV[i];
-    out[lightStep] = ramp[darkStep];
+    out[SHADES[i]] = ramp[SHADE_ORDER_REV[i]];
   }
   return out;
 }
 
-// ============================================================================
-// 2. Read seed color from theme config
-// ============================================================================
-
-function getRoleSeed(
-  theme: ThemeConfig,
-  mode: ThemeMode,
-  role: RoleName
-): OklchColor | null {
-  // Special handling for surface: allow seeds.surface.light/dark
+function getRoleSeed(theme: ThemeConfig, mode: ThemeMode, role: RoleName): OklchColor | null {
   const seedGroup = (theme as any).seeds?.[role];
 
   if (role === "surface" && seedGroup && typeof seedGroup === "object") {
     const surfaceSeed = mode === "light" ? seedGroup.light : seedGroup.dark;
-
     if (surfaceSeed && typeof surfaceSeed.l === "number") {
-      return {
-        mode: "oklch",
-        l: surfaceSeed.l,
-        c: surfaceSeed.c,
-        h: surfaceSeed.h,
-      };
+      return { mode: "oklch", l: surfaceSeed.l, c: surfaceSeed.c, h: surfaceSeed.h };
     }
   }
 
@@ -293,7 +268,6 @@ function getRoleSeed(
 
   if (!seedNode) return null;
 
-  // { l, c, h }
   if (
     typeof seedNode.l === "number" &&
     typeof seedNode.c === "number" &&
@@ -302,37 +276,22 @@ function getRoleSeed(
     return { mode: "oklch", l: seedNode.l, c: seedNode.c, h: seedNode.h };
   }
 
-  // { hue, chroma }
   if (typeof seedNode.hue === "number") {
     const h = seedNode.hue;
     const c = typeof seedNode.chroma === "number" ? seedNode.chroma : 0.12;
-    const l =
-      (theme as any).seeds?.[role]?.l ??
-      (theme as any).seeds?.[role]?.light?.l ??
-      0.64;
-
+    const l = (theme as any).seeds?.[role]?.l ?? (theme as any).seeds?.[role]?.light?.l ?? 0.64;
     return { mode: "oklch", l, c, h };
   }
 
-  // "#hex" or "oklch(...)"
   if (typeof seedNode === "string") {
     const o = toOklch(seedNode);
-    if (o && typeof o.l === "number") {
-      return { mode: "oklch", l: o.l, c: o.c, h: o.h };
-    }
+    if (o && typeof o.l === "number") return { mode: "oklch", l: o.l, c: o.c, h: o.h };
   }
 
   return null;
 }
 
-// ============================================================================
-// 3. Build all ramps from seeds
-// ============================================================================
-
-function rampsForTheme(
-  theme: ThemeConfig,
-  mode: ThemeMode
-): Record<string, Record<Step, string>> {
+function rampsForTheme(theme: ThemeConfig, mode: ThemeMode): Record<string, Record<Step, string>> {
   const result: Record<string, Record<Step, string>> = {};
 
   for (const role of ROLES) {
@@ -343,12 +302,8 @@ function rampsForTheme(
 
     if (role === "surface") {
       const surfaceSeeds = (theme as any).seeds?.surface;
-      const hasExplicitDarkSeed =
-        surfaceSeeds && typeof surfaceSeeds === "object" && surfaceSeeds.dark;
-
-      result[role] =
-        mode === "dark" && !hasExplicitDarkSeed ? flipRampForDark(ramp) : ramp;
-
+      const hasExplicitDarkSeed = surfaceSeeds && typeof surfaceSeeds === "object" && surfaceSeeds.dark;
+      result[role] = mode === "dark" && !hasExplicitDarkSeed ? flipRampForDark(ramp) : ramp;
       continue;
     }
 
@@ -358,63 +313,8 @@ function rampsForTheme(
   return result;
 }
 
-// ============================================================================
-// 4. Generic CSS var flattening + grouping
-// ============================================================================
-
-function toCSSVars(
-  obj: Record<string, string | Record<string, string | Record<string, string>>>
-): string {
-  const entries: [string, string][] = [];
-
-  function flattenObject(node: any, prefix = ""): void {
-    for (const [key, value] of Object.entries(node)) {
-      const fullKey = prefix ? `${prefix}-${key}` : key;
-
-      if (typeof value === "string") {
-        entries.push([fullKey, value]);
-      } else if (typeof value === "object" && value !== null) {
-        flattenObject(value, fullKey);
-      }
-    }
-  }
-
-  flattenObject(obj);
-
-  const groups: Record<string, [string, string][]> = {};
-
-  for (const [key, value] of entries) {
-    const withoutPrefix = key.startsWith("--") ? key.slice(2) : key;
-    const prefix = withoutPrefix.split("-")[0] || "misc";
-    if (!groups[prefix]) groups[prefix] = [];
-    groups[prefix].push([key, value]);
-  }
-
-  const groupNames = Object.keys(groups).sort();
-
-  const blocks = groupNames.map((group) => {
-    const collator = new Intl.Collator("en", {
-      numeric: true,
-      sensitivity: "base",
-    });
-
-    const lines = groups[group]
-      .sort((a, b) => collator.compare(a[0], b[0]))
-      .map(([k, v]) => `  ${k.startsWith("--") ? k : `--${k}`}: ${v};`)
-      .join("\n");
-
-    return `  /* ${group.toUpperCase()} */\n${lines}`;
-  });
-
-  return blocks.join("\n\n");
-}
-
-// ============================================================================
-// 5. Role color vars (base + contrast + vision-adjusted)
-// ============================================================================
-
 function roleVars(theme: ThemeConfig): string {
-  const ramps = rampsForTheme(theme, "light"); // canonical ramps from “light” seeds
+  const ramps = rampsForTheme(theme, "light");
   const base: string[] = [];
   const rel: string[] = [];
 
@@ -433,9 +333,7 @@ function roleVars(theme: ThemeConfig): string {
       );
       base.push(`  --color-${role}-${shade}-vis: var(--color-${role}-${shade}-ct);`);
 
-      rel.push(
-        `  --color-${role}-${shade}-vis: oklch(from var(--color-${role}-${shade}-ct) l c h);`
-      );
+      rel.push(`  --color-${role}-${shade}-vis: oklch(from var(--color-${role}-${shade}-ct) l c h);`);
     }
 
     base.push("");
@@ -445,304 +343,132 @@ function roleVars(theme: ThemeConfig): string {
   return base.join("\n").trimEnd();
 }
 
-
-// ============================================================================
-// 5b. Vision defaults (per-role base values for -vis)
-// ============================================================================
-
 function visionDefaults(): string {
   return ROLES.map(
-    (role) =>
-      `  --vision-${role}-l-shift: 0%;
+    (role) => `  --vision-${role}-l-shift: 0%;
   --vision-${role}-c-scale: 1;
   --vision-${role}-h-shift: 0deg;`
   ).join("\n");
 }
 
 // ============================================================================
-// 6. Spacing tokens
+// Global-from-base extraction
+// - Omit bg/border/ring/etc from components.css (contract stays clean)
+// - Only emit NON-COLOR helpers from baseTokens into semantic.css
 // ============================================================================
 
-function spacingVars(): string {
-  const out: Record<string, string> = {};
+function isGlobalSemanticFromBaseToken(key: string): boolean {
+  const GLOBAL_PREFIXES = [
+    "background-",
+    "bg-",
+    "surface-",
+    "border-",
+    "border-color-",
+    "ring-",
+    "outline-",
+    "divide-",
+    "contrast-",
+    "ct-",
+  ];
 
-  for (const key in spacingScale) {
-    out[`spacing-${key}`] = spacingScale[key as keyof typeof spacingScale];
+  // Border WIDTH scale tokens are handled by foundations/borders
+  if (key.startsWith("border-width-")) return false;
+
+  return GLOBAL_PREFIXES.some((p) => key.startsWith(p));
+}
+
+/**
+ * semantic.css should NOT own color decisions.
+ * We only allow structural helpers from baseTokens (e.g., border-inset, border-transition).
+ */
+function isNonColorSemanticFromBaseToken(key: string): boolean {
+  // Hard excludes: color semantic families
+  const EXCLUDE_PREFIXES = [
+    "background-",
+    "bg-",
+    "surface-",
+    "border-color-",
+    "text-",
+    "link-",
+    "anchor-",
+    "focus-ring-",
+  ];
+  if (EXCLUDE_PREFIXES.some((p) => key.startsWith(p))) return false;
+
+  if (key.startsWith("border-width-")) return false;
+
+  // Allow only structural/helper prefixes
+  const ALLOW_PREFIXES = ["border-", "ring-", "outline-", "divide-", "contrast-", "ct-"];
+  return ALLOW_PREFIXES.some((p) => key.startsWith(p));
+}
+
+function extractNonColorSemanticFromBaseTokens(tokens: Record<string, any>) {
+  const out: Record<string, any> = {};
+  for (const [k, v] of Object.entries(tokens)) {
+    if (isNonColorSemanticFromBaseToken(k)) out[k] = v;
   }
+  return out;
+}
 
-  for (const key in spacingSemantic) {
-    const scaleKey = spacingSemantic[key as keyof typeof spacingSemantic];
-    out[`spacing-${key}`] = `var(--spacing-${scaleKey})`;
+function filterBaseTokensForComponents(tokens: Record<string, any>) {
+  const omitPrefixes = [
+    // scales or semantic layers emitted elsewhere
+    "spacing-",
+    "radius-",
+    "size-",
+    "type-",
+    "opacity-",
+    "z-",
+    "elevation-",
+    "layout-",
+    "focus-",
+
+    // these are emitted in semantic-colors.css (color semantics)
+    "text-",
+    "anchor-",
+    "link-",
+
+    // border-width scale emitted in foundations.css
+    "border-width-",
+  ];
+
+  const omitExact = new Set(["border-0", "border-1", "border-2", "border-4"]);
+
+  const out: Record<string, any> = {};
+  for (const [k, v] of Object.entries(tokens)) {
+    if (omitExact.has(k)) continue;
+    if (omitPrefixes.some((p) => k.startsWith(p))) continue;
+
+    // IMPORTANT: strip bg/border/etc global semantics
+    if (isGlobalSemanticFromBaseToken(k)) continue;
+
+    out[k] = v;
   }
-
-  return toCSSVars(out);
+  return out;
 }
 
 // ============================================================================
-// 7. Radius tokens
+// Foundation var map (per-theme overrides/escape hatches)
 // ============================================================================
 
-function radiusVars(): string {
-  const out: Record<string, string> = {};
+type ThemeVarValue = string | number | { light: string | number; dark: string | number };
+type ThemeVarMap = Record<`--${string}`, ThemeVarValue>;
 
-  // Base scale
-  for (const key in radiusScale) {
-    out[`radius-${key}`] = radiusScale[key as RadiusScaleKey];
+function emitThemeVarMap(map: ThemeVarMap | undefined): string {
+  if (!map) return "";
+  const lines: string[] = [];
+
+  for (const [k, v] of Object.entries(map)) {
+    if (v && typeof v === "object" && "light" in v && "dark" in v) {
+      lines.push(`  ${k}: ${v.light};`);
+      lines.push(`  ${k}-dark: ${v.dark};`);
+    } else {
+      lines.push(`  ${k}: ${v as any};`);
+    }
   }
 
-  // Semantic aliases
-  for (const key in radiusSemantic) {
-    const semanticKey = key as RadiusSemanticKey;
-    const scaleKey = radiusSemantic[semanticKey];
-
-    // Avoid overriding the raw scale var (e.g. full -> full)
-    if (semanticKey === scaleKey) continue;
-
-    out[`radius-${semanticKey}`] = `var(--radius-${scaleKey})`;
-  }
-
-  return toCSSVars(out);
+  return lines.join("\n");
 }
-
-// ============================================================================
-// 8. Scaling + motion tokens
-// ============================================================================
-
-function scalingVars(): string {
-  const out: Record<string, string> = {};
-
-  // Base scaling: text/ui/icon/density
-  for (const key in scalingBase) {
-    out[`${key}-scaling`] = scalingBase[key as keyof typeof scalingBase];
-  }
-
-  // Preset tiers
-  for (const key in scalingPresets) {
-    out[`scaling-${key}`] = scalingPresets[key as keyof typeof scalingPresets];
-  }
-
-  // Motion scale + durations + easing
-  out["motion-scale"] = motionScale;
-
-  for (const key in motionDurations) {
-    out[`motion-duration-${key}`] =
-      motionDurations[key as keyof typeof motionDurations];
-  }
-
-  out["motion-ease"] = motionEase;
-
-  // Component-level scaling
-  for (const key in componentScaling) {
-    out[`${key}-scale`] =
-      componentScaling[key as keyof typeof componentScaling];
-  }
-
-  return toCSSVars(out);
-}
-
-// ============================================================================
-// 9. Size tokens
-// ============================================================================
-
-function sizeVars(): string {
-  const out: Record<string, string> = {};
-
-  for (const key in sizeScale) {
-    out[`size-${key}`] = sizeScale[key as keyof typeof sizeScale];
-  }
-
-  for (const key in sizeSemantic) {
-    const scaleKey = sizeSemantic[key as keyof typeof sizeSemantic];
-    out[`size-${key}`] = `var(--size-${scaleKey})`;
-  }
-
-  return toCSSVars(out);
-}
-
-// ============================================================================
-// 10. Border width tokens
-// ============================================================================
-
-function borderVars(): string {
-  const out: Record<string, string> = {};
-
-  for (const key in borderScale) {
-    out[`border-${key}`] = borderScale[key as keyof typeof borderScale];
-  }
-
-  for (const key in borderSemantic) {
-    const scaleKey = borderSemantic[key as keyof typeof borderSemantic];
-    out[key] = `var(--border-${scaleKey})`;
-  }
-
-  return toCSSVars(out);
-}
-
-// ============================================================================
-// 11. Typography tokens
-// ============================================================================
-
-function typographyVars(): string {
-  const out: Record<string, string> = {};
-
-  // Scale
-  for (const key in typeScale) {
-    out[`type-scale-${key}`] = typeScale[key as keyof typeof typeScale];
-  }
-
-  // Line height
-  for (const key in typeLineHeight) {
-    out[`type-leading-${key}`] =
-      typeLineHeight[key as keyof typeof typeLineHeight];
-  }
-
-  // Tracking
-  for (const key in typeTracking) {
-    out[`type-tracking-${key}`] =
-      typeTracking[key as keyof typeof typeTracking];
-  }
-
-  // Weights
-  for (const key in typeWeights) {
-    out[`type-weight-${key}`] = typeWeights[key as keyof typeof typeWeights];
-  }
-
-  // Families
-  for (const key in typeFamilies) {
-    out[`type-family-${key}`] = typeFamilies[key as keyof typeof typeFamilies];
-  }
-
-  // Semantic roles
-  for (const role in typeRoles) {
-    const config = typeRoles[role as keyof typeof typeRoles];
-
-    out[`type-${role}-size`] = `var(--type-scale-${config.size})`;
-    out[`type-${role}-weight`] = `var(--type-weight-${config.weight})`;
-    out[`type-${role}-leading`] = `var(--type-leading-${config.leading})`;
-    out[`type-${role}-tracking`] = `var(--type-tracking-${config.tracking})`;
-    out[`type-${role}-family`] = `var(--type-family-${config.family})`;
-    out[`type-${role}-transform`] = config.transform;
-  }
-
-  return toCSSVars(out);
-}
-
-// ============================================================================
-// 12. Opacity tokens
-// ============================================================================
-
-function opacityVars(): string {
-  const out: Record<string, string> = {};
-
-  // 1) Emit primitives (scale) exactly once
-  for (const key in opacityScale) {
-    out[`opacity-${key}`] = opacityScale[key as OpacityScaleKey];
-  }
-
-  // 2) Emit semantic aliases, but NEVER overwrite an existing primitive token
-  for (const key in opacitySemantic) {
-    const cssKey = `opacity-${key}`;
-
-    // If this semantic name collides with a primitive name (e.g. "disabled", "backdrop"),
-    // do not overwrite the primitive value with a self-referencing var().
-    if (cssKey in out) continue;
-
-    const scaleKey = opacitySemantic[key as OpacitySemanticKey];
-    out[cssKey] = `var(--opacity-${scaleKey})`;
-  }
-
-  return toCSSVars(out);
-}
-
-// ============================================================================
-// 13. Z-index tokens
-// ============================================================================
-
-function zIndexVars(): string {
-  const out: Record<string, string> = {};
-
-  // primitives (scale)
-  for (const key in zIndexScale) {
-    out[`z-${key}`] = zIndexScale[key as ZIndexScaleKey];
-  }
-
-  // semantic aliases
-  for (const key in zIndexSemantic) {
-    const scaleKey = zIndexSemantic[key as ZIndexSemanticKey];
-    out[`z-${key}`] = `var(--z-${scaleKey})`;
-  }
-
-  return toCSSVars(out);
-}
-// ============================================================================
-// X. Layout tokens (container width scale + semantic selector)
-// ============================================================================
-
-function layoutVars(): string {
-  const out: Record<string, string> = {};
-
-  // Scale
-  for (const key in layoutContainerScale) {
-    out[`layout-container-${key}`] =
-      layoutContainerScale[key as LayoutContainerScaleKey];
-  }
-
-  // Semantic (max)
-  for (const key in layoutContainerSemantic) {
-    const semanticKey = key as LayoutContainerSemanticKey; // "max"
-    const scaleKey = layoutContainerSemantic[semanticKey]; // e.g. "xl"
-    out[`layout-container-${semanticKey}`] = `var(--layout-container-${scaleKey})`;
-  }
-
-  return toCSSVars(out);
-}
-
-// ============================================================================
-// X. Focus tokens (width + offset)
-// ============================================================================
-
-function focusVars(): string {
-  const out: Record<string, string> = {};
-
-  // primitives (scale)
-  for (const key in focusScale) {
-    out[`focus-${key}`] = focusScale[key as keyof typeof focusScale];
-  }
-
-  // semantic aliases (IMPORTANT: do NOT double-prefix "focus-")
-  for (const key in focusSemantic) {
-    const scaleKey = focusSemantic[key as keyof typeof focusSemantic];
-
-    // scaleKey may be "2" or "offset-2"
-    const ref = scaleKey.startsWith("offset-")
-      ? `var(--focus-${scaleKey})`
-      : `var(--focus-${scaleKey})`;
-
-    out[key] = ref;
-  }
-
-  return toCSSVars(out);
-}
-
-// ============================================================================
-// 14. Elevation (shadow) tokens
-// ============================================================================
-
-function elevationVars(): string {
-  const out: Record<string, string> = {};
-
-  for (const key in elevationScale) {
-    out[`elevation-${key}`] = elevationScale[key as ElevationScaleKey];
-  }
-
-  for (const key in elevationSemantic) {
-    const scaleKey = elevationSemantic[key as ElevationSemanticKey];
-    out[`elevation-${key}`] = `var(--elevation-${scaleKey})`;
-  }
-
-  return toCSSVars(out);
-}
-
 
 function foundationVarMap(theme: ThemeConfig): ThemeVarMap {
   const f = theme.foundation ?? {};
@@ -787,38 +513,203 @@ function foundationVarMap(theme: ThemeConfig): ThemeVarMap {
 
   if (f.bodyBackgroundColor) out["--body-background-color"] = f.bodyBackgroundColor as any;
 
-  // escape hatch
   Object.assign(out, f.vars ?? {});
-  // per-theme escape hatch (ThemeConfig.vars)
   Object.assign(out, theme.vars ?? {});
-
   return out;
 }
 
 // ============================================================================
-// 15. On-color tokens
+// Token emitters
 // ============================================================================
 
-function onVars(mode: ThemeMode): string {
-  return mode === "light"
-    ? `  --on-primary: var(--color-surface-50);
-  --on-secondary: var(--color-surface-50);
-  --on-tertiary: var(--color-surface-50);
-  --on-success: var(--color-surface-50);
-  --on-warning: var(--color-surface-950);
-  --on-error: var(--color-surface-50);
-  --on-info: var(--color-surface-50);`
-    : `  --on-primary: var(--color-surface-950);
-  --on-secondary: var(--color-surface-950);
-  --on-tertiary: var(--color-surface-950);
-  --on-success: var(--color-surface-950);
-  --on-warning: var(--color-surface-950);
-  --on-error: var(--color-surface-950);
-  --on-info: var(--color-surface-950);`;
+// SCALES ONLY (foundations.css)
+function blurScaleVars() {
+  const out: Record<string, string> = {};
+  for (const k in blurScale) out[`blur-${k}`] = blurScale[k as BlurScaleKey];
+  return toCSSVarsSorted(out);
+}
+
+function spacingScaleVars() {
+  const out: Record<string, string> = {};
+  for (const k in spacingScale) out[`spacing-${k}`] = spacingScale[k as keyof typeof spacingScale];
+  return toCSSVarsSorted(out);
+}
+
+function radiusScaleVars() {
+  const out: Record<string, string> = {};
+  for (const k in radiusScale) out[`radius-${k}`] = radiusScale[k as RadiusScaleKey];
+  return toCSSVarsSorted(out);
+}
+
+function sizeScaleVars() {
+  const out: Record<string, string> = {};
+  for (const k in sizeScale) out[`size-${k}`] = sizeScale[k as keyof typeof sizeScale];
+  return toCSSVarsSorted(out);
+}
+
+function borderScaleVars() {
+  const out: Record<string, string> = {};
+  for (const k in borderScale) out[`border-${k}`] = borderScale[k as keyof typeof borderScale];
+  return toCSSVarsSorted(out);
+}
+
+function focusScaleVars() {
+  const out: Record<string, string> = {};
+  for (const k in focusScale) out[`focus-${k}`] = focusScale[k as keyof typeof focusScale];
+  return toCSSVarsSorted(out);
+}
+
+function scalingScaleVars() {
+  const out: Record<string, string> = {};
+  for (const k in scalingBase) out[`${k}-scaling`] = scalingBase[k as keyof typeof scalingBase];
+
+  out["motion-scale"] = motionScale;
+  for (const k in motionDurations) out[`motion-duration-${k}`] = motionDurations[k as keyof typeof motionDurations];
+
+  return toCSSVarsSorted(out);
+}
+
+function typographyScaleVars() {
+  const out: Record<string, string> = {};
+  for (const k in typeScale) out[`type-scale-${k}`] = typeScale[k as keyof typeof typeScale];
+  for (const k in typeLineHeight) out[`type-leading-${k}`] = typeLineHeight[k as keyof typeof typeLineHeight];
+  for (const k in typeTracking) out[`type-tracking-${k}`] = typeTracking[k as keyof typeof typeTracking];
+  for (const k in typeWeights) out[`type-weight-${k}`] = typeWeights[k as keyof typeof typeWeights];
+  for (const k in typeFamilies) out[`type-family-${k}`] = typeFamilies[k as keyof typeof typeFamilies];
+  return toCSSVarsSorted(out);
+}
+
+function opacityScaleVars() {
+  const out: Record<string, string> = {};
+  for (const k in opacityScale) out[`opacity-${k}`] = opacityScale[k as OpacityScaleKey];
+  return toCSSVarsSorted(out);
+}
+
+function zIndexScaleVars() {
+  const out: Record<string, string> = {};
+  for (const k in zIndexScale) out[`z-${k}`] = String(zIndexScale[k as ZIndexScaleKey]);
+  return toCSSVarsSorted(out);
+}
+
+function elevationScaleVars() {
+  const out: Record<string, string> = {};
+  for (const k in elevationScale) out[`elevation-${k}`] = elevationScale[k as ElevationScaleKey];
+  return toCSSVarsSorted(out);
+}
+
+function layoutScaleVars() {
+  const out: Record<string, string> = {};
+  for (const k in layoutContainerScale) out[`layout-container-${k}`] = layoutContainerScale[k as LayoutContainerScaleKey];
+  return toCSSVarsSorted(out);
+}
+
+// GLOBAL SEMANTICS (semantic.css) — NON-COLOR ONLY
+function spacingSemanticVars() {
+  const out: Record<string, string> = {};
+  for (const k in spacingSemantic) {
+    const scaleKey = spacingSemantic[k as keyof typeof spacingSemantic];
+    out[`spacing-${k}`] = `var(--spacing-${scaleKey})`;
+  }
+  return toCSSVarsSorted(out);
+}
+
+function radiusSemanticVars() {
+  const out: Record<string, string> = {};
+  for (const k in radiusSemantic) {
+    const semanticKey = k as RadiusSemanticKey;
+    const scaleKey = radiusSemantic[semanticKey];
+    if (semanticKey === scaleKey) continue;
+    out[`radius-${semanticKey}`] = `var(--radius-${scaleKey})`;
+  }
+  return toCSSVarsSorted(out);
+}
+
+function sizeSemanticVars() {
+  const out: Record<string, string> = {};
+  for (const k in sizeSemantic) out[`size-${k}`] = `var(--size-${sizeSemantic[k as keyof typeof sizeSemantic]})`;
+  return toCSSVarsSorted(out);
+}
+
+function borderSemanticVars() {
+  const out: Record<string, string> = {};
+  for (const k in borderSemantic) out[k] = `var(--border-${borderSemantic[k as keyof typeof borderSemantic]})`;
+  return toCSSVarsSorted(out);
+}
+
+function focusSemanticVars() {
+  const out: Record<string, string> = {};
+  for (const k in focusSemantic) out[k] = `var(--focus-${focusSemantic[k as keyof typeof focusSemantic]})`;
+  return toCSSVarsSorted(out);
+}
+
+function typographySemanticVars() {
+  const out: Record<string, string> = {};
+  for (const role in typeRoles) {
+    const cfg = typeRoles[role as keyof typeof typeRoles];
+    out[`type-${role}-size`] = `var(--type-scale-${cfg.size})`;
+    out[`type-${role}-weight`] = `var(--type-weight-${cfg.weight})`;
+    out[`type-${role}-leading`] = `var(--type-leading-${cfg.leading})`;
+    out[`type-${role}-tracking`] = `var(--type-tracking-${cfg.tracking})`;
+    out[`type-${role}-family`] = `var(--type-family-${cfg.family})`;
+    out[`type-${role}-transform`] = cfg.transform;
+  }
+  return toCSSVarsSorted(out);
+}
+
+function opacitySemanticVars() {
+  const out: Record<string, string> = {};
+  for (const k in opacitySemantic) {
+    const cssKey = `opacity-${k}`;
+    const scaleKey = opacitySemantic[k as OpacitySemanticKey];
+    out[cssKey] = `var(--opacity-${scaleKey})`;
+  }
+  return toCSSVarsSorted(out);
+}
+
+function zIndexSemanticVars() {
+  const out: Record<string, string> = {};
+  for (const k in zIndexSemantic) out[`z-${k}`] = `var(--z-${zIndexSemantic[k as ZIndexSemanticKey]})`;
+  return toCSSVarsSorted(out);
+}
+
+function elevationSemanticVars() {
+  const out: Record<string, string> = {};
+  for (const k in elevationSemantic) out[`elevation-${k}`] = `var(--elevation-${elevationSemantic[k as ElevationSemanticKey]})`;
+  return toCSSVarsSorted(out);
+}
+
+function layoutSemanticVars() {
+  const out: Record<string, string> = {};
+
+  for (const k in layoutContainerSemantic) {
+    const semanticKey = k as LayoutContainerSemanticKey;
+    const scaleKey = layoutContainerSemantic[semanticKey];
+    out[`layout-container-${semanticKey}`] = `var(--layout-container-${scaleKey})`;
+  }
+
+  for (const k in layoutSpacingSemantic) {
+    const cssKey = toKebabCase(k);
+    const spacingKey = layoutSpacingSemantic[k as keyof typeof layoutSpacingSemantic];
+    out[`layout-${cssKey}`] = `var(--spacing-${spacingKey})`;
+  }
+
+  return toCSSVarsSorted(out);
+}
+
+function scalingSemanticVars() {
+  const out: Record<string, string> = {};
+
+  for (const k in scalingPresets) out[`scaling-${k}`] = scalingPresets[k as keyof typeof scalingPresets];
+
+  for (const k in componentScaling) out[`${k}-scale`] = componentScaling[k as keyof typeof componentScaling];
+
+  out["motion-ease"] = motionEase;
+
+  return toCSSVarsSorted(out);
 }
 
 // ============================================================================
-// 16. Build theme CSS
+// CSS builders
 // ============================================================================
 
 function themeCSS(theme: ThemeConfig): string {
@@ -826,100 +717,151 @@ function themeCSS(theme: ThemeConfig): string {
 
   return `
 html[data-theme='${theme.name}'] {
-${section("FOUNDATION", foundationCss)}
+${section("FOUNDATION (PER THEME)", foundationCss)}
 ${section("COLOR RAMPS", roleVars(theme))}
 }
 `.trimStart();
 }
 
-
 function foundationsCSS(): string {
   return `
 /* ============================================================================
    Clothesline Foundations (global, theme-agnostic)
+   SCALES ONLY
 ============================================================================ */
 html {
-${section("SPACING", spacingVars())}
-${section("RADIUS", radiusVars())}
-${section("SIZE", sizeVars())}
-${section("BORDERS", borderVars())}
-${section("FOCUS", focusVars())}
-${section("SCALING & MOTION", scalingVars())}
-${section("TYPOGRAPHY", typographyVars())}
-${section("TEXT", textVars())}
-${section("LINK", linkVars())}
-${section("OPACITY", opacityVars())}
-${section("Z-INDEX", zIndexVars())}
-${section("ELEVATION", elevationVars())}
-${section("LAYOUT", layoutVars())}
+${section("BLUR SCALE", blurScaleVars())}
+${section("BORDER WIDTH SCALE", borderScaleVars())}
+${section("ELEVATION SCALE", elevationScaleVars())}
+${section("FOCUS SCALE", focusScaleVars())}
+${section("LAYOUT CONTAINER SCALE", layoutScaleVars())}
+${section("OPACITY SCALE", opacityScaleVars())}
+${section("RADIUS SCALE", radiusScaleVars())}
+${section("SCALING & MOTION SCALES", scalingScaleVars())}
+${section("SIZE SCALE", sizeScaleVars())}
+${section("SPACING SCALE", spacingScaleVars())}
+${section("TYPOGRAPHY SCALES", typographyScaleVars())}
+${section("Z-INDEX SCALE", zIndexScaleVars())}
+}
+`.trimStart();
 }
 
-/* Defaults that should not be duplicated per-theme */
-html[data-mode='light'],
-html[data-mode='dark']{
-  --k-ct: clamp(0%, calc((var(--contrast-factor, 1) - 1) * 120%), 25%);
-}
-
-/* Vision defaults can be global; modes.css can still override per vision mode */
-html{
-${section("VISION DEFAULTS", visionDefaults())}
-}
-`;
-}
-
-function componentsCSS(): string {
-  const baseTokensCss = toCSSVars(
-    filterBaseTokensForComponents(baseTokens as any)
+function semanticCSS(): string {
+  const globalNonColorFromBase = toCSSVarsGroupedByPrefix(
+    extractNonColorSemanticFromBaseTokens(baseTokens as any)
   );
 
   return `
 /* ============================================================================
-   Clothesline Component Tokens (global contract)
+   Clothesline Semantics (global, theme-agnostic)
+   - NON-COLOR semantic aliases
+   - Structural/global helpers only (no color decisions)
 ============================================================================ */
-html{
-${section("BASE TOKENS", baseTokensCss)}
+html {
+${section("GLOBAL NON-COLOR HELPERS (FROM BASE TOKENS)", globalNonColorFromBase)}
+${section("BORDER SEMANTICS", borderSemanticVars())}
+${section("ELEVATION SEMANTICS", elevationSemanticVars())}
+${section("FOCUS SEMANTICS", focusSemanticVars())}
+${section("LAYOUT SEMANTICS", layoutSemanticVars())}
+${section("OPACITY SEMANTICS", opacitySemanticVars())}
+${section("RADIUS SEMANTICS", radiusSemanticVars())}
+${section("SCALING SEMANTICS", scalingSemanticVars())}
+${section("SIZE SEMANTICS", sizeSemanticVars())}
+${section("SPACING SEMANTICS", spacingSemanticVars())}
+${section("TYPOGRAPHY SEMANTICS", typographySemanticVars())}
+${section("Z-INDEX SEMANTICS", zIndexSemanticVars())}
 }
-`;
+
+/* Global defaults that are not scales */
+html[data-mode='light'],
+html[data-mode='dark'] {
+  --k-ct: clamp(0%, calc((var(--contrast-factor, 1) - 1) * 120%), 25%);
+}
+
+/* Vision defaults can be global; modes.css can still override per vision mode */
+html {
+${section("VISION DEFAULTS", visionDefaults())}
+}
+`.trimStart();
 }
 
 function semanticColorsCSS(): string {
-  const lightVars = toCSSVars((semanticColorTokens as any).light);
-  const darkVars = toCSSVars((semanticColorTokens as any).dark);
+  const lightVars = toCSSVarsSorted((semanticColorTokens as any).light);
+  const darkVars = toCSSVarsSorted((semanticColorTokens as any).dark);
 
   return `
 /* ============================================================================
    Clothesline Semantic Color Layer (global, theme-agnostic)
    - References theme-provided ramps + contrast picks.
 ============================================================================ */
-
-html[data-mode='light']{
+html[data-mode='light'] {
 ${lightVars}
 }
 
-html[data-mode='dark']{
+html[data-mode='dark'] {
 ${darkVars}
 }
-`;
+`.trimStart();
 }
 
+
+
+function componentsCSS(): string {
+  const componentOnly = filterBaseTokensForComponents(baseTokens as any);
+
+  // Optional: provide a groupOrder if you want a fixed ordering.
+  const grouped = toCSSVarsGroupedByPrefix(componentOnly);
+
+  return `
+/* ============================================================================
+   Clothesline Component Tokens (global contract)
+   - Component-only tokens
+   - Global semantics are intentionally excluded (see semantic.css + semantic-colors.css + modes.css)
+============================================================================ */
+html {
+${section("COMPONENT TOKENS", grouped)}
+}
+`.trimStart();
+}
+
+function semanticEffectsCSS(): string {
+  const vars = toCSSVarsSorted(semanticEffectsTokens as any);
+
+  return `
+/* ============================================================================
+   Clothesline Semantic Effects (global, theme-agnostic)
+============================================================================ */
+html {
+${vars}
+}
+`.trimStart();
+}
+
+
 // ============================================================================
-// 17. Build + output files
+// Output wiring
 // ============================================================================
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const pkgRoot = path.resolve(__dirname, "../..");
+const distRoot = path.join(pkgRoot, "dist");
+
+const cssDir = path.join(distRoot, "css");
+const cssThemesDir = path.join(cssDir, "themes");
+const manifestDir = path.join(distRoot, "manifest");
+
+const modesCssPath = path.join(pkgRoot, "src", "css", "modes.css");
 
 async function buildTheme(theme: ThemeConfig) {
   const css = themeCSS(theme);
   const file = path.join(cssThemesDir, `${theme.name}.css`);
-
   await fs.outputFile(file, css);
   console.log(`Built ${path.relative(process.cwd(), file)}`);
 }
 
 async function copyModes() {
   const dest = path.join(cssDir, "modes.css");
-
-  if (await fs.pathExists(modesCssPath)) {
-    await fs.copy(modesCssPath, dest);
-  }
+  if (await fs.pathExists(modesCssPath)) await fs.copy(modesCssPath, dest);
 }
 
 async function writeManifest(themes: ThemeConfig[]) {
@@ -929,14 +871,10 @@ async function writeManifest(themes: ThemeConfig[]) {
     defaults: t.modes?.defaults ?? { mode: "light" },
     presets: t.modes?.presets ?? {},
   }));
-  const file = path.join(manifestDir, "themes.json");
 
+  const file = path.join(manifestDir, "themes.json");
   await fs.outputJson(file, manifest, { spaces: 2 });
 }
-
-// ============================================================================
-// 18. Run build
-// ============================================================================
 
 async function run() {
   const themes: ThemeConfig[] = [
@@ -952,25 +890,26 @@ async function run() {
 
   await fs.ensureDir(cssThemesDir);
   await fs.ensureDir(manifestDir);
-  // formats dir is handled by build-formats.ts already
 
   await fs.outputFile(path.join(cssDir, "foundations.css"), foundationsCSS());
-  await fs.outputFile(
-    path.join(cssDir, "semantic-colors.css"),
-    semanticColorsCSS()
-  );
+  await fs.outputFile(path.join(cssDir, "semantic.css"), semanticCSS());
+  await fs.outputFile(path.join(cssDir, "semantic-colors.css"), semanticColorsCSS());
+  await fs.outputFile(path.join(cssDir, "semantic-effects.css"), semanticEffectsCSS());
   await fs.outputFile(path.join(cssDir, "components.css"), componentsCSS());
+
+
 
   await Promise.all(themes.map(buildTheme));
   await copyModes();
   await writeManifest(themes);
 
   console.log("Done.");
-  console.log("BIGSKY textScaling:", bigSkyTheme.foundation?.textScaling);
-
 }
 
 run().catch((err) => {
   console.error("Build failed:", err);
   process.exit(1);
 });
+
+
+

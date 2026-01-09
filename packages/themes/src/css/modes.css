@@ -3,9 +3,13 @@
 /* =============================================================================
    Clothesline Modes
    Loaded AFTER theme CSS so it can:
-   1) Swap *-dark tokens when data-mode="dark"
-   2) Provide global semantic aliases (background/text/borders/rings)
+   1) Set browser color-scheme + contrast pole for ramp mixing
+   2) Swap *-dark foundation variables when data-mode="dark"
    3) Apply vision + contrast + accessibility deltas
+
+   IMPORTANT:
+   - DO NOT define semantic color aliases here (background/on-surface/borders/rings/links).
+     Those live in semantic-colors.css as the single source of truth.
 
    Specificity strategy:
    - Use html[data-theme][data-mode="..."] so it matches theme selector weight.
@@ -17,13 +21,15 @@
 html[data-mode='light'] { color-scheme: light; }
 html[data-mode='dark']  { color-scheme: dark;  }
 
-/* Used by theme ramp "-ct" mixing: color-mix(..., var(--ct-pole) ...) */
+/* Used by theme ramp "-ct" mixing:
+   color-mix(..., var(--ct-pole) ..., var(--k-ct)) */
 html[data-theme][data-mode='light'] { --ct-pole: black; }
 html[data-theme][data-mode='dark']  { --ct-pole: white; }
 
 /* -----------------------------------------------------------------------------
    1) Dark-mode variable swaps (Skeleton-style)
    Only swap variables that actually have a "-dark" companion.
+   (These are foundation/typography-ish, not semantic color aliases.)
 ----------------------------------------------------------------------------- */
 html[data-theme][data-mode='dark'] {
   --base-font-color:       var(--base-font-color-dark, var(--base-font-color));
@@ -33,63 +39,8 @@ html[data-theme][data-mode='dark'] {
 }
 
 /* -----------------------------------------------------------------------------
-   2) Global semantic aliases (per mode)
-   These reference each theme’s ramps, so they adapt automatically.
------------------------------------------------------------------------------ */
-
-/* Light mode */
-html[data-theme][data-mode='light'] {
-  /* Backgrounds */
-  --background-app:         var(--color-surface-50-vis);
-  --background-panel:       var(--color-surface-100-vis);
-  --background-elevation-1: var(--color-surface-100-vis);
-  --background-elevation-2: var(--color-surface-200-vis);
-
-  /* Text */
-  --on-surface-strong:   var(--color-surface-950-vis);
-  --on-surface:          var(--color-surface-800-vis);
-  --on-surface-muted:    var(--color-surface-700-vis);
-  --on-surface-subtle:   var(--color-surface-600-vis);
-  --on-surface-disabled: var(--color-surface-500-vis);
-
-  /* Borders / rings (canonical names) */
-  --border-color-default: var(--color-surface-200-vis);
-  --border-color-muted:   var(--color-surface-100-vis);
-  --ring-offset-color:    var(--color-surface-50-vis);
-
-  /* Back-compat aliases (optional; remove once migrated) */
-  --border-default-color: var(--border-color-default);
-  --border-muted-color:   var(--border-color-muted);
-}
-
-/* Dark mode */
-html[data-theme][data-mode='dark'] {
-  /* Backgrounds */
-  --background-app:         var(--color-surface-950-vis);
-  --background-panel:       var(--color-surface-900-vis);
-  --background-elevation-1: var(--color-surface-900-vis);
-  --background-elevation-2: var(--color-surface-800-vis);
-
-  /* Text */
-  --on-surface-strong:   var(--color-surface-50-vis);
-  --on-surface:          var(--color-surface-200-vis);
-  --on-surface-muted:    var(--color-surface-400-vis);
-  --on-surface-subtle:   var(--color-surface-500-vis);
-  --on-surface-disabled: var(--color-surface-600-vis);
-
-  /* Borders / rings (canonical names) */
-  --border-color-default: var(--color-surface-700-vis);
-  --border-color-muted:   var(--color-surface-800-vis);
-  --ring-offset-color:    var(--color-surface-900-vis);
-
-  /* Back-compat aliases (optional; remove once migrated) */
-  --border-default-color: var(--border-color-default);
-  --border-muted-color:   var(--border-color-muted);
-}
-
-/* -----------------------------------------------------------------------------
-   3) Vision presets (global deltas)
-   Your builder emits per-role knobs:
+   2) Vision presets (global deltas)
+   Builder emits per-role knobs:
    --vision-<role>-l-shift / c-scale / h-shift
    Here we set small, predictable adjustments only.
 ----------------------------------------------------------------------------- */
@@ -130,14 +81,15 @@ html[data-theme][data-vision='monochromacy'] {
 }
 
 /* -----------------------------------------------------------------------------
-   4) Contrast
-   Ramps read --k-ct derived from --contrast-factor (defined in foundations.css).
+   3) Contrast
+   Ramps read --k-ct derived from --contrast-factor.
+   Note: --k-ct itself is computed in semantic.css (global defaults).
 ----------------------------------------------------------------------------- */
 html[data-theme][data-contrast='normal'] { --contrast-factor: 1; }
 html[data-theme][data-contrast='high']   { --contrast-factor: 1.25; }
 
 /* -----------------------------------------------------------------------------
-   5) Reading modes
+   4) Reading modes
 ----------------------------------------------------------------------------- */
 html[data-theme][data-reading='dyslexia'] {
   --base-letter-spacing: 0.02em;
@@ -149,21 +101,21 @@ html[data-theme][data-reading='plain'] {
 }
 
 /* -----------------------------------------------------------------------------
-   6) Motion
+   5) Motion
    Components should multiply durations/distances by --motion-scale.
 ----------------------------------------------------------------------------- */
 html[data-theme][data-motion='reduced'] { --motion-scale: 0.5; }
 html[data-theme][data-motion='off']     { --motion-scale: 0; }
 
 /* -----------------------------------------------------------------------------
-   7) Focus helpers
+   6) Focus helpers
    Components may read --focus-enabled to suppress outlines if you allow that.
 ----------------------------------------------------------------------------- */
 html[data-theme][data-focus='off'] { --focus-enabled: 0; }
 html[data-theme]:not([data-focus='off']) { --focus-enabled: 1; }
 
 /* -----------------------------------------------------------------------------
-   8) RTL
+   7) RTL
    Support either dir="rtl" or a toggle attribute.
 ----------------------------------------------------------------------------- */
 html[data-theme][dir='rtl'],

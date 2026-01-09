@@ -446,13 +446,13 @@
 </div>
 
 <style>
-  .page { padding: 1.25rem; display: grid; gap: 1rem; }
+  .page { padding: 1.25rem; display: grid; gap: 1rem; min-width: 0; }
 
   .panel {
     border: var(--border-width-card, var(--border-1)) solid color-mix(in oklab, currentColor 12%, transparent);
     border-radius: var(--radius-card, var(--radius-6));
     padding: 1rem;
-    background: color-mix(in oklab, currentColor 3%, transparent);
+    background: color-mix(in oklab, currentColor 3%, transparent); min-width: 0;
   }
 
   .warn {

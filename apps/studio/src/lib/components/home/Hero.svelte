@@ -69,7 +69,7 @@
   <p
     class="mx-auto max-w-xl md:mx-0"
     style="
-      color: var(--on-surface-subtle, var(--color-surface-500));
+      color: var(--on-surface, var(--color-surface-500));
       font-size: var(--base-font-size, 1rem);
       font-family: var(--base-font-family, var(--type-body-family));
       font-weight: var(--base-font-weight, 400);

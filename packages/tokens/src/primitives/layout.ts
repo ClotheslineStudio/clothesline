@@ -46,3 +46,16 @@ export const layoutTokens = {
   scale: layoutContainerScale,
   semantic: layoutContainerSemantic,
 };
+
+// tokens/src/primitives/layout.ts
+
+export type LayoutSpacingScaleRef = string; // reference to --spacing-{key}, e.g. "6"
+
+export type LayoutSpacingSemanticKey = 'gutterX' | 'gutterY' | 'inset' | 'gap';
+
+export const layoutSpacingSemantic: Record<LayoutSpacingSemanticKey, LayoutSpacingScaleRef> = {
+  gutterX: '6',
+  gutterY: '8',
+  inset: '6',
+  gap: '4'
+};

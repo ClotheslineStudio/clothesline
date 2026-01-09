@@ -9,24 +9,19 @@
 
   /* Responsive sidebar (off-canvas under breakpoint) */
   export let collapsible = true;
-  export let collapsed = true; // closed on mobile by default
+  export let collapsed = true;
 
-  /**
-   * IMPORTANT:
-   * CSS cannot use var(--collapse-bp) inside @media().
-   * We keep this prop for future JS-driven/utility approaches,
-   * but the CSS uses a container-query cutoff.
-   */
   export let collapseBreakpoint = '1024px';
 
-  /* Page rhythm */
-  export let contentMaxWidth: string | null = '1200px';
-  export let pageGutterX = 'var(--spacing-4)';
-  export let contentPaddingY = 'var(--spacing-6)';
+  /* Page rhythm (now defaults to layout semantics) */
+  export let contentMaxWidth: string | null = 'var(--layout-container-max)';
+  export let pageGutterX = 'var(--layout-gutter-x)';
+  export let contentPaddingY = 'var(--layout-gutter-y)';
 
   /* Overlay for off-canvas sidebar on small screens */
   export let showOverlay = true;
 </script>
+
 
 <div
   class={`appshell ${className}`}
@@ -107,9 +102,7 @@
     color: inherit;
     border-right: var(--border-1) solid var(--border-color-default);
     overflow: auto;
-
-    /* Align sidebar content with the overall gutter system */
-    padding: var(--spacing-4) var(--page-gutter-x);
+    padding: var(--layout-inset) var(--page-gutter-x);
   }
 
   .appshell__content {
@@ -133,9 +126,9 @@
     color: inherit;
     border-top: var(--border-1) solid var(--border-color-default);
 
-    padding: var(--spacing-4);
-    padding-left: calc(var(--page-gutter-x) + env(safe-area-inset-left));
-    padding-right: calc(var(--page-gutter-x) + env(safe-area-inset-right));
+     padding: var(--layout-inset);
+  padding-left: calc(var(--page-gutter-x) + env(safe-area-inset-left));
+  padding-right: calc(var(--page-gutter-x) + env(safe-area-inset-right));
 
     text-align: center;
     font-size: 0.875rem;

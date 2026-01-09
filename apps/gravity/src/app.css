@@ -11,6 +11,7 @@
 @import '@clothesline/themes/css/foundations.css';
 @import '@clothesline/themes/css/components.css';
 @import '@clothesline/themes/css/semantic-colors.css';
+@import '@clothesline/themes/css/semantic.css';
 
 @import "tailwindcss";
 

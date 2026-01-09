@@ -3,7 +3,9 @@
 
 /* === System layers (define globals / behaviors) === */
 @import '@clothesline/themes/css/foundations.css';
+@import '@clothesline/themes/css/semantic.css';
 @import '@clothesline/themes/css/semantic-colors.css';
+@import '@clothesline/themes/css/semantic-effects.css';
 @import '@clothesline/themes/css/modes.css';
 @import '@clothesline/themes/css/components.css';
 
