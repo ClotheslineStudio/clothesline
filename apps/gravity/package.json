@@ -12,7 +12,8 @@
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
 		"format": "prettier --write .",
 		"lint": "prettier --check . && eslint .",
-		"db:health": "tsx prisma/healthcheck.ts"
+		"db:health": "tsx prisma/healthcheck.ts",
+		"db:seed": "tsx prisma/seed.ts"
 	},
 	"dependencies": {
 		"@clothesline/icons": "workspace:*",

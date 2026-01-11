@@ -11,6 +11,12 @@ datasource db {
   // url is coming from prisma.config.ts in Prisma 7
 }
 
+enum MembershipRole {
+  OWNER
+  ADMIN
+  MEMBER
+  VIEWER
+}
 
 model Workspace {
   id        String   @id @default(cuid())
@@ -19,6 +25,8 @@ model Workspace {
   updatedAt DateTime @updatedAt
 
   memberships Membership[]
+
+  @@index([createdAt])
 }
 
 model User {
@@ -29,17 +37,19 @@ model User {
   updatedAt DateTime @updatedAt
 
   memberships Membership[]
+
+  @@index([createdAt])
 }
 
 model Membership {
-  id          String    @id @default(cuid())
+  id          String          @id @default(cuid())
   workspaceId String
   userId      String
-  role        String    @default("OWNER")
-  createdAt   DateTime  @default(now())
+  role        MembershipRole  @default(OWNER)
+  createdAt   DateTime        @default(now())
 
-  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workspace   Workspace       @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  user        User            @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([workspaceId, userId])
   @@index([workspaceId])
