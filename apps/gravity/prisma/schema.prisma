@@ -33,6 +33,7 @@ model Workspace {
   tasks        Task[]
   pages        Page[]
   evidence     Evidence[]
+  edges        Edge[]
 
   @@index([createdAt])
 }
@@ -205,4 +206,43 @@ model Evidence {
   @@index([workspaceId])
   @@index([type])
   @@index([createdAt])
+}
+
+enum EntityType {
+  SOURCE
+  REQUIREMENT
+  TASK
+  PROJECT
+  PAGE
+  EVIDENCE
+}
+
+enum EdgeType {
+  DERIVED_FROM
+  IMPLEMENTS
+  DOCUMENTS
+  EVIDENCE_FOR
+  PART_OF
+  RELATED_TO
+}
+
+model Edge {
+  id          String @id @default(cuid())
+  workspaceId String
+
+  type     EdgeType
+  fromType EntityType
+  fromId   String
+  toType   EntityType
+  toId     String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@unique([workspaceId, type, fromType, fromId, toType, toId])
+  @@index([workspaceId, type])
+  @@index([workspaceId, fromType, fromId])
+  @@index([workspaceId, toType, toId])
 }
