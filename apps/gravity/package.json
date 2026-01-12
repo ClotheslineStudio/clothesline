@@ -14,7 +14,8 @@
 		"lint": "prettier --check . && eslint .",
 		"db:health": "tsx prisma/healthcheck.ts",
 		"db:seed": "tsx prisma/seed.ts",
-		 "edge:check": "tsx prisma/edge-validator.sanity.ts"
+		 "edge:check": "tsx prisma/edge-validator.sanity.ts",
+		 "queries:check": "tsx prisma/queries.sanity.ts"
 	},
 	"dependencies": {
 		"@clothesline/icons": "workspace:*",
