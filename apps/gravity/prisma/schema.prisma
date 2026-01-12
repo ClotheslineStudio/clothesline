@@ -27,13 +27,15 @@ model Workspace {
   memberships Membership[]
 
   // v1 nouns
-  sources      Source[]
-  requirements Requirement[]
-  projects     Project[]
-  tasks        Task[]
-  pages        Page[]
-  evidence     Evidence[]
-  edges        Edge[]
+  sources        Source[]
+  requirements   Requirement[]
+  projects       Project[]
+  tasks          Task[]
+  pages          Page[]
+  evidence       Evidence[]
+  edges          Edge[]
+  tags           Tag[]
+  tagAssignments TagAssignment[]
 
   @@index([createdAt])
 }
@@ -245,4 +247,38 @@ model Edge {
   @@index([workspaceId, type])
   @@index([workspaceId, fromType, fromId])
   @@index([workspaceId, toType, toId])
+}
+
+model Tag {
+  id          String  @id @default(cuid())
+  workspaceId String
+  name        String
+  color       String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  workspace   Workspace       @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  assignments TagAssignment[]
+
+  @@unique([workspaceId, name])
+  @@index([workspaceId])
+}
+
+model TagAssignment {
+  id          String @id @default(cuid())
+  workspaceId String
+
+  tagId      String
+  entityType EntityType
+  entityId   String
+
+  createdAt DateTime @default(now())
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  tag       Tag       @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@unique([workspaceId, tagId, entityType, entityId])
+  @@index([workspaceId, entityType, entityId])
+  @@index([workspaceId, tagId])
 }
