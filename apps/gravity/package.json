@@ -13,7 +13,8 @@
 		"format": "prettier --write .",
 		"lint": "prettier --check . && eslint .",
 		"db:health": "tsx prisma/healthcheck.ts",
-		"db:seed": "tsx prisma/seed.ts"
+		"db:seed": "tsx prisma/seed.ts",
+		 "edge:check": "tsx prisma/edge-validator.sanity.ts"
 	},
 	"dependencies": {
 		"@clothesline/icons": "workspace:*",
