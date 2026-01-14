@@ -82,7 +82,13 @@ model Source {
   title       String
   type        SourceType @default(URL)
   url         String?
-  filePath    String? // local path or storage key (v1 placeholder)
+
+  // File metadata (for PDF uploads)
+  fileStorageKey  String? // rename from filePath when ready
+  fileOriginalName String?
+  fileMimeType     String?
+  fileSizeBytes    Int?
+
   notes       String?
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
@@ -92,6 +98,7 @@ model Source {
   @@index([workspaceId])
   @@index([createdAt])
 }
+
 
 enum RequirementStatus {
   DRAFT

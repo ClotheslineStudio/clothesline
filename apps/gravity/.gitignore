@@ -30,3 +30,8 @@ vite.config.ts.timestamp-*
 
 # Prisma generated client output (do not commit)
 src/lib/generated/
+
+# Local dev file storage (uploaded PDFs, etc.)
+/storage/**
+!/storage/.gitkeep
+!/storage/sources/.gitkeep
