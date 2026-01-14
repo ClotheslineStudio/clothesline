@@ -84,21 +84,20 @@ model Source {
   url         String?
 
   // File metadata (for PDF uploads)
-  fileStorageKey  String? // rename from filePath when ready
+  fileStorageKey   String? // rename from filePath when ready
   fileOriginalName String?
   fileMimeType     String?
   fileSizeBytes    Int?
 
-  notes       String?
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
+  notes     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 
   @@index([workspaceId])
   @@index([createdAt])
 }
-
 
 enum RequirementStatus {
   DRAFT
