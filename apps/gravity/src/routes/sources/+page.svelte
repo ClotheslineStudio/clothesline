@@ -130,10 +130,7 @@
 
         <a
           class="rounded-2xl bg-white px-4 py-2 text-sm font-medium text-zinc-950 hover:opacity-95"
-          href="/_dev/source-upload?workspaceId={workspaceId}"
-        >
-          Add Source
-        </a>
+          href={`/sources/new?workspaceId=${workspaceId}`}>Add Source</a>
       </div>
     </header>
 
