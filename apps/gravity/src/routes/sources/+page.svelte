@@ -234,11 +234,12 @@
       {:else}
         <div class="space-y-2">
           {#each visible as s (s.id)}
-            <a
-              class="group grid w-full grid-cols-[auto,1fr,auto] items-center gap-3 rounded-xl border border-white/10 bg-zinc-950/20 px-4 py-3 text-left transition hover:border-white/15 hover:bg-white/5"
-              href={`/sources/${s.id}?workspaceId=${workspaceId}`}
-              use:prefetch
-            >
+           <a
+  class="group grid w-full grid-cols-[auto,1fr,auto] items-center gap-3 rounded-xl border border-white/10 bg-zinc-950/20 px-4 py-3 text-left transition hover:border-white/15 hover:bg-white/5"
+  href={`/sources/${s.id}?workspaceId=${workspaceId}`}
+  data-sveltekit-preload-data="hover"
+>
+
               <span class={badgeClasses(s.type)}>{s.type}</span>
 
               <div class="min-w-0">
