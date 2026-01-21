@@ -1,29 +1,16 @@
 import { prisma } from '$lib/server/prisma';
+import { validateHttpUrl } from '$lib/validation/sources';
 
-/**
- * Validates URL format for v1.
- * - Requires http/https
- * - Returns a normalized URL string (URL.href)
- */
-function validateAndNormalizeUrl(input: string): string {
-  const raw = (input ?? '').trim();
+type ApiErrorCode = 'VALIDATION' | 'BAD_JSON' | 'DB';
 
-  if (!raw) {
-    throw new Error('URL is required.');
-  }
-
-  let parsed: URL;
-  try {
-    parsed = new URL(raw);
-  } catch {
-    throw new Error('Invalid URL format. Include https:// (or http://).');
-  }
-
-  if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
-    throw new Error('URL must start with http:// or https://');
-  }
-
-  return parsed.href;
+function jsonError(status: number, code: ApiErrorCode, message: string) {
+  return Response.json(
+    {
+      ok: false,
+      error: { code, message }
+    },
+    { status }
+  );
 }
 
 type PostBody = {
@@ -33,45 +20,41 @@ type PostBody = {
 };
 
 export async function POST({ request }) {
-  let body: unknown;
+  let body: PostBody;
 
   try {
-    body = await request.json();
+    body = (await request.json()) as PostBody;
   } catch {
-    return new Response('Request body must be valid JSON.', { status: 400 });
+    return jsonError(400, 'BAD_JSON', 'Request body must be valid JSON.');
   }
 
-  const { workspaceId = '', title = '', url = '' } = body as PostBody;
-  const workspaceIdTrimmed = workspaceId.trim();
-  const titleTrimmed = title.trim();
-  const urlInput = url.trim();
+  const workspaceId = (body.workspaceId ?? '').trim();
+  const title = (body.title ?? '').trim();
+  const urlInput = (body.url ?? '').trim();
 
-  if (!workspaceIdTrimmed) {
-    return new Response('workspaceId is required.', { status: 400 });
+  if (!workspaceId) {
+    return jsonError(400, 'VALIDATION', 'workspaceId is required.');
   }
 
-  // v1: title is required (per your note)
-  if (!titleTrimmed) {
-    return new Response('title is required for v1.', { status: 400 });
+  // v1: title required
+  if (!title) {
+    return jsonError(400, 'VALIDATION', 'title is required for v1.');
   }
 
-  let normalizedUrl: string;
-  try {
-    normalizedUrl = validateAndNormalizeUrl(urlInput);
-  } catch (err) {
-    const message = err instanceof Error ? err.message : 'Invalid URL.';
-    return new Response(message, { status: 400 });
+  const v = validateHttpUrl(urlInput);
+  if (!v.ok) {
+    return jsonError(400, 'VALIDATION', v.message);
   }
 
   try {
     const source = await prisma.source.create({
       data: {
-        workspaceId: workspaceIdTrimmed,
-        title: titleTrimmed,
+        workspaceId,
+        title,
         type: 'URL',
-        url: normalizedUrl,
+        url: v.normalized,
 
-        // Ensure file fields are null for URL Sources
+        // URL sources do not have file fields
         fileStorageKey: null,
         fileOriginalName: null,
         fileMimeType: null,
@@ -81,10 +64,10 @@ export async function POST({ request }) {
       }
     });
 
-    return Response.json(source);
+    return Response.json({ ok: true, source }, { status: 201 });
   } catch (err) {
-    // Keep error mapping simple for v1; expand later
     console.error('[POST /api/sources/url] db create failed', err);
-    return new Response('Failed to create Source.', { status: 500 });
+    return jsonError(500, 'DB', 'Failed to create Source.');
   }
 }
+
