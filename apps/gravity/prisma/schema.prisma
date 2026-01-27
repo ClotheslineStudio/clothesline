@@ -122,6 +122,7 @@ model Requirement {
   priority    RequirementPriority @default(MEDIUM)
   ownerId     String?
   dueDate     DateTime?
+  archivedAt  DateTime?           // <-- add this
   createdAt   DateTime            @default(now())
   updatedAt   DateTime            @updatedAt
 
@@ -129,6 +130,7 @@ model Requirement {
   owner     User?     @relation("RequirementOwner", fields: [ownerId], references: [id], onDelete: SetNull)
 
   @@index([workspaceId])
+  @@index([archivedAt])
   @@index([status])
   @@index([priority])
   @@index([ownerId])
