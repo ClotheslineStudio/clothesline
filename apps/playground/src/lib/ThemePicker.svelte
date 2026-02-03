@@ -201,14 +201,14 @@
     gap: .5rem;
     height: 32px;
     padding: 0 .6rem 0 .4rem;
-    border-radius: .6rem;
-    border: 1px solid var(--color-surface-300);
-    background: color-mix(in oklab, var(--color-surface-100) 90%, transparent);
-    color: var(--on-surface);
-    font-size: .875rem;
-    line-height: 1;
+    border-radius: var(--radius-base, var(--radius-interactive));
+    border: 1px solid var(--border-color-default, var(--color-surface-300-vis));
+    background: var(--background-panel, var(--color-surface-100-vis));
+    color: var(--background-panel, var(--color-surface-100-vis));
+    font-size: var(--base-font-size, var(--type-body-size));
+    line-height: var(--base-line-height, var(--type-body-leading));
   }
-  .tp-btn:hover { background: color-mix(in oklab, var(--color-surface-100) 100%, transparent); }
+  .tp-btn:hover { background: var(--background-elevation-2, var(--color-surface-200-vis)); }
   .tp-btn:focus-visible { outline: 2px solid var(--color-info-500); outline-offset: 2px; }
   .tp-dot {
     width: .8rem; height: .8rem; border-radius: 999px;
@@ -238,9 +238,9 @@
     top: calc(56px + 8px);
     z-index: 1000;
     width: min(900px, 95vw);
-    border-radius: 14px;
-    border: 1px solid var(--color-surface-300);
-    background: var(--color-surface-50);
+    border-radius: var(--radius-base, var(--radius-interactive));
+    border: 1px solid var(--border-color-default, var(--color-surface-300-vis));
+    background: var(--background-elevation-1, var(--color-surface-100-vis));
     box-shadow: 0 20px 60px rgba(0,0,0,.14);
     padding: 14px;
   }
@@ -263,7 +263,7 @@
     padding: 12px;
     border-radius: 12px;
     border: 1px solid var(--color-surface-300);
-    background: color-mix(in oklab, var(--color-surface-100) 92%, transparent);
+    background: var(--body-background-color, var(--color-surface-50));
     text-align: left;
     transition: transform .12s ease, background-color .12s ease, border-color .12s ease, box-shadow .12s ease;
   }

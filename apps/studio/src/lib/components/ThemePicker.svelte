@@ -295,7 +295,7 @@
   .tp-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
-    gap: var(--spacing-3, 12px);
+    gap: var(--spacing-4, 12px);
   }
 
   .tp-card {

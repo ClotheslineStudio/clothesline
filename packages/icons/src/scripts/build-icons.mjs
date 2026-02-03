@@ -263,7 +263,7 @@ async function loadMeta(base, CompName, flags) {
 }
 
 // ------------- Svelte template -------------
-function wrapSvelte({ strokeInner, filledInner, duoTone1, duoTone2, hasStroke, hasFilled, hasDuotone }) {
+function wrapSvelte({ strokeInner, filledInner, duoTone1, duoTone2, hasStroke, hasFilled, hasDuotone, hasTone2 }) {
   return `<!-- AUTO-GENERATED. DO NOT EDIT. -->
 <script lang="ts">
   export let size: number = 24;
@@ -271,7 +271,7 @@ function wrapSvelte({ strokeInner, filledInner, duoTone1, duoTone2, hasStroke, h
   export let strokeWidth: number = 2;
 
   export let primaryColor: string = "currentColor";
-  export let secondaryColor: string = "currentColor";
+   ${hasTone2 ? `export let secondaryColor: string = "currentColor";` : ``}
 
   export let variant: "stroke" | "filled" | "duotone" | "animated" = "stroke";
   export let ariaLabel: string | undefined = undefined;
@@ -304,8 +304,8 @@ function wrapSvelte({ strokeInner, filledInner, duoTone1, duoTone2, hasStroke, h
       ${filledInner || ''}
     </g>
 
-  {:else if variant === "duotone"${hasDuotone ? '' : ' && false'}}
-    ${duoTone2 && duoTone2.trim()
+    {:else if variant === "duotone"${hasDuotone ? '' : ' && false'}}
+    ${hasTone2
       ? `<g fill="currentColor" stroke="none" style={"color:" + secondaryColor}>
       ${duoTone2}
     </g>`
@@ -483,6 +483,7 @@ export const iconRegistry = {};
     const filledInner = hasFilled ? data.filled : '';
     const duoTone1 = hasDuotone ? (data.duotone.tone1 || '') : '';
     const duoTone2 = hasDuotone ? sanitizeTone2(data.duotone.tone2 || '') : '';
+    const hasTone2 = Boolean(duoTone2 && duoTone2.trim());
 
     const svelte = wrapSvelte({
       strokeInner,
@@ -491,7 +492,8 @@ export const iconRegistry = {};
       duoTone2,
       hasStroke,
       hasFilled,
-      hasDuotone
+      hasDuotone,
+      hasTone2
     });
     const svgVariants = buildSvgVariants({
   strokeInner,

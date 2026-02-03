@@ -1,6 +1,6 @@
 <script lang="ts">
   // good: import the actual component constructors
-  import { AppBar, Button, Card, Badge, Chip, Divider, TextField, Switch, Radio, ToggleButton, Checkbox, Icon, Range, Select, Slider, Heading, Label, Paragraph, Text } from '@clothesline/ui';
+  import { AppBar, Button, Card, Badge, Chip, Divider, TextField, Switch, Radio, ToggleButton, Checkbox, Icon, Range, Select, Slider, } from '@clothesline/ui';
 
   // Initialize all variables used in the template
   let mode = 'light';

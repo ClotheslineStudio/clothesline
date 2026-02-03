@@ -5,7 +5,7 @@
   export let strokeWidth: number = 2;
 
   export let primaryColor: string = "currentColor";
-  export let secondaryColor: string = "currentColor";
+   export let secondaryColor: string = "currentColor";
 
   export let variant: "stroke" | "filled" | "duotone" | "animated" = "stroke";
   export let ariaLabel: string | undefined = undefined;
@@ -38,7 +38,7 @@
       <path fill="currentColor" d="M8 7.571A3.57 3.57 0 0 1 11.571 4h.858A3.57 3.57 0 0 1 16 7.57a.43.43 0 0 1-.429.429H8.43A.43.43 0 0 1 8 7.57"/><path fill="currentColor" d="m8.429 8-.087-.009A.43.43 0 0 1 8 7.571 3.57 3.57 0 0 1 11.571 4h.858l.183.005A3.57 3.57 0 0 1 16 7.57a.43.43 0 0 1-.429.429z"/><path fill="currentColor" d="M7.293 2.293a1 1 0 0 1 1.414 0l2 2a1 1 0 1 1-1.414 1.414l-2-2a1 1 0 0 1 0-1.414"/><path fill="currentColor" d="M16.707 2.293a1 1 0 0 0-1.414 0l-2 2a1 1 0 1 0 1.414 1.414l2-2a1 1 0 0 0 0-1.414"/><path fill="currentColor" d="M19 7a1 1 0 1 1 2 0c0 .948-.268 1.739-.767 2.36-.487.608-1.134.977-1.77 1.205C17.23 11.01 15.802 11 15 11a1 1 0 1 1 0-2c.865 0 1.936-.01 2.786-.316.407-.146.697-.34.887-.576C18.85 7.886 19 7.552 19 7"/><path fill="currentColor" d="M5 7a1 1 0 0 0-2 0c0 .948.268 1.739.767 2.36.487.608 1.134.977 1.77 1.205C6.77 11.01 8.198 11 9 11a1 1 0 1 0 0-2c-.865 0-1.936-.01-2.786-.316-.407-.146-.697-.34-.887-.576C5.15 7.886 5 7.552 5 7"/><path fill="currentColor" d="M19 21a1 1 0 1 0 2 0q-.002-1.351-.596-2.274a3.4 3.4 0 0 0-1.494-1.263C17.85 16.986 16.63 17 16 17a1 1 0 1 0 0 2c.703 0 1.484.014 2.09.287.276.124.484.29.63.519.148.229.28.595.28 1.194"/><path fill="currentColor" d="M5 21a1 1 0 1 1-2 0q.002-1.351.596-2.274a3.4 3.4 0 0 1 1.494-1.263C6.15 16.986 7.37 17 8 17a1 1 0 1 1 0 2c-.702 0-1.484.014-2.09.287-.276.124-.484.29-.63.519C5.131 20.035 5 20.4 5 21"/><path fill="currentColor" d="M21 13a1 1 0 1 1 0 2h-4a1 1 0 1 1 0-2z"/><path fill="currentColor" d="M7 13a1 1 0 1 1 0 2H3a1 1 0 1 1 0-2z"/><path fill="currentColor" fill-rule="evenodd" d="M15 9a3 3 0 0 1 3 3v3a6 6 0 0 1-12 0v-3a3 3 0 0 1 3-3zm-3 4c-.552 0-1 .28-1 .625v3.75c0 .345.448.625 1 .625s1-.28 1-.625v-3.75c0-.345-.448-.625-1-.625" clip-rule="evenodd"/>
     </g>
 
-  {:else if variant === "duotone"}
+    {:else if variant === "duotone"}
     <g fill="currentColor" stroke="none" style={"color:" + secondaryColor}>
       <path d="M7 12a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v3a5 5 0 0 1-10 0z"/>
 <path d="M9 8a3 3 0 1 1 6 0v1a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1z"/>

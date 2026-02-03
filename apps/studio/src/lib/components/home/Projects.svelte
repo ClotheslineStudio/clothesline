@@ -72,36 +72,76 @@
 	}
 </script>
 
-<section class="bg-gray-900 px-6 py-20 text-white sm:px-10 lg:px-20">
-	<h2 class="mb-12 text-4xl font-extrabold tracking-tight text-orange-400">Projects</h2>
+<section style="background: var(--color-surface-900, #18181b); color: var(--on-surface, #fff); padding: var(--spacing-section, var(--spacing-8));">
+	<h2 style="
+		margin-bottom: var(--spacing-12, 3rem);
+		font-size: var(--type-display-size, 2.25rem);
+		font-family: var(--heading-font-family, var(--type-heading-family));
+		font-weight: var(--heading-font-weight, 800);
+		letter-spacing: var(--heading-letter-spacing, -0.01em);
+		line-height: var(--type-heading-leading, 1.1);
+		color: var(--color-accent-400, #fb923c);"
+	>Projects</h2>
 
-	<div class="grid auto-rows-[minmax(200px,1fr)] grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+	<div class="grid auto-rows-[minmax(200px,1fr)] grid-cols-1 sm:grid-cols-2 lg:grid-cols-4" style="gap: var(--spacing-6, 1.5rem);">
 		{#each projects as project, i}
 			<button
 				type="button"
-				class={`group flex cursor-pointer flex-col justify-between rounded-2xl bg-(--color-plum) p-5
-		shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-xl
-		${i === 0 ? 'lg:col-span-2 lg:row-span-2' : ''}
-		${i === 3 ? 'lg:col-span-4' : ''}
-		${i !== 0 && i !== 3 ? 'lg:col-span-1' : ''}
-	  `}
+				class={`group flex cursor-pointer flex-col justify-between transition-all duration-300
+					${i === 0 ? 'lg:col-span-2 lg:row-span-2' : ''}
+					${i === 3 ? 'lg:col-span-4' : ''}
+					${i !== 0 && i !== 3 ? 'lg:col-span-1' : ''}
+				`}
 				aria-label={`Open details for ${project.title}`}
 				on:click={() => openModal(i)}
+				style="
+					border-radius: var(--radius-card, var(--radius-lg, 1rem));
+					background: var(--color-plum, #a78bfa);
+					padding: var(--spacing-5, 1rem);
+					box-shadow: var(--elevation-card, 0px 1px 3px rgba(0,0,0,0.10));
+					border: var(--default-border-width, 1px) solid transparent;
+					transition: box-shadow 0.3s, transform 0.3s;
+				"
+				on:mouseover={(e) => {
+					const el = e.currentTarget as HTMLElement;
+					el.style.transform = 'translateY(-4px)';
+					el.style.boxShadow = 'var(--elevation-highest, 0px 8px 16px rgba(0,0,0,0.16))';
+				}}
+				on:focus={(e) => {
+					const el = e.currentTarget as HTMLElement;
+					el.style.transform = 'translateY(-4px)';
+					el.style.boxShadow = 'var(--elevation-highest, 0px 8px 16px rgba(0,0,0,0.16))';
+				}}
+				on:mouseout={(e) => {
+					const el = e.currentTarget as HTMLElement;
+					el.style.transform = 'none';
+					el.style.boxShadow = 'var(--elevation-card, 0px 1px 3px rgba(0,0,0,0.10))';
+				}}
+				on:blur={(e) => {
+					const el = e.currentTarget as HTMLElement;
+					el.style.transform = 'none';
+					el.style.boxShadow = 'var(--elevation-card, 0px 1px 3px rgba(0,0,0,0.10))';
+				}}
 			>
 				<img
 					src={project.cover}
 					alt={project.title}
-					class="mb-4 h-40 w-full rounded-lg object-cover"
+					style="margin-bottom: var(--spacing-4, 1rem); height: 10rem; width: 100%; border-radius: var(--radius-md, 0.5rem); object-fit: cover;"
 					on:error={(e) => { const img = e.target as HTMLImageElement; if (img) img.src = 'https://via.placeholder.com/300x200?text=Project'; }}
 				/>
 
-				<h3 class="text-xl font-semibold text-(--color-accent)">{project.title}</h3>
-				<p class="mt-2 text-sm text-white/90">{project.summary}</p>
+				<h3 style="
+					font-size: var(--type-heading-size, 1.25rem);
+					font-family: var(--heading-font-family, var(--type-heading-family));
+					font-weight: var(--heading-font-weight, 700);
+					color: var(--color-accent, #fb923c);"
+				>{project.title}</h3>
+				<p style="margin-top: var(--spacing-2, 0.5rem); font-size: var(--type-body-size, 1rem); color: var(--on-surface, #fff); opacity: 0.9;">{project.summary}</p>
 
 				{#if project.skills?.length}
-					<div class="mt-4 flex flex-wrap gap-2">
+					<div style="margin-top: var(--spacing-4, 1rem); display: flex; flex-wrap: wrap; gap: var(--spacing-2, 0.5rem);">
 						{#each project.skills as skill}
-							<span class="rounded bg-white/10 px-2 py-1 text-xs text-white">{skill}</span>
+							<span style="border-radius: var(--radius-sm, 0.25rem); background: rgba(255,255,255,0.10); padding: var(--spacing-1, 0.25rem) var(--spacing-2, 0.5rem); font-size: var(--type-caption-size, 0.75rem); color: var(--on-surface, #fff);">{skill}</span>
 						{/each}
 					</div>
 				{/if}
@@ -111,17 +151,15 @@
 </section>
 
 {#if modalOpen}
-	<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-6">
-		<div class="relative w-full max-w-3xl rounded-xl bg-[#171123] p-6 text-white shadow-2xl">
-			<button class="absolute top-4 right-6 text-xl" on:click={closeModal}>✕</button>
-			<h2 class="mb-4 text-4xl font-bold text-orange-400">{projects[activeIndex].title}</h2>
+	<div style="position: fixed; inset: 0; z-index: var(--z-modal, 1000); display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.7); padding: var(--spacing-6, 1.5rem);">
+		<div style="position: relative; width: 100%; max-width: 48rem; border-radius: var(--radius-xl, 1rem); background: var(--color-surface-900, #171123); padding: var(--spacing-6, 1.5rem); color: var(--on-surface, #fff); box-shadow: var(--elevation-highest, 0px 8px 16px rgba(0,0,0,0.16));">
+			<button style="position: absolute; top: var(--spacing-4, 1rem); right: var(--spacing-6, 1.5rem); font-size: var(--type-heading-size, 1.25rem); color: var(--on-surface, #fff); background: none; border: none; cursor: pointer;" on:click={closeModal}>✕</button>
+			<h2 style="margin-bottom: var(--spacing-4, 1rem); font-size: var(--type-display-size, 2.25rem); font-family: var(--heading-font-family, var(--type-heading-family)); font-weight: var(--heading-font-weight, 700); color: var(--color-accent-400, #fb923c);">{projects[activeIndex].title}</h2>
 
-			<div class="mb-4 flex gap-4 border-b border-gray-600 pb-2">
+			<div style="margin-bottom: var(--spacing-4, 1rem); display: flex; gap: var(--spacing-4, 1rem); border-bottom: var(--default-border-width, 1px) solid var(--color-surface-700, #444); padding-bottom: var(--spacing-2, 0.5rem);">
 				{#each ['summary', 'challenges', 'role', 'tools', 'outcomes', 'skills'] as tab}
 					<button
-						class="border-b-2 pb-1 text-sm tracking-wider uppercase"
-						class:border-orange-400={activeTab === tab}
-						class:border-transparent={activeTab !== tab}
+						style="border-bottom: var(--default-border-width, 2px) solid; border-color: ${activeTab === tab ? 'var(--color-accent-400, #fb923c)' : 'transparent'}; padding-bottom: var(--spacing-1, 0.25rem); font-size: var(--type-label-size, 0.875rem); letter-spacing: var(--type-label-tracking, 0.02em); text-transform: uppercase; background: none; color: var(--on-surface, #fff); cursor: pointer;"
 						on:click={() => (activeTab = tab)}
 					>
 						{tab}
@@ -130,35 +168,35 @@
 			</div>
 
 			{#if activeTab === 'summary'}
-				<p class="text-gray-300">{projects[activeIndex].summary}</p>
+				<p style="color: var(--on-surface-subtle, #d1d5db);">{projects[activeIndex].summary}</p>
 			{:else if activeTab === 'challenges'}
-				<ul class="list-disc space-y-2 pl-5">
+				<ul style="list-style: disc; padding-left: var(--spacing-5, 1rem); display: flex; flex-direction: column; gap: var(--spacing-2, 0.5rem);">
 					{#each projects[activeIndex].challenges as ch}
 						<li><strong>{ch.title}</strong>: {ch.solution}</li>
 					{/each}
 				</ul>
 			{:else if activeTab === 'role'}
-				<ul class="list-disc pl-5">
+				<ul style="list-style: disc; padding-left: var(--spacing-5, 1rem);">
 					{#each projects[activeIndex].role as role}
 						<li>{role}</li>
 					{/each}
 				</ul>
 			{:else if activeTab === 'tools'}
-				<div class="flex flex-wrap gap-2">
+				<div style="display: flex; flex-wrap: wrap; gap: var(--spacing-2, 0.5rem);">
 					{#each projects[activeIndex].tools as tool}
-						<span class="rounded bg-gray-700 px-2 py-1 text-sm">{tool.name}</span>
+						<span style="border-radius: var(--radius-sm, 0.25rem); background: var(--color-surface-700, #444); padding: var(--spacing-1, 0.25rem) var(--spacing-2, 0.5rem); font-size: var(--type-caption-size, 0.75rem); color: var(--on-surface, #fff);">{tool.name}</span>
 					{/each}
 				</div>
 			{:else if activeTab === 'outcomes'}
-				<ul class="list-disc pl-5">
+				<ul style="list-style: disc; padding-left: var(--spacing-5, 1rem);">
 					{#each projects[activeIndex].outcomes as o}
 						<li>{o}</li>
 					{/each}
 				</ul>
 			{:else if activeTab === 'skills'}
-				<div class="flex flex-wrap gap-2">
+				<div style="display: flex; flex-wrap: wrap; gap: var(--spacing-2, 0.5rem);">
 					{#each projects[activeIndex].skills as skill}
-						<span class="rounded bg-orange-500 px-2 py-1 text-sm">{skill}</span>
+						<span style="border-radius: var(--radius-sm, 0.25rem); background: var(--color-accent-500, #f97316); padding: var(--spacing-1, 0.25rem) var(--spacing-2, 0.5rem); font-size: var(--type-caption-size, 0.75rem); color: var(--on-surface, #fff);">{skill}</span>
 					{/each}
 				</div>
 			{/if}

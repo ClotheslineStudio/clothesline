@@ -21,7 +21,6 @@ export default defineConfig({
       '@clothesline/ui': resolve(__dirname, '../../packages/ui/src'),
       '@clothesline/icons': resolve(__dirname, '../../packages/icons/src'),
       // keep pointing at the package root so CSS imports from /dist still work
-      '@clothesline/themes': resolve(__dirname, '../../packages/themes'),
       '@clothesline/tokens': resolve(__dirname, '../../packages/tokens/src')
     }
   }

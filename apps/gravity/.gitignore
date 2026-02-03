@@ -21,3 +21,17 @@ Thumbs.db
 # Vite
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
+
+/../generated/prisma
+
+# Local DB leftovers
+*.db
+*.db-journal
+
+# Prisma generated client output (do not commit)
+src/lib/generated/
+
+# Local dev file storage (uploaded PDFs, etc.)
+/storage/**
+!/storage/.gitkeep
+!/storage/sources/.gitkeep

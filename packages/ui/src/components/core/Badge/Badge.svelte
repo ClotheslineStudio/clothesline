@@ -3,25 +3,25 @@
    * Badge component for displaying status, labels, or counts
    */
 
-  /** @type {'primary' | 'secondary' | 'tertiary' | 'success' | 'warning' | 'error' | 'info' | 'accent' | 'neutral'} */
+    /** @type {'primary' | 'secondary' | 'tertiary' | 'success' | 'warning' | 'error' | 'info' | 'accent' | 'neutral'} */
   export let variant = "primary";
 
-  /** @type {'sm' | 'md' | 'lg'} */
+    /** @type {'sm' | 'md' | 'lg'} */
   export let size = "md";
 
-  /** @type {'solid' | 'outline' | 'soft'} */
+    /** @type {'solid' | 'outline' | 'soft'} */
   export let appearance = "solid";
 
-  /** @type {boolean} */
+    /** @type {boolean} */
   export let pill = false;
 
-  /** @type {boolean} */
+    /** @type {boolean} */
   export let removable = false;
 
-  /** @type {string} */
+    /** @type {string} */
   export let label = "";
 
-  /** @type {Function} */
+    /** @type {Function} */
   export let onRemove = () => {};
 
   // Handle remove action
@@ -78,10 +78,6 @@
 
 <style>
   .badge {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--spacing-1);
-    font-family: var(--base-font-family);
     font-weight: var(--font-weight-semibold);
     line-height: 1;
     white-space: nowrap;

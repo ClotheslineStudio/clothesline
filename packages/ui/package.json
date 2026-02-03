@@ -21,6 +21,7 @@
     "build": "svelte-package --input src --output dist"
   },
   "peerDependencies": {
+    "@clothesline/icons": "workspace:^",
     "svelte": "^5.0.0"
   },
   "devDependencies": {
@@ -39,5 +40,8 @@
     "typescript": "^5.9.2",
     "vitest": "^4.0.14"
   },
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "lucide-svelte": "^0.562.0"
+  }
 }

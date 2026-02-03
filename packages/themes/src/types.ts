@@ -1,29 +1,5 @@
-// packages/themes/types.ts
-
-/** ──────────────────────────────────────────────────────────────────────────
- *  Legacy types (kept for back‑compat). Prefer the new ModeState model below.
- *  ────────────────────────────────────────────────────────────────────────── */
-
-// Visual mode of the UI: standard light/dark
-export type ThemeMode = 'light' | 'dark';
-
-// Optional contrast override (used alongside ThemeMode)
-/** @deprecated Use `Contrast` inside `ModeState` */
-export type ContrastMode = 'normal' | 'high';
-
-// Optional vision mode (used alongside ThemeMode)
-/** @deprecated Use `Vision` inside `ModeState` */
-export type VisionMode = 'default' | 'color-blind';
-
-// Full combination string for a build variant (for CSS filenames)
-/** @deprecated Use attribute-driven modes instead of filename variants */
-export type ModeString =
-  | 'light'
-  | 'dark'
-  | 'high-contrast-light'
-  | 'high-contrast-dark'
-  | 'color-blind-light'
-  | 'color-blind-dark';
+// packages/themes/src/types.ts
+import type { ModeState, Vision, Contrast } from './runtime/modes.js';
 
 /** ──────────────────────────────────────────────────────────────────────────
  *  Core semantic color roles
@@ -48,55 +24,110 @@ export interface RoleConfig {
   chroma: number;
 }
 
+/** OKLCH seed triplet used to generate ramps. */
+export type OklchSeed = { l: number; c: number; h: number };
+
+/** Per-mode seed overrides (used primarily for surface). */
+export type OklchSeedPair = { light: OklchSeed; dark: OklchSeed };
+
 /** ──────────────────────────────────────────────────────────────────────────
- *  Stackable Modes: attribute-driven state + delta description types
+ *  Values / maps used by builders
  *  ────────────────────────────────────────────────────────────────────────── */
 
-export type Vision = 'none' | 'protan' | 'deutan' | 'tritan' | 'mono';
+export type CSSVarValue = string | number;
 
-export type Contrast =
-  | 'normal'
-  | 'high'
-  | { custom: number }; // e.g. { custom: 1.12 } -> sets data-contrast="custom" and --contrast-factor: 1.12
-
-export type ModeState = {
-  /** Theme/palette name (e.g., 'clothesline', 'bigsky') */
-  theme?: string;
-  /** Light/Dark */
-  mode?: ThemeMode;
-
-  /** Color vision simulation / palette adjustment */
-  vision?: Vision;
-
-  /** Contrast handling; supports a custom scalar */
-  contrast?: Contrast;
-
-  /** Global type scale multiplier (1.00 = base) */
-  typescale?: number;
-
-  /** Reading/comprehension aids */
-  reading?: 'dyslexia' | 'plain' | 'none';
-
-  /** Motion preferences */
-  motion?: 'normal' | 'reduced' | 'off';
-
-  /** Emphasize focus affordances (presence = on) */
-  focus?: boolean;
-
-  /** UI complexity flags (space-separated tokens on `data-ui`) */
-  ui?: Array<'simplified' | 'visual-alerts' | 'captions'>;
-
-  /** Motor accessibility flags (space-separated tokens on `data-motor`) */
-  motor?: Array<'large-hit' | 'kbd' | 'sticky-controls'>;
-
-  /** Right-to-left layout (presence = true) */
-  rtl?: boolean;
-
-  /** Developer/debug overlays (space-separated tokens on `data-dev`) */
-  dev?: Array<'a11y-debug' | 'grid' | 'tokens'>;
+/**
+ * Skeleton-style “single selector” theme output pattern:
+ * - light value is written to `--token`
+ * - dark value is written to `--token-dark`
+ *
+ * Example:
+ * { light: 'var(--color-surface-950)', dark: 'var(--color-surface-50)' }
+ * => --base-font-color: var(--color-surface-950);
+ * => --base-font-color-dark: var(--color-surface-50);
+ */
+export type DualModeValue<T extends CSSVarValue = CSSVarValue> = {
+  light: T;
+  dark: T;
 };
 
-/** Minimal description of CSS variable changes for a given mode delta. */
+export type ThemeVarValue<T extends CSSVarValue = CSSVarValue> = T | DualModeValue<T>;
+
+/** CSS custom properties map (must be written as `--foo`). */
+export type ThemeVarMap = Record<`--${string}`, ThemeVarValue>;
+
+/** ──────────────────────────────────────────────────────────────────────────
+ *  Foundation config — to generate “non-color” theme vars in the single theme file
+ *  (spacing, radii, typography, base semantics, etc.)
+ *  ────────────────────────────────────────────────────────────────────────── */
+
+export interface FontBlock {
+  color?: ThemeVarValue; // usually var(--color-surface-950) / var(--color-surface-50)
+  family?: ThemeVarValue;
+  size?: ThemeVarValue;
+  lineHeight?: ThemeVarValue;
+  weight?: ThemeVarValue;
+  style?: ThemeVarValue;
+  letterSpacing?: ThemeVarValue;
+  transform?: ThemeVarValue;
+}
+
+export interface AnchorBlock extends FontBlock {
+  textDecoration?: ThemeVarValue;
+  textDecorationHover?: ThemeVarValue;
+  textDecorationActive?: ThemeVarValue;
+  textDecorationFocus?: ThemeVarValue;
+}
+
+export interface ThemeFoundationConfig {
+  /**
+   * Matches Skeleton’s `--text-scaling`.
+   * You can also override via modes (typescale) at runtime if desired.
+   */
+  textScaling?: ThemeVarValue<number>;
+
+  /** Base/root text tokens (Skeleton-style `--base-*`) */
+  base?: FontBlock;
+
+  /** Heading tokens (Skeleton-style `--heading-*`) */
+  heading?: FontBlock;
+
+  /** Anchor/link tokens (Skeleton-style `--anchor-*`) */
+  anchor?: AnchorBlock;
+
+  /**
+   * A single spacing unit (Skeleton uses `--spacing: 0.25rem`).
+   * You can still keep your detailed spacing scale elsewhere; this is the theme’s “unit.”
+   */
+  spacingUnit?: ThemeVarValue;
+
+  /** Primary radii knobs (Skeleton uses base + container). */
+  radii?: {
+    base?: ThemeVarValue;
+    container?: ThemeVarValue;
+  };
+
+  /** Global border/ring widths (Skeleton uses these defaults). */
+  borders?: {
+    defaultBorderWidth?: ThemeVarValue;
+    defaultDivideWidth?: ThemeVarValue;
+    defaultRingWidth?: ThemeVarValue;
+  };
+
+  /** Body/background semantic (Skeleton uses `--body-background-color` + `-dark`). */
+  bodyBackgroundColor?: ThemeVarValue;
+
+  /**
+   * Escape hatch: additional theme-level vars to output into the *same selector*.
+   * Prefer this over ad-hoc extra CSS files when you want a single theme file.
+   */
+  vars?: ThemeVarMap;
+}
+
+/** ──────────────────────────────────────────────────────────────────────────
+ *  Mode delta description types (builder metadata; real behavior lives in CSS)
+ *  ────────────────────────────────────────────────────────────────────────── */
+
 export type CSSVarMap = Record<string, string | number>;
 
 export interface TokenDelta {
@@ -106,61 +137,40 @@ export interface TokenDelta {
    */
   vars?: CSSVarMap;
 
-  /**
-   * Optional note for docs; not used at runtime.
-   */
+  /** Optional note for docs; not used at runtime. */
   note?: string;
 }
 
-/**
- * Non-token adjustments that are still tiny/scoped (selectors you’ll target in modes.css).
- * This type is intentionally light; real CSS lives in your generated `modes.css`.
- */
 export interface UtilityDelta {
-  /** Optional list of selector “hooks” you plan to affect in CSS (for documentation/reference). */
+  /** Optional list of selector hooks you plan to affect in CSS (for docs/reference). */
   selectors?: string[];
   /** Optional note for docs; not used at runtime. */
   note?: string;
 }
 
-/**
- * A registry of deltas the theme can expose per mode bucket.
- * Each entry represents a tiny, scoped override (variables/utilities) for that mode.
- */
 export interface ModeDeltas {
-  // Visual Accessibility
-  vision?: {
-    protan?: TokenDelta;
-    deutan?: TokenDelta;
-    tritan?: TokenDelta;
-    mono?: TokenDelta;
-  };
+  // Visual accessibility
+  vision?: Partial<Record<Exclude<Vision, 'none'>, TokenDelta>>;
+
   contrast?: {
     normal?: TokenDelta;
     high?: TokenDelta;
-    /**
-     * Custom contrast deltas should be multiplicative and read the runtime var
-     * `--contrast-factor`; keep this empty or with doc notes.
-     */
     custom?: TokenDelta;
   };
-  /**
-   * Reading: typescale is scalar (runtime via data-typescale);
-   * dyslexia/plain can have token & utility tweaks.
-   */
+
   reading?: {
     dyslexia?: TokenDelta & UtilityDelta;
-    plain?: UtilityDelta; // content-level in apps; can still expose utility hooks
+    plain?: UtilityDelta;
   };
 
-  // Motion & Focus
+  // Motion & focus
   motion?: {
     reduced?: UtilityDelta;
     off?: UtilityDelta;
   };
   focus?: UtilityDelta;
 
-  // UI Complexity & Motor
+  // UI complexity & motor
   ui?: {
     simplified?: UtilityDelta;
     'visual-alerts'?: UtilityDelta;
@@ -172,10 +182,10 @@ export interface ModeDeltas {
     'sticky-controls'?: UtilityDelta;
   };
 
-  // Language & Layout
+  // Language & layout
   rtl?: UtilityDelta;
 
-  // Developer & Debug
+  // Developer & debug
   dev?: {
     'a11y-debug'?: UtilityDelta;
     grid?: UtilityDelta;
@@ -183,15 +193,9 @@ export interface ModeDeltas {
   };
 }
 
-/**
- * Preset named states you want to ship with a theme,
- * e.g., { "accessible": { contrast: 'high', typescale: 1.1, ui: ['simplified'] } }
- */
 export type ModePresets = Record<string, ModeState>;
 
-/** Default/initial state a theme recommends (can be overridden by the app at runtime). */
 export interface ModeDefaults extends Required<Pick<ModeState, 'mode'>> {
-  /** Optional defaults for other mode fields */
   theme?: string;
   vision?: Vision;
   contrast?: Contrast;
@@ -206,11 +210,7 @@ export interface ModeDefaults extends Required<Pick<ModeState, 'mode'>> {
 }
 
 /** ──────────────────────────────────────────────────────────────────────────
- *  ThemeConfig: now with modes (presets + deltas). Legacy fields kept optional.
- *  ────────────────────────────────────────────────────────────────────────── */
-
-/** ──────────────────────────────────────────────────────────────────────────
- *  ThemeConfig: now with seeds (OKLCH source-of-truth) + modes + legacy roles
+ *  ThemeConfig (used by build scripts + theme generator UI)
  *  ────────────────────────────────────────────────────────────────────────── */
 
 export interface ThemeConfig {
@@ -218,32 +218,38 @@ export interface ThemeConfig {
   name: string;
 
   /**
-   * True measured OKLCH seeds used to generate ramps.
+   * Foundations: generates the “top” variables you see in Skeleton-like theme files:
+   * spacing unit, radii knobs, typography, base/heading/link semantics, etc.
+   */
+  foundation?: ThemeFoundationConfig;
+
+  /**
+   * Source-of-truth OKLCH seeds used to generate ramps.
    * Optional but preferred over `roles`.
    */
-  seeds?: Record<
-    SemanticColorRole,
-    | { l: number; c: number; h: number }
-    | { light: { l: number; c: number; h: number }; dark: { l: number; c: number; h: number } }
-  >;
+  seeds?: Partial<Record<SemanticColorRole, OklchSeed | OklchSeedPair>>;
 
-  /** Purpose-driven role palette inputs used to generate ramps/tokens */
-  roles: { [role in SemanticColorRole]: RoleConfig };
+  /**
+   * Legacy/alternate palette inputs used to generate ramps/tokens.
+   * Keep optional if you’re migrating fully to `seeds`.
+   */
+  roles?: Partial<Record<SemanticColorRole, RoleConfig>>;
 
-  /** Stackable modes: presets (named states), deltas (tiny CSS var/util overrides), and defaults */
+  /**
+   * Escape hatch: additional variables to emit at the theme selector level.
+   * If you use DualModeValue here, your builder should emit `-dark` suffixes.
+   */
+  vars?: ThemeVarMap;
+
+  /** Stackable modes: presets, deltas (tiny overrides), and defaults */
   modes?: {
-    /** Named presets (saved to JSON; exposed in builder UI) */
     presets?: ModePresets;
-    /** Per-mode delta registry (tiny, scoped overrides that the builder can author) */
     deltas?: ModeDeltas;
-    /** Default starting state */
     defaults?: ModeDefaults;
   };
-
-  /** @deprecated kept for back-compat with older builds */
-  contrast?: ContrastMode;
-  /** @deprecated kept for back-compat with older builds */
-  vision?: VisionMode;
 }
+
+
+
 
 

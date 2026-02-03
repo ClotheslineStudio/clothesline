@@ -1,11 +1,13 @@
 /**
- * Spacing tokens for the Clothesline UI system.
+ * Spacing tokens
  *
- * - `spacingScale` is the atomic step scale (raw values only).
- * - `spacingSemantic` defines semantic spacing/gaps that reference the scale.
+ * - spacingScale: atomic spacing steps (raw values)
+ * - spacingSemantic: intent-based aliases referencing spacingScale
  *
- * Build step is responsible for turning these into CSS custom properties like:
- *   --spacing-0, --spacing-1, --spacing-md, --gap-base, etc.
+ * Rules:
+ * - No var() usage in primitives.
+ * - Semantic values must reference a spacingScale key.
+ * - Semantic keys should be kebab-case to match emitted CSS.
  */
 
 export type SpacingScaleKey =
@@ -44,7 +46,7 @@ export const spacingScale: Record<SpacingScaleKey, string> = {
 };
 
 export type SpacingSemanticKey =
-  // generic spacing scale
+  // generic tiers
   | 'base'
   | 'sm'
   | 'md'
@@ -52,50 +54,48 @@ export type SpacingSemanticKey =
   | 'xl'
   // layout patterns
   | 'stack'
-  | 'gridGap'
+  | 'grid-gap'
   | 'form'
   | 'nav'
   | 'section'
-  // accessibility / density
+  // density / accessibility
   | 'touch'
   | 'compact'
   | 'comfy'
-  // motion / density gaps
+  // component gaps
   | 'gap-small'
   | 'gap-base'
   | 'gap-large';
 
 export const spacingSemantic: Record<SpacingSemanticKey, SpacingScaleKey> = {
-  // Semantic layout spacing (mapped to the base scale)
-  base: '3', // default UI element spacing
+  // generic tiers
+  base: '3',
   sm: '2',
   md: '4',
   lg: '6',
   xl: '8',
 
-  // Semantic layout patterns
-  stack: '5',   // vertical spacing in stacked layout
-  gridGap: '4', // default grid gap
-  form: '4',    // input group spacing
-  nav: '3',     // space between nav links
-  section: '8', // top/bottom layout spacing
+  // layout patterns
+  stack: '5',
+  'grid-gap': '4',
+  form: '4',
+  nav: '3',
+  section: '8',
 
-  // Accessibility / density overrides
-  touch: '5',   // larger spacing for tap targets
-  compact: '2', // dense layouts
-  comfy: '6',   // relaxed UIs
+  // density / accessibility
+  touch: '5',
+  compact: '2',
+  comfy: '6',
 
-  // Motion/density-aware gaps
+  // component gaps
   'gap-small': '2',
   'gap-base': '3',
   'gap-large': '6',
 };
 
-/**
- * Export in a single object if your build step expects that.
- */
 export const spacingTokens = {
   scale: spacingScale,
-  semantic: spacingSemantic,
+  semantic: spacingSemantic
 };
+
 

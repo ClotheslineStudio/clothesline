@@ -75,29 +75,56 @@
   });
 </script>
 
-<header class="sticky top-0 z-50">
+
+<header style="position: sticky; top: 0; z-index: 50;">
   <nav
-    class="border-b border-(--color-plum)/20 bg-(--color-bg)/80 backdrop-blur supports-backdrop-filter:bg-(--color-bg)/70 transition-shadow duration-300"
-    class:shadow-sm={isScrolled}
+    style="
+      border-bottom: var(--default-border-width, 1px) solid var(--color-primary-200, #e0e7ff);
+      background: color-mix(in srgb, var(--color-bg, #fff) 80%, transparent);
+      backdrop-filter: blur(8px);
+      transition: box-shadow 0.3s;
+      box-shadow: {isScrolled ? 'var(--elevation-1, 0px 1px 2px rgba(0,0,0,0.06))' : 'none'};
+    "
   >
-    <!-- full-width bar; your +layout controls site width -->
-    <div class="flex items-center justify-between py-3">
-      <!-- Brand -->
+    <div style="display: flex; align-items: center; justify-content: space-between; padding-block: var(--spacing-3, 0.75rem);">
       <a
         href="/static/images/clotheslinestudio-logo.svg"
-        class="inline-flex items-center gap-2 rounded-lg font-extrabold tracking-tight text-(--color-surface-600) hover:text-(--color-accent-500) transition focus:outline-none focus:ring-2 focus:ring-(--color-accent-500) focus:ring-offset-2 focus:ring-offset-(--color-bg)"
+        style="
+          display: inline-flex;
+          align-items: center;
+          gap: var(--spacing-2, 0.5rem);
+          border-radius: var(--radius-base, 0.5rem);
+          font-weight: var(--heading-font-weight, 800);
+          letter-spacing: var(--heading-letter-spacing, -0.01em);
+          color: var(--on-surface-muted, #52525b);
+          transition: color 0.2s;
+          outline: none;
+        "
+        on:mouseover={(e) => { e.currentTarget.style.color = 'var(--color-accent-500, #a21caf)'; }}
+        on:mouseout={(e) => { e.currentTarget.style.color = 'var(--on-surface-muted, #52525b)'; }}
+        on:focus={(e) => { e.currentTarget.style.color = 'var(--color-accent-500, #a21caf)'; }}
+        on:blur={(e) => { e.currentTarget.style.color = 'var(--on-surface-muted, #52525b)'; }}
       >
-        <span class="text-lg sm:text-xl">Clothesline</span>
-        <span class="text-lg sm:text-xl text-(--color-accent)">Studio</span>
+        <span style="font-size: var(--type-lg-size, 1.125rem); font-weight: var(--heading-font-weight, 800);">Clothesline</span>
+        <span style="font-size: var(--type-lg-size, 1.125rem); color: var(--color-accent-500, #a21caf); font-weight: var(--heading-font-weight, 800);">Studio</span>
       </a>
 
-      <!-- Desktop links -->
-      <ul class="hidden items-center gap-5 text-sm font-semibold md:flex">
+      <ul style="display: flex; align-items: center; gap: var(--spacing-5, 1.25rem); font-size: var(--base-font-size, 1rem); font-weight: var(--base-font-weight, 600);">
         {#each links as { href, label } (href)}
           <li>
             <a
               href={href}
-              class="rounded-md px-2 py-1 text-(--color-surface-500) hover:text-(--color-accent-500) transition focus:outline-none focus:ring-2 focus:ring-(--color-accent-500) focus:ring-offset-2 focus:ring-offset-(--color-bg)"
+              style="
+                border-radius: var(--radius-base, 0.5rem);
+                padding: var(--spacing-1, 0.125rem) var(--spacing-2, 0.5rem);
+                color: var(--on-surface-muted, #52525b);
+                transition: color 0.2s;
+                outline: none;
+              "
+              on:mouseover={(e) => { e.currentTarget.style.color = 'var(--color-accent-500, #a21caf)'; }}
+              on:mouseout={(e) => { e.currentTarget.style.color = 'var(--on-surface-muted, #52525b)'; }}
+              on:focus={(e) => { e.currentTarget.style.color = 'var(--color-accent-500, #a21caf)'; }}
+              on:blur={(e) => { e.currentTarget.style.color = 'var(--on-surface-muted, #52525b)'; }}
             >
               {label}
             </a>
@@ -105,81 +132,151 @@
         {/each}
       </ul>
 
-      <!-- Actions -->
-      <div class="flex items-center gap-2">
-        <!-- Search -->
-        <form class="hidden sm:block" on:submit|preventDefault={submitSearch}>
-          <label class="relative block">
+      <div style="display: flex; align-items: center; gap: var(--spacing-2, 0.5rem);">
+        <form style="display: none;" on:submit|preventDefault={submitSearch}>
+          <label style="position: relative; display: block;">
             <span class="sr-only">Search</span>
-            <Search class="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-(--color-indigo)/80" />
+            <Search style="pointer-events: none; position: absolute; left: var(--spacing-3, 0.75rem); top: 50%; height: 1rem; width: 1rem; transform: translateY(-50%); color: var(--color-primary-500, #6366f1); opacity: 0.8;" />
             <input
               id="site-search"
               type="search"
               bind:value={searchQuery}
               placeholder="Search…"
-              class="h-9 w-56 rounded-xl border border-(--color-plum)/25 bg-(--color-bg) px-3 pl-9 text-sm text-(--color-surface-500) placeholder:text-(--color-surface-500)/40 shadow-sm transition focus:outline-none focus:ring-2 focus:ring-(--color-accent-500) focus:ring-offset-2 focus:ring-offset-(--color-bg)"
+              style="
+                height: 2.25rem;
+                width: 14rem;
+                border-radius: var(--radius-xl, 0.75rem);
+                border: var(--default-border-width, 1px) solid var(--color-primary-200, #e0e7ff);
+                background: var(--background-elevation-2, var(--color-bg, #fff));
+                padding: 0 var(--spacing-3, 0.75rem) 0 calc(var(--spacing-3, 0.75rem) + 1rem);
+                font-size: var(--base-font-size, 1rem);
+                color: var(--on-surface-muted, #52525b);
+                box-shadow: var(--elevation-0, none);
+                transition: border-color 0.2s;
+                outline: none;
+              "
             />
           </label>
         </form>
 
-        <!-- Theme -->
         <button
           type="button"
           on:click={toggleTheme}
-          class="inline-flex h-9 items-center gap-2 rounded-xl border border-(--color-plum)/25 bg-(--color-bg) px-3 text-sm font-semibold text-(--color-surface-500) shadow-sm transition hover:border-(--color-accent-500)/60 focus:outline-none focus:ring-2 focus:ring-(--color-accent-500) focus:ring-offset-2 focus:ring-offset-(--color-bg)"
+          style="
+            display: inline-flex;
+            height: 2.25rem;
+            align-items: center;
+            gap: var(--spacing-2, 0.5rem);
+            border-radius: var(--radius-xl, 0.75rem);
+            border: var(--default-border-width, 1px) solid var(--color-primary-200, #e0e7ff);
+            background: var(--background-elevation-2, var(--color-bg, #fff));
+            padding: 0 var(--spacing-3, 0.75rem);
+            font-size: var(--base-font-size, 1rem);
+            font-weight: var(--base-font-weight, 600);
+            color: var(--on-surface-muted, #52525b);
+            box-shadow: var(--elevation-0, none);
+            transition: border-color 0.2s, color 0.2s;
+            outline: none;
+          "
           aria-label="Toggle theme"
+          on:mouseover={(e) => { e.currentTarget.style.borderColor = 'var(--color-accent-500, #a21caf)'; }}
+          on:mouseout={(e) => { e.currentTarget.style.borderColor = 'var(--color-primary-200, #e0e7ff)'; }}
+          on:focus={(e) => { e.currentTarget.style.borderColor = 'var(--color-accent-500, #a21caf)'; }}
+          on:blur={(e) => { e.currentTarget.style.borderColor = 'var(--color-primary-200, #e0e7ff)'; }}
         >
           {#if isDark}
-            <Sun class="h-4 w-4" />
-            <span class="hidden sm:inline">Light</span>
+            <Sun style="height: 1rem; width: 1rem;" />
+            <span style="display: none;">Light</span>
           {:else}
-            <Moon class="h-4 w-4" />
-            <span class="hidden sm:inline">Dark</span>
+            <Moon style="height: 1rem; width: 1rem;" />
+            <span style="display: none;">Dark</span>
           {/if}
         </button>
 
-        <!-- Mobile menu button -->
         <button
           type="button"
-          class="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-(--color-plum)/25 bg-(--color-bg) shadow-sm transition hover:border-(--color-accent-500)/60 focus:outline-none focus:ring-2 focus:ring-(--color-accent-500) focus:ring-offset-2 focus:ring-offset-(--color-bg) md:hidden"
+          style="
+            display: inline-flex;
+            height: 2.25rem;
+            width: 2.25rem;
+            align-items: center;
+            justify-content: center;
+            border-radius: var(--radius-xl, 0.75rem);
+            border: var(--default-border-width, 1px) solid var(--color-primary-200, #e0e7ff);
+            background: var(--background-elevation-2, var(--color-bg, #fff));
+            box-shadow: var(--elevation-0, none);
+            transition: border-color 0.2s;
+            outline: none;
+          "
           aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
           aria-expanded={mobileOpen}
           on:click={() => (mobileOpen = !mobileOpen)}
+          on:mouseover={(e) => { e.currentTarget.style.borderColor = 'var(--color-accent-500, #a21caf)'; }}
+          on:mouseout={(e) => { e.currentTarget.style.borderColor = 'var(--color-primary-200, #e0e7ff)'; }}
+          on:focus={(e) => { e.currentTarget.style.borderColor = 'var(--color-accent-500, #a21caf)'; }}
+          on:blur={(e) => { e.currentTarget.style.borderColor = 'var(--color-primary-200, #e0e7ff)'; }}
         >
           {#if mobileOpen}
-            <X class="h-5 w-5" />
+            <X style="height: 1.25rem; width: 1.25rem;" />
           {:else}
-            <Menu class="h-5 w-5" />
+            <Menu style="height: 1.25rem; width: 1.25rem;" />
           {/if}
         </button>
       </div>
     </div>
 
-    <!-- Mobile panel -->
     {#if mobileOpen}
-      <div class="md:hidden pb-3">
-        <form class="sm:hidden mb-3" on:submit|preventDefault={submitSearch}>
-          <label class="relative block">
+      <div style="padding-bottom: var(--spacing-3, 0.75rem);">
+        <form style="margin-bottom: var(--spacing-3, 0.75rem); display: none;" on:submit|preventDefault={submitSearch}>
+          <label style="position: relative; display: block;">
             <span class="sr-only">Search</span>
-            <Search class="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-(--color-indigo)/80" />
+            <Search style="pointer-events: none; position: absolute; left: var(--spacing-3, 0.75rem); top: 50%; height: 1rem; width: 1rem; transform: translateY(-50%); color: var(--color-primary-500, #6366f1); opacity: 0.8;" />
             <input
               type="search"
               bind:value={searchQuery}
               placeholder="Search…"
-              class="h-10 w-full rounded-xl border border-(--color-plum)/25 bg-(--color-bg) px-3 pl-9 text-sm text-(--color-surface-500) placeholder:text-(--color-surface-500)/40 shadow-sm transition focus:outline-none focus:ring-2 focus:ring-(--color-accent-500) focus:ring-offset-2 focus:ring-offset-(--color-bg)"
+              style="
+                height: 2.5rem;
+                width: 100%;
+                border-radius: var(--radius-xl, 0.75rem);
+                border: var(--default-border-width, 1px) solid var(--color-primary-200, #e0e7ff);
+                background: var(--background-elevation-2, var(--color-bg, #fff));
+                padding: 0 var(--spacing-3, 0.75rem) 0 calc(var(--spacing-3, 0.75rem) + 1rem);
+                font-size: var(--base-font-size, 1rem);
+                color: var(--on-surface-muted, #52525b);
+                box-shadow: var(--elevation-0, none);
+                transition: border-color 0.2s;
+                outline: none;
+              "
             />
           </label>
         </form>
 
-        <ul class="grid gap-1">
+        <ul style="display: grid; gap: var(--spacing-1, 0.125rem);">
           {#each links as { href, label, icon } (href)}
             <li>
               <a
                 href={href}
                 on:click={() => (mobileOpen = false)}
-                class="flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-semibold text-(--color-surface-500)/85 hover:bg-(--color-plum)/10 hover:text-(--color-accent-500) transition"
+                style="
+                  display: flex;
+                  align-items: center;
+                  gap: var(--spacing-2, 0.5rem);
+                  border-radius: var(--radius-xl, 0.75rem);
+                  padding: var(--spacing-2, 0.5rem) var(--spacing-3, 0.75rem);
+                  font-size: var(--base-font-size, 1rem);
+                  font-weight: var(--base-font-weight, 600);
+                  color: var(--on-surface-muted, #52525b);
+                  background: transparent;
+                  transition: background 0.2s, color 0.2s;
+                  outline: none;
+                "
+                on:mouseover={(e) => { e.currentTarget.style.background = 'var(--color-primary-50, #f3f4f6)'; e.currentTarget.style.color = 'var(--color-accent-500, #a21caf)'; }}
+                on:mouseout={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--on-surface-muted, #52525b)'; }}
+                on:focus={(e) => { e.currentTarget.style.background = 'var(--color-primary-50, #f3f4f6)'; e.currentTarget.style.color = 'var(--color-accent-500, #a21caf)'; }}
+                on:blur={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--on-surface-muted, #52525b)'; }}
               >
-                <svelte:component this={icon} class="h-4 w-4 text-(--color-indigo)/80" />
+                <svelte:component this={icon} style="height: 1rem; width: 1rem; color: var(--color-primary-500, #6366f1); opacity: 0.8;" />
                 {label}
               </a>
             </li>

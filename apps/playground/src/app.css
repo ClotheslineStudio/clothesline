@@ -1,33 +1,81 @@
-/* === Theme Imports === */
-@import '@clothesline/themes/dist/clothesline.css';
-@import '@clothesline/themes/dist/timberline.css';
-@import '@clothesline/themes/dist/retrograde.css';
-@import '@clothesline/themes/dist/milkyway.css';
-@import '@clothesline/themes/dist/copper-sun.css';
-@import '@clothesline/themes/dist/tidal-glass.css';
-@import '@clothesline/themes/dist/night-market.css';
-@import '@clothesline/themes/dist/bigsky.css';
-@import '@clothesline/themes/dist/modes.css';
-
-/* === Tailwind === */
+/* === Tailwind (if you use it) === */
 @import 'tailwindcss';
 
-/* === App-Specific Root Tokens === */
+/* === System layers (define globals / behaviors) === */
+@import '@clothesline/themes/css/foundations.css';
+@import '@clothesline/themes/css/semantic.css';
+@import '@clothesline/themes/css/semantic-colors.css';
+@import '@clothesline/themes/css/semantic-effects.css';
+@import '@clothesline/themes/css/modes.css';
+@import '@clothesline/themes/css/components.css';
+
+/* === Theme Imports (override per html[data-theme]) === */
+@import '@clothesline/themes/css/themes/clothesline.css';
+@import '@clothesline/themes/css/themes/timberline.css';
+@import '@clothesline/themes/css/themes/retrograde.css';
+@import '@clothesline/themes/css/themes/milkyway.css';
+@import '@clothesline/themes/css/themes/copper-sun.css';
+@import '@clothesline/themes/css/themes/tidal-glass.css';
+@import '@clothesline/themes/css/themes/night-market.css';
+@import '@clothesline/themes/css/themes/bigsky.css';
+
+/* === App-Specific Root Tokens (last) === */
 :root {
   --divider-color: #cbd5e1;
   --divider-thickness: 5px;
   --divider-style: solid;
 }
 
+
 @layer base {
+  /* Headings inherit theme foundation typography */
   h1, h2, h3, h4, h5, h6 {
+    font-family: var(--heading-font-family, var(--type-heading-family));
+    font-weight: var(--heading-font-weight, var(--type-heading-weight));
+    letter-spacing: var(--heading-letter-spacing, var(--type-heading-tracking));
     color: var(--heading-font-color, var(--base-font-color));
   }
 
+  /* Optional: map sizes to your type scales (keeps it token-driven) */
+  h1 { font-size: var(--type-scale-4xl); line-height: var(--type-leading-tight); }
+  h2 { font-size: var(--type-scale-3xl); line-height: var(--type-leading-tight); }
+  h3 { font-size: var(--type-scale-2xl); line-height: var(--type-leading-tight); }
+  h4 { font-size: var(--type-scale-xl);  line-height: var(--type-leading-tight); }
+  h5 { font-size: var(--type-scale-lg);  line-height: var(--type-leading-tight); }
+  h6 { font-size: var(--type-scale-md);  line-height: var(--type-leading-tight); }
+
+  /* Body text inherits theme foundation typography */
+  body {
+    font-family: var(--base-font-family, var(--type-body-family));
+    font-size: var(--base-font-size, var(--type-body-size));
+    line-height: var(--base-line-height, var(--type-body-leading));
+    font-weight: var(--base-font-weight, var(--type-body-weight));
+    letter-spacing: var(--base-letter-spacing, var(--type-body-tracking));
+    color: var(--base-font-color);
+    background: var(--body-background-color);
+  }
+
+  /* “Text elements” default to body color */
   p, span, li, dt, dd, th, td {
-    color: var(--body-font-color, var(--base-font-color));
+    color: var(--base-font-color);
+  }
+
+  /* Dark mode swaps (since your foundation bridge uses *-dark vars) */
+  html[data-mode='dark'] body {
+    color: var(--base-font-color-dark, var(--base-font-color));
+    background: var(--body-background-color-dark, var(--body-background-color));
+  }
+
+  html[data-mode='dark'] h1,
+  html[data-mode='dark'] h2,
+  html[data-mode='dark'] h3,
+  html[data-mode='dark'] h4,
+  html[data-mode='dark'] h5,
+  html[data-mode='dark'] h6 {
+    color: var(--heading-font-color-dark, var(--heading-font-color));
   }
 }
+
 
 
 

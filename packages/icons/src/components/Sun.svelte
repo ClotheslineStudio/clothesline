@@ -5,7 +5,7 @@
   export let strokeWidth: number = 2;
 
   export let primaryColor: string = "currentColor";
-  export let secondaryColor: string = "currentColor";
+   export let secondaryColor: string = "currentColor";
 
   export let variant: "stroke" | "filled" | "duotone" | "animated" = "stroke";
   export let ariaLabel: string | undefined = undefined;
@@ -38,7 +38,7 @@
       <circle cx="12" cy="12" r="4.998" fill="currentColor" transform="rotate(90.027 12 12)"/><path fill="currentColor" d="M20 11.004h2a1 1 0 1 1 0 2h-2a1 1 0 1 1 0-2"/><path fill="currentColor" d="m16.953 5.638 1.415-1.413A1 1 0 1 1 19.78 5.64l-1.415 1.413a1 1 0 1 1-1.413-1.415"/><path fill="currentColor" d="m2 10.995 2 .001a1 1 0 0 1 0 2H2a1 1 0 0 1 0-2"/><path fill="currentColor" d="m4.219 18.36 1.415-1.413a1 1 0 1 1 1.413 1.415l-1.414 1.413a1 1 0 0 1-1.414-1.415"/><path fill="currentColor" d="M11 4V2a1 1 0 1 1 2 0v2a1 1 0 1 1-2 0"/><path fill="currentColor" d="M5.636 7.05 4.222 5.636a1 1 0 1 1 1.414-1.414L7.05 5.636A1 1 0 1 1 5.636 7.05"/><path fill="currentColor" d="M11 22v-2a1 1 0 1 1 2 0v2a1 1 0 1 1-2 0"/><path fill="currentColor" d="m18.364 19.778-1.415-1.414a1 1 0 0 1 1.415-1.414l1.414 1.414a1 1 0 0 1-1.414 1.414"/>
     </g>
 
-  {:else if variant === "duotone"}
+    {:else if variant === "duotone"}
     <g fill="currentColor" stroke="none" style={"color:" + secondaryColor}>
       <circle id="tone2" cx="12" cy="12" r="3.998" transform="rotate(90.027 12 12)"/>
     </g>

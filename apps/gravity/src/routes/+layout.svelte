@@ -10,6 +10,7 @@
     { href: '/toolkits', label: 'Toolkits' },
     { href: '/plans', label: 'Plans' },
     { href: '/docs', label: 'Docs' },
+    { href: '/sources', label: 'Sources' },
     { href: '/settings', label: 'Settings' }
   ];
 </script>

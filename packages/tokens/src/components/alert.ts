@@ -4,32 +4,36 @@ export const alertTokens = {
   'alert-padding-y': 'var(--spacing-3)',
   'alert-padding-x': 'var(--spacing-4)',
   'alert-gap': 'var(--spacing-3)',
-  'alert-border': '1px solid var(--color-surface-300)',
+
+  // Prefer semantic border width + semantic border color
+  'alert-border': 'var(--border-width-default, 1px) solid var(--border-color-default)',
   'alert-shadow': 'none',
 
-  // neutral/default
-  'alert-bg': 'var(--color-surface-50)',
+  // neutral/default (semantic surfaces + text ladder)
+  'alert-bg': 'var(--fill-surface)',
   'alert-text': 'var(--on-surface)',
-  'alert-border-color': 'var(--color-surface-300)',
+  'alert-border-color': 'var(--border-color-default)',
 
-  // variants
-  'alert-info-bg': 'var(--color-info-50-vis)',
+  // variants (use role subtle backgrounds + global readable text ladder)
+  // NOTE: these rely entirely on semantic-colors.css tokens you already emit.
+  'alert-info-bg': 'var(--info-subtle)',
   'alert-info-text': 'var(--on-surface-strong)',
-  'alert-info-border-color': 'var(--color-info-300-vis)',
+  'alert-info-border-color': 'var(--border-color-default)',
 
-  'alert-success-bg': 'var(--color-success-50-vis)',
+  'alert-success-bg': 'var(--success-subtle)',
   'alert-success-text': 'var(--on-surface-strong)',
-  'alert-success-border-color': 'var(--color-success-300-vis)',
+  'alert-success-border-color': 'var(--border-color-default)',
 
-  'alert-warning-bg': 'var(--color-warning-50-vis)',
+  'alert-warning-bg': 'var(--warning-subtle)',
   'alert-warning-text': 'var(--on-surface-strong)',
-  'alert-warning-border-color': 'var(--color-warning-300-vis)',
+  'alert-warning-border-color': 'var(--border-color-default)',
 
-  'alert-error-bg': 'var(--color-error-50-vis)',
+  'alert-error-bg': 'var(--error-subtle)',
   'alert-error-text': 'var(--on-surface-strong)',
-  'alert-error-border-color': 'var(--color-error-300-vis)',
+  'alert-error-border-color': 'var(--border-color-default)',
 
   // actions / close button
   'alert-action-color': 'var(--on-surface-strong)',
   'alert-action-color-hover': 'var(--on-surface)',
-};
+} as const;
+

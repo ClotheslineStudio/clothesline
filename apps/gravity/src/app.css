@@ -1,15 +1,23 @@
-/* === Theme Imports === */
-@import '@clothesline/themes/dist/clothesline.css';
-@import '@clothesline/themes/dist/timberline.css';
-@import '@clothesline/themes/dist/retrograde.css';
-@import '@clothesline/themes/dist/milkyway.css';
-@import '@clothesline/themes/dist/copper-sun.css';
-@import '@clothesline/themes/dist/tidal-glass.css';
-@import '@clothesline/themes/dist/night-market.css';
-@import '@clothesline/themes/dist/bigsky.css';
-@import '@clothesline/themes/dist/modes.css';
+/* === Tailwind (if you use it) === */
+@import 'tailwindcss';
 
-@import "tailwindcss";
+/* === System layers (define globals / behaviors) === */
+@import '@clothesline/themes/css/foundations.css';
+@import '@clothesline/themes/css/semantic.css';
+@import '@clothesline/themes/css/semantic-colors.css';
+@import '@clothesline/themes/css/semantic-effects.css';
+@import '@clothesline/themes/css/modes.css';
+@import '@clothesline/themes/css/components.css';
+
+/* === Theme Imports (override per html[data-theme]) === */
+@import '@clothesline/themes/css/themes/clothesline.css';
+@import '@clothesline/themes/css/themes/timberline.css';
+@import '@clothesline/themes/css/themes/retrograde.css';
+@import '@clothesline/themes/css/themes/milkyway.css';
+@import '@clothesline/themes/css/themes/copper-sun.css';
+@import '@clothesline/themes/css/themes/tidal-glass.css';
+@import '@clothesline/themes/css/themes/night-market.css';
+@import '@clothesline/themes/css/themes/bigsky.css';
 
 @source "./**/*.{svelte,ts,js}";               
 @source "../../packages/ui/src/**/*.{svelte,ts}";

@@ -1,184 +1,441 @@
-<!-- apps/playground/src/routes/test/+page.svelte -->
 <script lang="ts">
   import { onMount } from 'svelte';
+  import { browser } from '$app/environment';
 
-  type Mode = 'light' | 'dark';
-  type Contrast = 'normal' | 'high' | 'custom';
-  type Vision = 'none' | 'protanopia' | 'deuteranopia' | 'tritanopia' | 'monochrome';
+  // Simple knobs
+  let theme: 'bigsky' | 'retrograde' = 'bigsky';
+  let mode: 'light' | 'dark' = 'light';
 
-  let theme = 'clothesline';
-  let mode: Mode = 'light';
-  let contrast: Contrast = 'normal';
-  let contrastFactor = 1.12; // used only when contrast === 'custom'
-  let vision: Vision = 'none';
-
-  function apply() {
-    const root = document.documentElement;
-
-    root.setAttribute('data-theme', theme);
-    root.setAttribute('data-mode', mode);
-
-    // contrast
-    root.setAttribute('data-contrast', contrast);
-    if (contrast === 'custom') {
-      const clamped = Math.max(0.8, Math.min(1.5, Number(contrastFactor || 1)));
-      root.style.setProperty('--contrast-factor', String(clamped));
-    } else {
-      root.style.removeProperty('--contrast-factor');
-    }
-
-    // vision
-    if (vision === 'none') root.removeAttribute('data-vision');
-    else root.setAttribute('data-vision', vision);
-  }
+  // Glass tuning (these become CSS custom props)
+  let blurPx = 18;          // 0–40 feels reasonable
+  let opacityPct = 18;      // 0–40 (%)  (higher = milkier)
+  let saturationPct = 140;  // 100–200 (%)
 
   onMount(() => {
-    // initialize once on client
-    apply();
+    if (!browser) return;
+
+    // Ensure your theme selector is actually being exercised
+    document.documentElement.dataset.theme = theme;
+    document.documentElement.dataset.mode = mode;
   });
 
-  // re-apply when values change (client-only guard)
-  $: if (typeof document !== 'undefined') apply();
+  $: if (browser) {
+    document.documentElement.dataset.theme = theme;
+    document.documentElement.dataset.mode = mode;
+  }
 </script>
 
-<main class="page">
-  <header class="header">
-    <h1>Modes Test</h1>
-    <p>Applies <code>data-theme</code>, <code>data-mode</code>, <code>data-contrast</code>, <code>data-vision</code> on &lt;html&gt;.</p>
-  </header>
-
-  <section class="card">
-    <div class="grid">
-      <label class="field">
-        <span>Theme</span>
+<section
+  class="page"
+  style={`
+    --glass-blur: ${blurPx}px;
+    --glass-opacity: ${opacityPct}%;
+    --glass-saturation: ${saturationPct}%;
+  `}
+>
+  <header class="controls glass glass--thin">
+    <div class="row">
+      <label>
+        Theme
         <select bind:value={theme}>
-          <option value="clothesline">clothesline</option>
-          <option value="timberline">timberline</option>
           <option value="bigsky">bigsky</option>
-          <option value="milkyway">milkyway</option>
           <option value="retrograde">retrograde</option>
-          <option value="tidal-glass">tidal-glass</option>
-          <option value="copper-sun">copper-sun</option>
-          <option value="night-market">night-market</option>
         </select>
       </label>
 
-      <label class="field">
-        <span>Mode</span>
+      <label>
+        Mode
         <select bind:value={mode}>
           <option value="light">light</option>
           <option value="dark">dark</option>
         </select>
       </label>
+    </div>
 
-      <label class="field">
-        <span>Contrast</span>
-        <select bind:value={contrast}>
-          <option value="normal">normal</option>
-          <option value="high">high</option>
-          <option value="custom">custom</option>
-        </select>
+    <div class="row">
+      <label>
+        Blur ({blurPx}px)
+        <input type="range" min="0" max="40" step="1" bind:value={blurPx} />
       </label>
 
-      <label class="field" aria-disabled={contrast !== 'custom'}>
-        <span>Contrast factor</span>
-        <input
-          type="number"
-          step="0.01"
-          min="0.8"
-          max="1.5"
-          bind:value={contrastFactor}
-          disabled={contrast !== 'custom'}
-        />
+      <label>
+        Opacity ({opacityPct}%)
+        <input type="range" min="6" max="40" step="1" bind:value={opacityPct} />
       </label>
 
-      <label class="field">
-        <span>Vision</span>
-        <select bind:value={vision}>
-          <option value="none">none</option>
-          <option value="protanopia">protanopia</option>
-          <option value="deuteranopia">deuteranopia</option>
-          <option value="tritanopia">tritanopia</option>
-          <option value="monochrome">monochrome</option>
-        </select>
+      <label>
+        Saturation ({saturationPct}%)
+        <input type="range" min="100" max="220" step="5" bind:value={saturationPct} />
       </label>
     </div>
 
-    <div class="preview">
-      <div class="chip">--body-background-color: <code>{getComputedStyle(document.documentElement).getPropertyValue('--body-background-color') || '∅'}</code></div>
-      <div class="chip">--base-font-color: <code>{getComputedStyle(document.documentElement).getPropertyValue('--base-font-color') || '∅'}</code></div>
-      <div class="chip">--border-default-color: <code>{getComputedStyle(document.documentElement).getPropertyValue('--border-default-color') || '∅'}</code></div>
-      <div class="note">
-        If these show “∅”, your CSS isn’t loaded or the variable names don’t exist yet.
+    <p class="hint">
+      Tip: Glass only “reads” if there’s something behind it. If this looks flat, your background is not
+      visible through the panel (or <code>backdrop-filter</code> isn’t supported/active).
+    </p>
+  </header>
+
+  <main class="grid">
+    <article class="glass glass--panel">
+      <h2>Glass Panel</h2>
+      <p>
+        This panel should blur the background and show a subtle tint from your theme’s <code>--color-surface-*</code>.
+      </p>
+
+      <div class="kpis">
+        <div class="kpi glass glass--thin">
+          <div class="kpi__label">Primary</div>
+          <div class="kpi__value">--color-primary-500</div>
+          <div class="swatch" style="background: var(--color-primary-500-vis);" />
+        </div>
+
+        <div class="kpi glass glass--thin">
+          <div class="kpi__label">Accent</div>
+          <div class="kpi__value">--color-accent-500</div>
+          <div class="swatch" style="background: var(--color-accent-500-vis);" />
+        </div>
+
+        <div class="kpi glass glass--thin">
+          <div class="kpi__label">Surface</div>
+          <div class="kpi__value">--color-surface-200</div>
+          <div class="swatch" style="background: var(--color-surface-200-vis);" />
+        </div>
       </div>
-    </div>
-  </section>
-</main>
+
+      <div class="form">
+        <label>
+          Email
+          <input placeholder="name@domain.com" />
+        </label>
+
+        <label>
+          Notes
+          <textarea rows="3" placeholder="This should remain readable on glass." />
+        </label>
+
+        <div class="actions">
+          <button class="btn">Primary action</button>
+          <button class="btn btn--ghost">Ghost</button>
+        </div>
+      </div>
+    </article>
+
+    <aside class="glass glass--panel glass--tinted">
+      <h2>Tinted Glass</h2>
+      <p>
+        This uses your <code>--color-primary-*</code> ramp as a tint. You should still see blur + transparency.
+      </p>
+
+      <div class="stack">
+        <div class="glass glass--thin block">
+          <div class="block__title">Thin glass</div>
+          <div class="block__sub">Lower opacity / lighter border</div>
+        </div>
+
+        <div class="glass glass--strong block">
+          <div class="block__title">Strong glass</div>
+          <div class="block__sub">Higher opacity / stronger border</div>
+        </div>
+
+        <div class="glass glass--thin block">
+          <div class="block__title">Focus ring check</div>
+          <input class="focus-test" placeholder="Tab into me" />
+        </div>
+      </div>
+    </aside>
+  </main>
+</section>
 
 <style>
+  /* Page framing */
   .page {
-    padding: 1.25rem;
-    display: grid;
-    gap: 1rem;
-    max-width: 960px;
-    margin: 0 auto;
+    min-height: 100vh;
+    padding: 24px;
+    color: var(--base-font-color, #111);
+    font-family: var(--base-font-family, system-ui);
+    background: transparent;
+    position: relative;
+    overflow: hidden;
   }
 
-  .header h1 { margin: 0; font-size: 1.5rem; }
-  .header p { margin: .25rem 0 0; opacity: .8; }
-
-  .card {
-    border: 1px solid var(--border-default-color, #d1d5db);
-    background: var(--background-panel, #ffffff);
-    border-radius: 0.75rem;
-    padding: 1rem;
-    display: grid;
-    gap: 1rem;
+  /* Background that makes glass “obvious” */
+  .page::before,
+  .page::after {
+    content: '';
+    position: absolute;
+    inset: -20%;
+    z-index: 0;
+    pointer-events: none;
   }
 
-  .grid {
-    display: grid;
-    gap: .75rem;
-    grid-template-columns: repeat(5, minmax(0, 1fr));
+  /* Big soft blobs */
+  .page::before {
+    background:
+      radial-gradient(circle at 20% 20%, var(--color-primary-300-vis, rgba(0, 140, 255, 0.35)) 0%, transparent 50%),
+      radial-gradient(circle at 80% 30%, var(--color-accent-300-vis, rgba(255, 140, 0, 0.30)) 0%, transparent 45%),
+      radial-gradient(circle at 60% 80%, var(--color-secondary-300-vis, rgba(120, 0, 255, 0.25)) 0%, transparent 55%);
+    filter: saturate(1.1);
+    opacity: 0.9;
+    transform: translateZ(0);
   }
 
-  .field { display: grid; gap: .35rem; }
-  .field > span { font-size: .8125rem; opacity: .75; }
+  /* Subtle “noise” using layered gradients (cheap, no assets) */
+  .page::after {
+    background:
+      repeating-linear-gradient(
+        0deg,
+        rgba(255, 255, 255, 0.05) 0px,
+        rgba(255, 255, 255, 0.05) 1px,
+        transparent 2px,
+        transparent 4px
+      ),
+      repeating-linear-gradient(
+        90deg,
+        rgba(0, 0, 0, 0.04) 0px,
+        rgba(0, 0, 0, 0.04) 1px,
+        transparent 2px,
+        transparent 5px
+      );
+    mix-blend-mode: overlay;
+    opacity: 0.25;
+  }
 
-  input, select {
-    padding: .5rem .625rem;
-    border: 1px solid var(--border-default-color, #d1d5db);
-    border-radius: .5rem;
-    background: var(--background-elevation-1, #fff);
+  /* Controls bar */
+  .controls {
+    position: sticky;
+    top: 16px;
+    z-index: 2;
+    padding: 14px 14px 12px;
+    margin-bottom: 18px;
+  }
+
+  .row {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(180px, 1fr));
+    gap: 12px;
+    align-items: end;
+    margin-bottom: 10px;
+  }
+  .row:first-child {
+    grid-template-columns: repeat(2, minmax(180px, 220px)) 1fr;
+  }
+
+  label {
+    display: grid;
+    gap: 6px;
+    font-size: 13px;
+    letter-spacing: 0.01em;
+  }
+
+  select,
+  input[type='range'],
+  input,
+  textarea {
+    width: 100%;
+  }
+
+  select,
+  input,
+  textarea {
+    border-radius: var(--radius-base, 10px);
+    border: 1px solid color-mix(in oklab, var(--color-surface-950-vis, #111) 12%, transparent);
+    background: color-mix(in oklab, var(--color-surface-50-vis, #fff) 70%, transparent);
+    padding: 10px 10px;
     color: inherit;
     outline: none;
   }
-  input:focus-visible, select:focus-visible {
-    outline: 2px solid var(--ring-color, #2563eb);
-    outline-offset: 2px;
+
+  html[data-mode='dark'] .page {
+    color: var(--base-font-color-dark, #f4f4f4);
   }
 
-  .preview {
+  html[data-mode='dark'] select,
+  html[data-mode='dark'] input,
+  html[data-mode='dark'] textarea {
+    border: 1px solid color-mix(in oklab, var(--color-surface-50-vis, #fff) 16%, transparent);
+    background: color-mix(in oklab, var(--color-surface-950-vis, #111) 65%, transparent);
+  }
+
+  .hint {
+    margin: 0;
+    font-size: 12px;
+    opacity: 0.8;
+  }
+  .hint code {
+    font-family: var(--type-family-mono, ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', monospace);
+    font-size: 11px;
+  }
+
+  /* Layout */
+  .grid {
+    position: relative;
+    z-index: 1; /* above background blobs */
     display: grid;
-    gap: .5rem;
-    padding-top: .25rem;
+    grid-template-columns: 1.2fr 0.8fr;
+    gap: 16px;
+    align-items: start;
   }
 
-  .chip {
-    padding: .5rem .625rem;
-    border: 1px dashed var(--border-muted-color, #e5e7eb);
-    border-radius: .5rem;
-    background: var(--background-elevation-2, #fafafa);
-    font-size: .875rem;
+  @media (max-width: 980px) {
+    .grid {
+      grid-template-columns: 1fr;
+    }
+    .row,
+    .row:first-child {
+      grid-template-columns: 1fr;
+    }
   }
 
-  .note {
-    opacity: .75;
-    font-size: .8125rem;
+  /* ---------
+     “GLASS TOKENS” (local test harness)
+     These are the only things you need to move into your actual tokens later.
+  --------- */
+
+  :global(html[data-mode='light']) .page {
+    --glass-tint: var(--color-surface-50-vis, #fff);
+    --glass-border-tint: var(--color-surface-950-vis, #111);
   }
 
-  @media (max-width: 920px) {
-    .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  :global(html[data-mode='dark']) .page {
+    --glass-tint: var(--color-surface-950-vis, #111);
+    --glass-border-tint: var(--color-surface-50-vis, #fff);
+  }
+
+  .glass {
+  /* read inherited knobs without overriding them */
+  --_glass-blur: var(--glass-blur, 18px);
+  --_glass-opacity: var(--glass-opacity, 18%);
+  --_glass-saturation: var(--glass-saturation, 140%);
+
+  --glass-bg: color-mix(in oklab, var(--glass-tint) var(--_glass-opacity), transparent);
+  --glass-border: color-mix(in oklab, var(--glass-border-tint) 14%, transparent);
+
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+
+  backdrop-filter: blur(var(--_glass-blur)) saturate(var(--_glass-saturation));
+  -webkit-backdrop-filter: blur(var(--_glass-blur)) saturate(var(--_glass-saturation));
+}
+
+
+  /* Fallback if backdrop-filter isn’t supported */
+  @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    .glass {
+      background: color-mix(in oklab, var(--glass-tint) 32%, transparent);
+    }
+  }
+
+  .glass--panel {
+    padding: 18px;
+  }
+
+  .glass--thin {
+    --glass-opacity: 12%;
+    --glass-shadow: 0 10px 24px color-mix(in oklab, var(--glass-border-tint) 14%, transparent);
+    padding: 12px;
+  }
+
+  .glass--strong {
+    --glass-opacity: 26%;
+    --glass-border: color-mix(in oklab, var(--glass-border-tint) 20%, transparent);
+    --glass-shadow: 0 14px 40px color-mix(in oklab, var(--glass-border-tint) 24%, transparent);
+    padding: 12px;
+  }
+
+  .glass--tinted {
+    /* Tint with primary ramp (still glass) */
+    --glass-tint: var(--color-primary-200-vis, #7db7ff);
+    --glass-border-tint: var(--color-primary-950-vis, #0a2a55);
+  }
+
+  h2 {
+    margin: 0 0 8px 0;
+    font-size: 16px;
+    letter-spacing: 0.01em;
+  }
+
+  p {
+    margin: 0 0 14px 0;
+    opacity: 0.9;
+    line-height: 1.4;
+    font-size: 13px;
+  }
+
+  .kpis {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+  @media (max-width: 980px) {
+    .kpis {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .kpi__label {
+    font-size: 12px;
+    opacity: 0.75;
+  }
+  .kpi__value {
+    font-size: 12px;
+    font-family: var(--type-family-mono, ui-monospace, monospace);
+    opacity: 0.9;
+  }
+  .swatch {
+    height: 10px;
+    border-radius: 999px;
+    margin-top: 8px;
+    border: 1px solid color-mix(in oklab, var(--glass-border-tint) 14%, transparent);
+  }
+
+  .form {
+    display: grid;
+    gap: 10px;
+  }
+
+  .actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 4px;
+  }
+
+  .btn {
+    border-radius: var(--radius-base, 10px);
+    border: 1px solid color-mix(in oklab, var(--glass-border-tint) 18%, transparent);
+    background: color-mix(in oklab, var(--color-primary-500-vis, #3b82f6) 22%, transparent);
+    padding: 10px 12px;
+    color: inherit;
+    cursor: pointer;
+    backdrop-filter: blur(calc(var(--glass-blur) * 0.6)) saturate(var(--glass-saturation));
+    -webkit-backdrop-filter: blur(calc(var(--glass-blur) * 0.6)) saturate(var(--glass-saturation));
+  }
+
+  .btn--ghost {
+    background: transparent;
+  }
+
+  .stack {
+    display: grid;
+    gap: 10px;
+  }
+
+  .block__title {
+    font-size: 13px;
+    margin-bottom: 2px;
+  }
+  .block__sub {
+    font-size: 12px;
+    opacity: 0.8;
+  }
+
+  .focus-test:focus {
+    outline: none;
+    box-shadow:
+      0 0 0 2px color-mix(in oklab, var(--color-accent-500-vis, #f59e0b) 55%, transparent),
+      0 0 0 6px color-mix(in oklab, var(--glass-border-tint) 10%, transparent);
   }
 </style>
+
 

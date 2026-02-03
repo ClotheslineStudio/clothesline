@@ -1,13 +1,19 @@
-/* === Clothesline Theme Imports === */
-@import '@clothesline/themes/dist/clothesline.css';
-@import '@clothesline/themes/dist/bigsky.css';
-@import '@clothesline/themes/dist/timberline.css';
-@import '@clothesline/themes/dist/night-market.css';
-@import '@clothesline/themes/dist/retrograde.css';
-@import '@clothesline/themes/dist/tidal-glass.css';
-@import '@clothesline/themes/dist/copper-sun.css';
-@import '@clothesline/themes/dist/milkyway.css';
-@import '@clothesline/themes/dist/modes.css';
+/* === Theme Imports === */
+@import '@clothesline/themes/css/foundations.css';
+@import '@clothesline/themes/css/components.css';
+@import '@clothesline/themes/css/semantic-colors.css';
+
+@import '@clothesline/themes/css/themes/clothesline.css';
+@import '@clothesline/themes/css/themes/timberline.css';
+@import '@clothesline/themes/css/themes/retrograde.css';
+@import '@clothesline/themes/css/themes/milkyway.css';
+@import '@clothesline/themes/css/themes/copper-sun.css';
+@import '@clothesline/themes/css/themes/tidal-glass.css';
+@import '@clothesline/themes/css/themes/night-market.css';
+@import '@clothesline/themes/css/themes/bigsky.css';
+
+@import '@clothesline/themes/css/modes.css';
+
 
 /* Tailwind v4 */
 @import "tailwindcss";
@@ -54,35 +60,32 @@
 /* 🌐 Global base styles */
 @layer base {
   html {
-    font-family: var(--font-sans);
-    color: var(--color-text);
-    background-color: var(--color-bg);
-    transition: background-color 0.3s ease, color 0.3s ease;
+    font-family: var(--base-font-family, var(--type-body-family));
+    font-size: var(--base-font-size, 1rem);
+    line-height: var(--base-line-height, 1.5);
+    letter-spacing: var(--base-letter-spacing, 0em);
+    font-weight: var(--base-font-weight, 400);
+
+    color: var(--base-font-color, var(--on-surface));
+    background-color: var(--body-background-color, var(--background-app));
   }
 
   h1, h2, h3, h4, h5 {
-    font-weight: 700;
-    color: var(--color-accent);
+    font-family: var(--heading-font-family, inherit);
+    font-weight: var(--heading-font-weight, 700);
+    letter-spacing: var(--heading-letter-spacing, 0em);
+    color: var(--heading-font-color, currentColor);
   }
 
   a {
-    color: var(--color-accent);
-    text-decoration: underline;
+    color: var(--anchor-font-color, var(--anchor-color));
+    text-decoration: var(--anchor-text-decoration, underline);
   }
-
-  code, pre {
-    font-family: var(--font-mono);
-  }
-}
-
-@layer components {
-  /* Global page shell: same width everywhere */
-  .page-shell {
-    /* same idea as your hero width — adjust to taste */
-    @apply mx-auto w-full px-6 lg:px-16;
-    max-width: 1200px; /* or 1300 / 1400 if you want “really wide” */
+  a:hover {
+    text-decoration: var(--anchor-text-decoration-hover, none);
   }
 }
+
 
 
 

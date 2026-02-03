@@ -1,9 +1,14 @@
 <script lang="ts">
+ 
   import { Mail, Github, Linkedin, MessageCircle } from 'lucide-svelte';
+  import { Button } from '@clothesline/ui';
+  import { Card } from '@clothesline/ui';
+  import { Alert } from '@clothesline/ui';
 
   let name = '';
   let email = '';
   let message = '';
+  let hidden_field = '';
   let submitting = false;
   let success = false;
   let error = '';
@@ -24,7 +29,7 @@
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ name, email, message })
+        body: JSON.stringify({ name, email, message, hidden_field })
       });
 
       if (!res.ok) {
@@ -57,114 +62,92 @@
 
   <div class="grid gap-10 lg:grid-cols-[minmax(0,2fr)_minmax(0,1.3fr)] lg:items-start">
     <!-- Form -->
-    <form
-      on:submit={handleSubmit}
-      class="space-y-6 rounded-2xl border border-(--color-border-subtle) bg-(--color-surface) p-6 shadow-sm"
-    >
-      <div class="space-y-1.5">
-        <label for="name" class="block text-sm font-medium text-(--color-text)">
-          Name
-        </label>
-        <input
-          id="name"
-          type="text"
-          bind:value={name}
-          required
-          class="block w-full rounded-lg border border-(--color-border-subtle)
-                 bg-(--field-bg,var(--color-surface-50))
-                 px-3 py-2 text-sm text-(--color-text)
-                 placeholder-(--color-text-muted) shadow-xs
-                 focus:bg-(--field-bg-focus,var(--color-surface))
-                 focus:outline-none focus:ring-2 focus:ring-(--color-accent)
-                 focus:ring-offset-2 focus:ring-offset-(--color-bg)"
-          placeholder="Your name"
-        />
-      </div>
+    <Card padding="lg" shadow="md" rounded border className="space-y-6">
+      <form on:submit={handleSubmit}>
+        <div class="space-y-1.5">
+          <label for="name" class="block text-sm font-medium">
+            Name
+          </label>
+          <input
+            id="name"
+            type="text"
+            bind:value={name}
+            required
+            class="block w-full rounded-lg border px-3 py-2 text-sm"
+            placeholder="Your name"
+          />
+        </div>
 
-      <div class="space-y-1.5">
-        <label for="email" class="block text-sm font-medium text-(--color-text)">
-          Email
-        </label>
-        <input
-          id="email"
-          type="email"
-          bind:value={email}
-          required
-          class="block w-full rounded-lg border border-(--color-border-subtle)
-                 bg-(--field-bg,var(--color-surface-50))
-                 px-3 py-2 text-sm text-(--color-text)
-                 placeholder-(--color-text-muted) shadow-xs
-                 focus:bg-(--field-bg-focus,var(--color-surface))
-                 focus:outline-none focus:ring-2 focus:ring-(--color-accent)
-                 focus:ring-offset-2 focus:ring-offset-(--color-bg)"
-          placeholder="you@example.com"
-        />
-      </div>
+        <div class="space-y-1.5">
+          <label for="email" class="block text-sm font-medium">
+            Email
+          </label>
+          <input
+            id="email"
+            type="email"
+            bind:value={email}
+            required
+            class="block w-full rounded-lg border px-3 py-2 text-sm"
+            placeholder="you@example.com"
+          />
+        </div>
 
-      <div class="space-y-1.5">
-        <label for="message" class="block text-sm font-medium text-(--color-text)">
-          Message
-        </label>
-        <textarea
-          id="message"
-          rows="5"
-          bind:value={message}
-          required
-          class="block w-full rounded-lg border border-(--color-border-subtle)
-                 bg-(--field-bg,var(--color-surface-50))
-                 px-3 py-2 text-sm text-(--color-text)
-                 placeholder-(--color-text-muted) shadow-xs
-                 focus:bg-(--field-bg-focus,var(--color-surface))
-                 focus:outline-none focus:ring-2 focus:ring-(--color-accent)
-                 focus:ring-offset-2 focus:ring-offset-(--color-bg)"
-          placeholder="Tell me a bit about what you’re working on."
-        ></textarea>
-      </div>
+        <div class="space-y-1.5">
+          <label for="message" class="block text-sm font-medium">
+            Message
+          </label>
+          <textarea
+            id="message"
+            rows="5"
+            bind:value={message}
+            required
+            class="block w-full rounded-lg border px-3 py-2 text-sm"
+            placeholder="Tell me a bit about what you’re working on."
+          ></textarea>
+        </div>
 
-      <div class="flex items-center gap-3">
-        <button
-          type="submit"
-          class="inline-flex items-center justify-center rounded-lg bg-(--color-accent)
-                 px-4 py-2 text-sm font-semibold text-(--color-on-accent, #fff)
-                 shadow-sm transition hover:shadow-md disabled:opacity-60"
-          disabled={submitting}
-        >
-          {submitting ? 'Sending…' : 'Send message'}
-        </button>
+        <!-- Honeypot anti-spam field (hidden from users) -->
+        <input type="text" bind:value={hidden_field} tabindex="-1" autocomplete="off" style="display:none" aria-hidden="true" />
+
+        <div class="flex items-center gap-3">
+          <Button type="submit" color="primary" variant="solid" size="md" disabled={submitting}>
+            {submitting ? 'Sending…' : 'Send message'}
+          </Button>
+        </div>
 
         {#if success}
-          <p class="text-xs text-(--color-success-500)">
+          <Alert id="success-alert" variant="success" title="Message sent">
             Thanks — your message has been sent.
-          </p>
+          </Alert>
         {/if}
         {#if error}
-          <p class="text-xs text-(--color-error-500)">
-            Error: {error}
-          </p>
+          <Alert id="error-alert" variant="error" title="Error">
+            {error}
+          </Alert>
         {/if}
-      </div>
-    </form>
+      </form>
+    </Card>
 
     <!-- Side column: other ways to reach you -->
     <aside
-      class="space-y-6 rounded-2xl bg-(--color-surface-50,var(--color-surface)) p-6 border border-(--color-border-subtle) shadow-xs"
+      class="space-y-(--spacing-lg) rounded-xl bg-(--color-surface-50) p-(--spacing-lg) border border-(--border-width-default) shadow-xs font-(--type-body-family) text-(--type-body-size)"
     >
       <div>
-        <h2 class="text-sm font-semibold uppercase tracking-wide text-(--color-text-muted)">
+          <h2 class="text-(--type-heading-size) font-(--type-heading-weight) uppercase tracking-(--type-heading-tracking)">
           Other ways to connect
         </h2>
-        <p class="mt-2 text-sm text-(--color-text-muted)">
+          <p class="mt-2 text-(--color-surface-950)">
           Not a form person? You can also reach out via social or email me directly.
         </p>
-        <div class="mt-4 flex flex-wrap gap-4 text-(--color-accent)">
+          <div class="mt-4 flex flex-wrap gap-(--spacing-lg) text-(--anchor-color)">
           <a
             href="https://github.com/ClotheslineStudio"
             target="_blank"
             rel="noreferrer"
-            class="inline-flex items-center gap-2 text-sm hover:underline"
+            class="inline-flex items-center gap-(--spacing-sm) text-(--type-body-size) hover:[text-decoration:var(--anchor-decoration-hover)]"
             aria-label="GitHub"
           >
-            <Github class="h-5 w-5" />
+            <Github style="width:24px; height:24px;" />
             <span>GitHub</span>
           </a>
 
@@ -172,41 +155,23 @@
             href="https://linkedin.com/in/yourusername"
             target="_blank"
             rel="noreferrer"
-            class="inline-flex items-center gap-2 text-sm hover:underline"
+            class="inline-flex items-center gap-(--spacing-sm) text-(--type-body-size) hover:[text-decoration:var(--anchor-decoration-hover)]"
             aria-label="LinkedIn"
           >
-            <Linkedin class="h-5 w-5" />
+            <Linkedin style="width:24px; height:24px;" />
             <span>LinkedIn</span>
           </a>
 
-          <a
-            href="https://discordapp.com/users/yourdiscordid"
-            target="_blank"
-            rel="noreferrer"
-            class="inline-flex items-center gap-2 text-sm hover:underline"
-            aria-label="Discord"
-          >
-            <MessageCircle class="h-5 w-5" />
-            <span>Discord</span>
-          </a>
-
-          <a
-            href="mailto:you@example.com"
-            class="inline-flex items-center gap-2 text-sm hover:underline"
-            aria-label="Email"
-          >
-            <Mail class="h-5 w-5" />
-            <span>Email</span>
-          </a>
+          <!-- Discord and email links removed as requested -->
         </div>
       </div>
 
-      <div class="border-t border-(--color-border-subtle) pt-4 text-sm text-(--color-text-muted)">
-        <p>
-          I specialize in education-focused tools, design systems, and data-heavy products, but I’m
-          always open to interesting collaborations, especially where thoughtful UX and strong
-          foundations matter.
-        </p>
+      <div class="border-t border-(--color-border-subtle) pt-(--spacing-lg) text-(--type-body-size)">
+          <p>
+            I specialize in education-focused tools, design systems, and data-heavy products, but I’m
+            always open to interesting collaborations, especially where thoughtful UX and strong
+            foundations matter.
+          </p>
       </div>
     </aside>
   </div>

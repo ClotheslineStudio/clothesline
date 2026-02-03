@@ -5,7 +5,7 @@
   export let strokeWidth: number = 2;
 
   export let primaryColor: string = "currentColor";
-  export let secondaryColor: string = "currentColor";
+   export let secondaryColor: string = "currentColor";
 
   export let variant: "stroke" | "filled" | "duotone" | "animated" = "stroke";
   export let ariaLabel: string | undefined = undefined;
@@ -38,7 +38,7 @@
       <g id="Property 1=filled"><path id="Subtract" fill="currentColor" d="M12.9 4.243a3 3 0 0 1 2.12.878l6.486 6.485a3 3 0 0 1 0 4.244l-5.656 5.656a3 3 0 0 1-4.244 0L5.121 15.02a3 3 0 0 1-.878-2.122V7.242a3 3 0 0 1 3-2.999zM9.484 8.071a1 1 0 1 0-1.414 1.414 1 1 0 0 0 1.414-1.414"/></g>
     </g>
 
-  {:else if variant === "duotone"}
+    {:else if variant === "duotone"}
     <g fill="currentColor" stroke="none" style={"color:" + secondaryColor}>
       <path id="tone2" fill-rule="evenodd" d="M12.9 5.242a2 2 0 0 1 1.413.586l6.486 6.485a2 2 0 0 1 0 2.83l-5.656 5.656a2 2 0 0 1-2.83 0l-6.485-6.485a2 2 0 0 1-.586-1.415V7.243a2 2 0 0 1 2-2zm-3.415 2.83a1 1 0 1 0-1.414 1.413 1 1 0 0 0 1.414-1.414" clip-rule="evenodd"/>
     </g>

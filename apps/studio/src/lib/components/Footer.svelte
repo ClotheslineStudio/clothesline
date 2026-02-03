@@ -1,17 +1,14 @@
 <script lang="ts">
-  import { Github, Linkedin, ArrowRight } from 'lucide-svelte';
-  
+  import { Github, Linkedin } from 'lucide-svelte';
+  import Logo from './Logo.svelte';
 
   const year = new Date().getFullYear();
 
   const links = [
-    // Main pages
     { href: '/', label: 'Home' },
     { href: '/about', label: 'About' },
     { href: '/blog', label: 'Blog' },
     { href: '/contact', label: 'Contact' },
-
-    // Utility pages
     { href: '/sitemap', label: 'Sitemap' },
     { href: '/accessibility', label: 'Accessibility' },
     { href: '/llm-optimization', label: 'LLM Optimization' }
@@ -23,86 +20,214 @@
   ];
 </script>
 
-<footer class="mt-16 border-t border-(--color-plum)/20 bg-(--background-panel)">
-  <!-- ✅ Constrained to layout width via .page-shell -->
-  <div class="page-shell py-10 text-sm text-(--color-text)">
-    <div class="grid gap-10 md:grid-cols-3 md:items-start">
-      <!-- Brand / blurb -->
-      <div class="space-y-3">
-        <div class="text-base font-extrabold tracking-tight">
-          <img
-            src="/image/clotheslinestudio-logo.svg"
-            alt="Clothesline Studio"
-            class="h-12 w-auto"
-          />
+<footer class="cl-footer">
+  <div class="cl-footer__inner">
+    <div class="cl-footer__row">
+      <!-- Brand -->
+      <div class="cl-footer__brand">
+        <!-- If your Logo.svelte is decorative, keep aria-hidden and provide brand text nearby.
+     If it conveys meaning, remove aria-hidden and add aria-label. -->
+<Logo class="cl-footer__logo" aria-hidden="true" focusable="false" />
+
+
+        <div class="cl-footer__meta">
+          <div class="cl-footer__built">Built by Travis in ⛰️ Montana.</div>
+          <div class="cl-footer__divider"></div>
+          <div class="cl-footer__copy">&copy; {year} Clothesline Studio</div>
         </div>
-
-        <p class="max-w-sm text-(--color-surface-500)">
-          Built by Travis in Montana 🏔️ — design systems, product UI, and tools that help teams move faster.
-        </p>
-
-        <a
-          href="/contact"
-          class="inline-flex items-center gap-2 font-semibold text-(--color-accent-500) hover:underline"
-        >
-          Start a project <ArrowRight class="h-4 w-4" />
-        </a>
       </div>
 
-      <!-- Links -->
-      <nav aria-label="Footer">
-        <h3 class="text-xs font-semibold uppercase tracking-wide text-(--color-surface-500)">
-          Links
-        </h3>
-        <ul class="mt-4 grid gap-2">
-          {#each links as l (l.href)}
-            <li>
-              <a
-                href={l.href}
-                class="rounded-md text-(--color-surface-500) transition hover:text-(--color-accent-500) focus:outline-none focus:ring-2 focus:ring-(--color-accent-500) focus:ring-offset-2 focus:ring-offset-(--color-bg)"
-              >
-                {l.label}
-              </a>
-            </li>
-          {/each}
-        </ul>
+      <!-- Links (two columns) -->
+      <nav class="cl-footer__nav" aria-label="Footer">
+        {#each links as l (l.href)}
+          <a class="cl-footer__link" href={l.href}>{l.label}</a>
+        {/each}
       </nav>
 
       <!-- Social -->
-      <div class="md:justify-self-end">
-        <h3 class="text-xs font-semibold uppercase tracking-wide text-(--color-surface-500)">
-          Connect
-        </h3>
-
-        <div class="mt-4 flex flex-wrap items-center gap-2">
-          {#each socials as s (s.href)}
-            <a
-              href={s.href}
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label={`Open ${s.label}`}
-              class="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-(--color-plum)/25 bg-(--color-bg) shadow-sm transition hover:-translate-y-0.5 hover:border-(--color-primary-500)/60 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-(--color-primary-500) focus:ring-offset-2 focus:ring-offset-(--color-bg)"
-            >
-              <svelte:component this={s.icon} class="h-5 w-5 text-(--color-surface-500)" />
-            </a>
-          {/each}
-        </div>
+      <div class="cl-footer__social">
+        {#each socials as s (s.href)}
+          <a
+            class="cl-footer__socialBtn"
+            href={s.href}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label={`Open ${s.label}`}
+          >
+            <svelte:component this={s.icon} class="cl-footer__socialIcon" />
+          </a>
+        {/each}
       </div>
-    </div>
-
-    <div
-      class="mt-10 flex flex-col gap-2 border-t border-(--color-surface-700) pt-6 sm:flex-row sm:items-center sm:justify-between"
-    >
-      <p class="text-(--color-surface-500)/60">
-        &copy; {year} Clothesline Studio. All rights reserved.
-      </p>
-
-      <p class="text-(--color-surface-500)/45">
-        Built with SvelteKit + Tailwind.
-      </p>
     </div>
   </div>
 </footer>
+
+<style>
+  .cl-footer {
+    margin-top: var(--spacing-10);
+    border-top: var(--border-width-divider) solid
+      color-mix(in oklab, var(--on-surface) var(--opacity-border), transparent);
+
+    /* Darker, theme-safe footer background */
+    background: color-mix(in oklab, var(--background-panel
+) 86%, var(--color-surface-50));
+    color: var(--on-surface);
+  }
+
+  .cl-footer__inner {
+    max-width: var(--layout-container-max);
+    margin-inline: auto;
+    padding-inline: var(--spacing-7);
+    padding-block: var(--spacing-8);
+  }
+
+  .cl-footer__row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--spacing-8);
+  }
+
+  /* Brand */
+  .cl-footer__brand {
+    display: grid;
+    gap: var(--spacing-4);
+    min-width: 0;
+  }
+:global(.cl-footer__logo) {
+  height: 3.25rem; /* larger */
+  width: auto;
+  display: block;
+}
+
+/* If Logo.svelte outputs an <svg> inside a wrapper, force the SVG to size correctly */
+:global(.cl-footer__logo) :global(svg) {
+  height: 100%;
+  width: auto;
+  display: block;
+}
+
+
+  .cl-footer__meta {
+    display: grid;
+    gap: var(--spacing-2);
+    color: var(--on-surface-muted);
+    font-size: var(--type-scale-sm);
+  }
+
+  .cl-footer__divider {
+    height: 1px;
+    width: 14rem;
+    background: color-mix(in oklab, var(--on-surface) var(--opacity-divider), transparent);
+  }
+
+  .cl-footer__copy {
+    font-size: var(--type-scale-xs);
+    opacity: var(--opacity-80);
+  }
+
+  /* Links (two columns) */
+  .cl-footer__nav {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(10rem, 1fr));
+    gap: var(--spacing-2) var(--spacing-6);
+    align-content: start;
+    width: min(28rem, 100%);
+  }
+
+  .cl-footer__link {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.2em 0.5em;
+    border-radius: var(--radius-interactive);
+    text-decoration: none;
+    font-weight: var(--type-weight-medium);
+    color: var(--on-surface-muted);
+    transition:
+      color var(--motion-duration-fast) var(--motion-ease),
+      background-color var(--motion-duration-fast) var(--motion-ease);
+    outline: none;
+  }
+
+  .cl-footer__link:hover {
+    color: var(--color-accent-400-vis);
+    background: color-mix(in oklab, var(--color-accent-500-vis) 18%, transparent);
+  }
+
+  .cl-footer__link:focus-visible {
+    color: var(--color-accent-300-vis);
+    box-shadow: 0 0 0 var(--focus-width)
+      color-mix(in oklab, var(--color-accent-500-vis) 45%, transparent);
+  }
+
+  /* Social */
+  .cl-footer__social {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-2);
+  }
+
+  .cl-footer__socialBtn {
+    display: inline-flex;
+    height: var(--size-control-md);
+    width: var(--size-control-md);
+    align-items: center;
+    justify-content: center;
+
+    border-radius: var(--radius-interactive);
+    border: var(--border-width-default) solid
+      color-mix(in oklab, var(--on-surface) var(--opacity-border), transparent);
+
+    /* Better default background on dark footer */
+    background: color-mix(in oklab, var(--color-surface-900) 70%, var(--color-accent-950) 30%);
+    box-shadow: var(--elevation-hairline);
+    transition:
+      transform var(--motion-duration-fast) var(--motion-ease),
+      background-color var(--motion-duration-fast) var(--motion-ease),
+      border-color var(--motion-duration-fast) var(--motion-ease);
+    outline: none;
+  }
+
+  .cl-footer__socialBtn:hover {
+    transform: translateY(-1px);
+    border-color: color-mix(in oklab, var(--color-accent-500-vis) 60%, transparent);
+    background: color-mix(in oklab, var(--color-accent-700-vis) 35%, var(--color-surface-900));
+  }
+
+  .cl-footer__socialBtn:focus-visible {
+    border-color: color-mix(in oklab, var(--color-accent-500-vis) 70%, transparent);
+    box-shadow:
+      0 0 0 var(--focus-width)
+        color-mix(in oklab, var(--color-accent-500-vis) 45%, transparent),
+      var(--elevation-2);
+  }
+
+  :global(.cl-footer__socialIcon) {
+    height: 1.05rem;
+    width: 1.05rem;
+    color: var(--on-surface-muted);
+  }
+
+  :global(.cl-footer__socialBtn:hover .cl-footer__socialIcon) {
+    color: var(--on-surface-strong);
+  }
+
+  @media (max-width: 640px) {
+    .cl-footer__inner {
+      padding-inline: var(--spacing-4);
+    }
+    .cl-footer__nav {
+      grid-template-columns: 1fr;
+      width: 100%;
+    }
+    .cl-footer__divider {
+      width: 100%;
+    }
+  }
+</style>
+
+
 
 
 

@@ -2,46 +2,43 @@
   "name": "@clothesline/themes",
   "version": "0.0.1",
   "type": "module",
-  "main": "src/index.ts",
+  "main": "dist/index.js",
   "exports": {
-    ".": "./src/index.ts",
-    "./setTheme": "./src/index.ts",
-    "./dist/clothesline-light.css": "./dist/clothesline-light.css",
-    "./dist/clothesline-dark.css": "./dist/clothesline-dark.css",
-    "./dist/solarflare-light.css": "./dist/solarflare-light.css",
-    "./dist/solarflare-dark.css": "./dist/solarflare-dark.css",
-    "./dist/bigsky-light.css": "./dist/bigsky-light.css",
-    "./dist/bigsky-dark.css": "./dist/bigsky-dark.css",
-    "./dist/evergreen-light.css": "./dist/evergreen-light.css",
-    "./dist/evergreen-dark.css": "./dist/evergreen-dark.css",
-    "./dist/milkyway-light.css": "./dist/milkyway-light.css",
-    "./dist/milkyway-dark.css": "./dist/milkyway-dark.css",
-    "./dist/neondusk-light.css": "./dist/neondusk-light.css",
-    "./dist/neondusk-dark.css": "./dist/neondusk-dark.css",
-    "./dist/oceandepths-light.css": "./dist/oceandepths-light.css",
-    "./dist/oceandepths-dark.css": "./dist/oceandepths-dark.css",
-    "./dist/*": "./dist/*"
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./modes": "./src/runtime/modes.ts",
+    "./css/foundations.css": "./dist/css/foundations.css",
+    "./css/components.css": "./dist/css/components.css",
+    "./css/semantic.css": "./dist/css/semantic.css",
+    "./css/semantic-colors.css": "./dist/css/semantic-colors.css",
+    "./css/semantic-effects.css": "./dist/css/semantic-effects.css",
+    "./css/modes.css": "./dist/css/modes.css",
+    "./css/themes/*": "./dist/css/themes/*",
+    "./manifest/themes.json": "./dist/manifest/themes.json",
+    "./formats/*": "./dist/formats/*",
+    "./tokens/tokens.json": "./tokens/tokens.json"
   },
   "files": [
     "dist",
     "src",
-    "configs"
+    "configs",
+    "tokens"
   ],
   "scripts": {
-  "build": "tsx src/build.ts",
-  "build:watch": "chokidar \"src/**/*.{ts,json}\" \"configs/**/*.{ts,json}\" -c \"pnpm build\"",
-  "build:formats": "tsx src/build-formats.ts",
-  "build:figma": "tsx src/build-figma-tokens.ts",
-  "build:figma:merged": "tsx src/build-figma-merged.ts",
-  "build:figma:single": "tsx src/build-figma-single.ts",
-  "build:all": "pnpm run build && pnpm run build:formats"
-},
-
+    "build": "tsup && tsx src/build/build.ts",
+    "build:formats": "tsx src/build/build-formats.ts",
+    "build:figma:single": "tsx src/build/build-figma-single.ts",
+    "build:all": "pnpm run build && pnpm run build:formats && pnpm run build:figma:single",
+    "build:watch": "chokidar \"src/**/*.{ts,json}\" \"configs/**/*.{ts,json}\" -c \"pnpm run build:all\""
+  },
   "devDependencies": {
     "@clothesline/tokens": "workspace:*",
     "@types/fs-extra": "^11.0.4",
     "fs-extra": "^11.3.0",
     "ts-node": "^10.9.2",
+    "tsup": "^7.3.0",
     "tsx": "^4.20.3",
     "typescript": "^5.0.0"
   }

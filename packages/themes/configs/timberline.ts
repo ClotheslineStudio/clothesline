@@ -1,46 +1,110 @@
 // packages/themes/configs/timberline.ts
-import type { ThemeConfig } from 'src/types.js';
+import type { ThemeConfig } from '../src/types.js';
 
 /**
  * Timberline — calibrated OKLCH seeds.
- * Each value is a measured color (no computed averages).
+ * National-park vibe: evergreen primaries, alpine sky secondaries,
+ * warm trail accents, clean paper surfaces.
  */
 const seeds = {
   primary:   { l: 0.4501, c: 0.0904, h: 149.62 },
   secondary: { l: 0.7996, c: 0.0293, h: 191.12 },
-  tertiary:  { l: 0.5497, c: 0.0301, h: 251.85  },
+  tertiary:  { l: 0.5497, c: 0.0301, h: 251.85 },
   accent:    { l: 0.3999, c: 0.0499, h: 58.59  },
+
   success:   { l: 0.6803, c: 0.1098, h: 139.96 },
-  warning:   { l: 0.782025, c: 0.161871, h: 98.5584  },
-  error:     { l: 0.5501, c: 0.13, h: 35.32  },
+  warning:   { l: 0.782025, c: 0.161871, h: 98.5584 },
+  error:     { l: 0.5501, c: 0.13,   h: 35.32  },
   info:      { l: 0.6508, c: 0.0798, h: 219.81 },
-  neutral:   { l: 0.8797, c: 0.0203, h: 100.62   },
-  surface: { l: 0.58, c: 0.03, h: 181 }
+
+  neutral:   { l: 0.8797, c: 0.0203, h: 100.62 },
+
+  /**
+   * SURFACE (single seed = full ramp)
+   * Keep chroma low for “paper” UI surfaces.
+   */
+  surface:   { l: 0.58, c: 0.03, h: 181 }
 } as const;
 
 /**
- * Roles — minimal legacy support for {hue, chroma}.
+ * Roles — legacy support for hue/chroma pairing
  */
 const roles = {
   primary:   { hue: seeds.primary.h,   chroma: seeds.primary.c },
   secondary: { hue: seeds.secondary.h, chroma: seeds.secondary.c },
   tertiary:  { hue: seeds.tertiary.h,  chroma: seeds.tertiary.c },
   accent:    { hue: seeds.accent.h,    chroma: seeds.accent.c },
+
   success:   { hue: seeds.success.h,   chroma: seeds.success.c },
   warning:   { hue: seeds.warning.h,   chroma: seeds.warning.c },
   error:     { hue: seeds.error.h,     chroma: seeds.error.c },
   info:      { hue: seeds.info.h,      chroma: seeds.info.c },
+
   neutral:   { hue: seeds.neutral.h,   chroma: seeds.neutral.c },
-  surface:   { hue: seeds.surface.h, chroma: seeds.surface.c }
+  surface:   { hue: seeds.surface.h,   chroma: seeds.surface.c }
 } as const;
 
-/**
- * Timberline — full ThemeConfig (with both seeds + roles)
- */
 export const timberlineTheme: ThemeConfig = {
   name: 'timberline',
-  seeds,  // ← THIS was missing
+  seeds,
   roles,
+
+  /**
+   * FOUNDATION
+   * This is where Timberline “feels” different without inventing a new skin system.
+   * The builder should emit these as CSS vars the app reads globally.
+   */
+  foundation: {
+    textScaling: 1,
+
+    spacingUnit: 'var(--spacing-2)',
+
+    radii: {
+      // Softer roundness than the default theme (interactive + containers)
+      base: 'var(--radius-4)',
+      container: 'var(--radius-8)'
+    },
+
+    borders: {
+      defaultBorderWidth: 'var(--border-width-default)',
+      defaultDivideWidth: 'var(--border-width-divider)',
+      defaultRingWidth: 'var(--focus-width)'
+    },
+
+    base: {
+      color: { light: 'var(--color-surface-950)', dark: 'var(--color-surface-50)' },
+
+      // Serif-forward body typography (park-poster / brochure feel)
+      family:
+        'ui-serif, Georgia, Cambria, "Times New Roman", Times, serif',
+      size: 'var(--type-body-size)',
+      lineHeight: 'var(--type-body-leading)',
+      weight: 'var(--type-body-weight)',
+      letterSpacing: 'var(--type-body-tracking)'
+    },
+
+    heading: {
+      color: { light: 'var(--color-surface-950)', dark: 'var(--color-surface-50)' },
+
+      // Serif headings (distinct, classic, “national park”)
+      family:
+        'ui-serif, Georgia, Cambria, "Times New Roman", Times, serif',
+      weight: 'var(--type-heading-weight)',
+      letterSpacing: 'var(--type-heading-tracking)'
+    },
+
+    anchor: {
+      color: { light: 'var(--anchor-color)', dark: 'var(--anchor-color)' },
+      textDecoration: 'var(--anchor-decoration)',
+      textDecorationHover: 'var(--anchor-decoration-hover)',
+      textDecorationFocus: 'var(--anchor-decoration-hover)'
+    },
+
+    bodyBackgroundColor: {
+      light: 'var(--color-surface-50)',
+      dark: 'var(--color-surface-950)'
+    }
+  },
 
   modes: {
     defaults: {
@@ -54,17 +118,19 @@ export const timberlineTheme: ThemeConfig = {
     },
 
     presets: {
-      accessible: { contrast: 'high', typescale: 1.1, ui: ['simplified'], motor: ['kbd'] },
-      reading:    { reading: 'dyslexia', typescale: 1.08, motion: 'reduced', focus: true },
-      night:      { mode: 'dark', contrast: 'normal', dev: ['grid'] }
+      accessible: { contrast: 'high', typescale: 1.08, ui: ['simplified'], motor: ['kbd'] },
+      reading:    { reading: 'dyslexia', typescale: 1.06, motion: 'reduced', focus: true },
+      night:      { mode: 'dark', contrast: 'normal' }
     },
 
     deltas: {
       contrast: {
-        high: { vars: { '--focus-ring': 'oklch(82% 0.25 230)' } }
-      },
-      vision: {
-        mono: { vars: { '--neutral-boost': 0.02 }, note: 'Used by generator to widen neutral steps' }
+        high: {
+          vars: {
+            // Keep your existing pattern; modes.css implements behavior.
+            '--focus-ring': 'oklch(82% 0.25 230)'
+          }
+        }
       },
       motor: {
         kbd: { selectors: [':focus-visible'], note: 'See modes.css for the actual outline rule' }
@@ -74,4 +140,6 @@ export const timberlineTheme: ThemeConfig = {
 };
 
 export default timberlineTheme;
+
+
 

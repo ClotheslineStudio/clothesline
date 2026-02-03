@@ -1,13 +1,37 @@
+/**
+ * Avatar tokens (CSS-ready).
+ *
+ * Contract:
+ * - CSS-ready values only (may use var()).
+ * - Do NOT define raw sizes here; sizes come from sizes.ts semantic tokens.
+ * - Do NOT invent colors; reference existing system roles/ramps.
+ *
+ * Depends on:
+ * - sizes.ts generating: --size-avatar-xs/sm/md/lg/xl
+ * - borders.ts generating: --border-1
+ * - border color tokens generating: --border-color-muted
+ * - theme color roles generating: --color-surface-200-vis, --on-surface-strong, etc.
+ */
+
 export const avatarTokens = {
-  'avatar-bg': 'oklch(85% 0.02 270)',                    // soft lavender
-  'avatar-text': 'oklch(20% 0.05 270)',                  // dark contrast text
-  'avatar-border': '1px solid oklch(70% 0.03 270)',      // subtle border
-  'avatar-size-xs': '1.5rem',
-  'avatar-size-sm': '2rem',
-  'avatar-size-md': '2.5rem',
-  'avatar-size-lg': '3rem',
-  'avatar-size-xl': '4rem',
-  'avatar-status-online': 'oklch(75% 0.17 145)',         // accessible green
-  'avatar-status-offline': 'oklch(65% 0.01 270)'         // muted gray-violet
-};
+  /* Base visuals */
+  'avatar-bg': 'var(--color-surface-200-vis)',
+  'avatar-text': 'var(--on-surface-strong)',
+  'avatar-border': 'var(--border-1) solid var(--border-color-muted)',
+
+  /* Sizes (semantic only; sourced from sizes.ts) */
+  'avatar-size-xs': 'var(--size-avatar-xs)',
+  'avatar-size-sm': 'var(--size-avatar-sm)',
+  'avatar-size-md': 'var(--size-avatar-md)',
+  'avatar-size-lg': 'var(--size-avatar-lg)',
+  'avatar-size-xl': 'var(--size-avatar-xl)',
+
+  /* Status indicators */
+  'avatar-status-online': 'var(--color-success-500-vis)',
+  'avatar-status-offline': 'var(--color-neutral-400-vis)'
+} as const;
+
+export type AvatarTokenKey = keyof typeof avatarTokens;
+
+
 

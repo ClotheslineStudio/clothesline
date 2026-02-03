@@ -9,50 +9,77 @@
   };
 </script>
 
+
 <script lang="ts">
   import { ArrowRight } from 'lucide-svelte';
+  import { Button } from '@clothesline/ui';
 
   export let posts: BlogPreviewPost[] = [];
 </script>
 
-<section class="py-16 sm:py-20">
-  <header class="text-center space-y-4">
-    <h2 class="text-3xl sm:text-4xl font-extrabold tracking-tight text-(--color-accent-500)">
+
+<section style="padding-block: var(--spacing-section, 2rem) var(--spacing-9, 2.5rem);">
+  <header style="text-align: center; margin-bottom: var(--spacing-gap-large, 1.5rem);">
+    <h2 style="
+      font-size: var(--type-3xl-size, 1.875rem);
+      font-weight: var(--heading-font-weight, 800);
+      letter-spacing: var(--heading-letter-spacing, -0.01em);
+      color: var(--color-accent-500, #a21caf);
+      font-family: var(--heading-font-family, inherit);
+      margin-bottom: var(--spacing-2, 0.5rem);
+    ">
       Latest Insights
     </h2>
-    <p class="mx-auto max-w-2xl text-sm sm:text-base text-(--color-surface-600)">
+    <p style="
+      margin-inline: auto;
+      max-width: 40ch;
+      font-size: var(--base-font-size, 1rem);
+      color: var(--on-surface-subtle, #a1a1aa);
+      font-family: var(--base-font-family, inherit);
+    ">
       Notes on design, development, and digital craft.
     </p>
   </header>
 
-  <div class="mt-10 grid gap-6 sm:grid-cols-2">
+  <div style="margin-top: var(--spacing-lg, 2rem); display: grid; gap: var(--spacing-gap-base, 1.5rem); grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));">
     {#if posts.length === 0}
-      <p class="col-span-full text-center text-sm text-(--color-surface-600)">
+      <p style="grid-column: 1/-1; text-align: center; font-size: var(--base-font-size, 1rem); color: var(--on-surface-subtle, #a1a1aa);">
         Blog posts are coming soon.
       </p>
     {:else}
       {#each posts as post (post.slug)}
         <a
           href={`/blog/${post.slug}`}
-          class="group block rounded-2xl border border-(--color-primary-500)/30 bg-(--color-bg)/70 p-6 shadow-sm backdrop-blur transition hover:-translate-y-0.5 hover:border-(--color-primary-500)/60 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-(--color-primary-500) focus:ring-offset-2 focus:ring-offset-(--color-bg) no-underline"
+          style="
+            display: block;
+            border-radius: var(--radius-container, 1.25rem);
+            border: var(--default-border-width, 1px) solid var(--color-primary-200, #e0e7ff);
+            background: var(--background-elevation-2, var(--color-surface-900, #18181b));
+            padding: var(--spacing-lg, 1.25rem);
+            box-shadow: var(--elevation-1, 0px 1px 2px rgba(0,0,0,0.06));
+            backdrop-filter: blur(4px);
+            text-decoration: none;
+            transition: box-shadow 0.2s, border-color 0.2s, transform 0.2s;
+          "
+          on:mouseover={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = 'var(--elevation-3, 0 8px 24px rgba(0,0,0,0.12))'; e.currentTarget.style.borderColor = 'var(--color-primary-500, #6366f1)'; }}
+          on:mouseout={(e) => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = 'var(--elevation-1, 0px 1px 2px rgba(0,0,0,0.06))'; e.currentTarget.style.borderColor = 'var(--color-primary-200, #e0e7ff)'; }}
+          on:focus={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = 'var(--elevation-3, 0 8px 24px rgba(0,0,0,0.12))'; e.currentTarget.style.borderColor = 'var(--color-primary-500, #6366f1)'; }}
+          on:blur={(e) => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = 'var(--elevation-1, 0px 1px 2px rgba(0,0,0,0.06))'; e.currentTarget.style.borderColor = 'var(--color-primary-200, #e0e7ff)'; }}
         >
-          <div class="flex items-start justify-between gap-4">
-            <div class="min-w-0">
-              <h3 class="text-lg sm:text-xl font-semibold text-(--color-surface-800) group-hover:text-(--color-primary-500)">
+          <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: var(--spacing-gap-base, 1rem);">
+            <div style="min-width: 0;">
+              <h3 style="font-size: var(--type-lg-size, 1.125rem); font-weight: var(--base-font-weight, 600); color: var(--on-surface, #18181b); transition: color 0.2s;">
                 {post.metadata.title}
               </h3>
-              <p class="mt-1 text-xs text-(--color-surface-600)">
+              <p style="margin-top: var(--spacing-1, 0.125rem); font-size: var(--type-xs-size, 0.75rem); color: var(--on-surface-muted, #52525b);">
                 {post.metadata.date}
               </p>
             </div>
 
-            <ArrowRight
-  class="h-5 w-5 shrink-0 text-(--color-primary-500) transition group-hover:translate-x-0.5 group-hover:text-(--color-primary-600)"
-/>
-
+            <ArrowRight style="height: 1.25rem; width: 1.25rem; color: var(--color-primary-500, #6366f1); transition: transform 0.2s, color 0.2s;" />
           </div>
 
-          <p class="mt-4 text-sm leading-relaxed text-(--color-text)/80">
+          <p style="margin-top: var(--spacing-4, 1rem); font-size: var(--base-font-size, 1rem); color: var(--on-surface-subtle, #a1a1aa); line-height: var(--base-line-height, 1.6);">
             {post.metadata.description}
           </p>
         </a>
@@ -60,14 +87,11 @@
     {/if}
   </div>
 
-  <div class="mt-10 flex justify-center">
-    <a
-      href="/blog"
-      class="inline-flex items-center justify-center gap-2 rounded-xl border border-(--color-accent-500) px-6 py-3 font-semibold text-(--color-accent-500) transition hover:bg-(--color-accent-500) hover:text-white focus:outline-none focus:ring-2 focus:ring-(--color-accent-500) focus:ring-offset-2 focus:ring-offset-(--color-bg)"
-    >
-      View all posts
-      <ArrowRight class="h-5 w-5" />
-    </a>
+  <div style="margin-top: var(--spacing-lg, 2rem); display: flex; justify-content: center;">
+    <Button href="/blog" variant="outline" color="primary" size="lg" ariaLabel="View all posts">
+      <span>View all posts</span>
+      <ArrowRight slot="icon-right" style="height: 1.25rem; width: 1.25rem;" />
+    </Button>
   </div>
 </section>
 

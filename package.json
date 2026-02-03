@@ -2,18 +2,22 @@
   "name": "clothesline",
   "private": true,
   "type": "module",
-
   "devDependencies": {
-    "@sveltejs/vite-plugin-svelte": "^6.2.1"
+    "@sveltejs/vite-plugin-svelte": "^6.2.1",
+    "@types/nodemailer": "^7.0.4",
+    "vitest": "^4.0.16"
   },
-
   "scripts": {
     "build": "pnpm -r run build",
     "build:themes": "pnpm --filter @clothesline/themes run build:all",
     "build:tokens": "pnpm --filter @clothesline/tokens run build",
     "build:all": "pnpm run build:tokens && pnpm run build:themes",
-    "build:figma": "pnpm --filter @clothesline/themes run build:figma:single"
+    "build:figma": "pnpm --filter @clothesline/themes run build:figma:single",
+    "test": "pnpm -r exec vitest run"
+  },
+  "dependencies": {
+    "lucide-svelte": "^0.562.0",
+    "nodemailer": "^7.0.11",
+    "zod": "^4.3.6"
   }
 }
-
-

@@ -5,7 +5,7 @@
   export let strokeWidth: number = 2;
 
   export let primaryColor: string = "currentColor";
-  export let secondaryColor: string = "currentColor";
+   
 
   export let variant: "stroke" | "filled" | "duotone" | "animated" = "stroke";
   export let ariaLabel: string | undefined = undefined;
@@ -38,7 +38,7 @@
       <g id="Property 1=filled"><path id="Vector 2 (Stroke)" fill="currentColor" d="M21 11a1 1 0 1 1 0 2H3a1 1 0 1 1 0-2z"/></g>
     </g>
 
-  {:else if variant === "duotone" && false}
+    {:else if variant === "duotone" && false}
     
 
     <g fill="none" stroke={primaryColor} stroke-width={resolvedStroke}>

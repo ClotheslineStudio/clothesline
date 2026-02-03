@@ -17,7 +17,7 @@
   import ModeToggle from '$lib/ModeToggle.svelte';
 
   // Icons
-  import { Menu, Github} from 'lucide-svelte';
+  import { Menu, Github } from 'lucide-svelte';
   import { Search as SearchIcon } from '@clothesline/icons';
 
   // Sidebar collapse (AppShell controls off-canvas on small screens)
@@ -48,8 +48,6 @@
     { title: 'Checkbox', path: '/form/checkbox' },
     { title: 'Radio', path: '/form/radio' },
     { title: 'DatePicker', path: '/form/datepicker' },
-    { title: 'Dropdown', path: '/form/dropdown' },
-    { title: 'Input', path: '/form/input' },
     { title: 'Select', path: '/form/select' },
     { title: 'Switch', path: '/form/switch' },
     { title: 'Textarea', path: '/form/textarea' },
@@ -62,7 +60,7 @@
     { title: 'Pagination', path: '/navigation/pagination' },
     { title: 'NavGroup', path: '/navigation/navgroup' },
     { title: 'Link', path: '/navigation/link' },
-    { title: 'MobileNav', path: '/navigation/mobile-nav' },
+
     { title: 'Image', path: '/media/image' },
     { title: 'AudioPlayer', path: '/media/audioplayer' },
     { title: 'Avatar', path: '/media/avatar' },
@@ -76,31 +74,31 @@
     { title: 'MediaPlayer', path: '/media/mediaplayer' },
     { title: 'MediaPreview', path: '/media/mediapreview' },
     { title: 'VideoPlayer', path: '/media/videoplayer' },
-    { title: 'ThreeColumn', path: '/layout/threecolumn' },
-    { title: 'MainLayout', path: '/layout/mainlayout' },
-    { title: 'Sidebar', path: '/layout/sidebar' },
-    { title: 'Footer', path: '/layout/footer' },
+
     { title: 'Heading', path: '/typography/heading' },
     { title: 'Paragraph', path: '/typography/paragraph' },
-    { title: 'AppBar', path: '/navigation/appbar' }
+    { title: 'AppBar', path: '/navigation/appbar' },
+    { title: 'Modes-Test', path: '/modes-test' }
   ];
 </script>
 
 <AppShell
   {collapsed}
   collapsible={true}
-  sidebarWidth="272px"
-  contentMaxWidth="1200px"
-  pageGutterX="var(--spacing-4, 1rem)"
+  sidebarWidth="240px"
+  contentMaxWidth="var(--layout-container-max)"
+  pageGutterX="var(--layout-gutter-x)"
+  contentPaddingY="var(--layout-gutter-y)"
 >
-  <!-- Header (AppBar fully owns surface and gutters via AppShell) -->
   <div slot="header">
     <AppBar sticky border elevated>
       <div slot="left" class="brand">
-        <button class="icon-btn" on:click={toggleSidebar} aria-label="Toggle sidebar"><Menu size={18} /></button>
+        <button class="icon-btn" on:click={toggleSidebar} aria-label="Toggle sidebar">
+          <Menu size={18} />
+        </button>
+
         <a href="/" class="brand-link">
           <img src="/Logo-01.svg" alt="Logo" class="brand-logo" />
-          <span class="brand-name">Clothesline UI</span>
         </a>
       </div>
 
@@ -118,36 +116,50 @@
           <input type="search" placeholder="Search…" />
         </div>
 
-        <!-- Theme toggle lives in the header now -->
         <ThemePicker />
-
         <ModeToggle size={32} rounded={8} />
 
-        <a href="https://github.com/clotheslinestudio/ui" target="_blank" rel="noopener noreferrer" class="icon-link" aria-label="GitHub">
+        <a
+          href="https://github.com/clotheslinestudio/ui"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="icon-link"
+          aria-label="GitHub"
+        >
           <Github size={18} />
         </a>
       </div>
     </AppBar>
   </div>
 
-  <!-- Sidebar -->
   <div slot="sidebar">
     <Sidebar {routes} />
   </div>
 
-  <!-- Content -->
   <div slot="content">
-    <ThreeColumn maxWidth={920} tocWidth={280} stickyTop={16}>
-      <div slot="main">
+    <!-- NOTE:
+         - ThreeColumn no longer needs to be sticky; TOC component will be sticky.
+         - Drive spacing from layout tokens (with fallbacks in CSS below). -->
+    <ThreeColumn
+      maxWidth="min(100%, var(--layout-doc-max, 920px))"
+      tocWidth="var(--layout-toc-width, 280px)"
+      gap="var(--layout-gap)"
+      stickyTop="0px"
+      collapseMode="stack"
+    >
+      <div slot="main" class="main">
         <slot />
       </div>
+
       <div slot="toc">
-        <TableOfContents selector=".main" />
+        <TableOfContents
+          selector=".main"
+          stickyTop="var(--layout-sticky-top)"
+        />
       </div>
     </ThreeColumn>
   </div>
 
-  <!-- Footer -->
   <div slot="footer">
     <Footer>
       <div slot="left">
@@ -161,66 +173,209 @@
         </nav>
       </div>
       <div slot="right">
-        <a href="https://twitter.com" target="_blank">Twitter</a>
-        <a href="https://discord.gg" target="_blank">Discord</a>
+        <a href="https://twitter.com" target="_blank" rel="noreferrer">Twitter</a>
+        <a href="https://discord.gg" target="_blank" rel="noreferrer">Discord</a>
       </div>
     </Footer>
   </div>
 </AppShell>
 
 <style>
+  /* --------------------------------------------------------------------------
+    Layout token defaults (local fallbacks).
+    You can move these into foundations.css once you’re ready.
+  -------------------------------------------------------------------------- */
+  :global(html) {
+    --layout-gutter-x: var(--spacing-4, 1rem);
+    --layout-gutter-y: var(--spacing-6, 1.5rem);
+    --layout-gap: var(--spacing-8, 2rem);
+    --layout-sticky-top: var(--spacing-6, 1.5rem);
+
+    /* Optional (doc page specifics) */
+    --layout-doc-max: 920px;
+    --layout-toc-width: 280px;
+  }
+
   /* Brand */
-  .brand { display:flex; align-items:center; gap:.5rem; }
-  .brand-link { display:flex; align-items:center; gap:.5rem; color: inherit; text-decoration: none; }
-  .brand-logo { height: 2rem; }
-  .brand-name { font-weight: 700; }
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-2);
+  }
+
+  .brand-link {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-2);
+    color: var(--on-surface-strong);
+    text-decoration: none;
+  }
+
+  .brand-logo {
+    height: var(--size-control-md);
+  }
 
   /* Center nav */
-  .main-nav { display:flex; gap:1rem; font-size:.9rem; }
-  .main-nav a {
-    text-decoration:none;
-    color: var(--base-font-color);
-    opacity:.85;
-    padding:.25rem .5rem;
-    border-radius:.5rem;
+  .main-nav {
+    display: flex;
+    gap: var(--spacing-4);
+    font-size: var(--type-scale-sm);
   }
-  .main-nav a:hover { opacity:1; background: color-mix(in oklab, var(--base-font-color) 10%, transparent); }
-  :global(html[data-mode="dark"]) .main-nav a { color: var(--base-font-color-dark); }
+
+  .main-nav a {
+    text-decoration: none;
+    color: var(--on-surface);
+    opacity: 0.92;
+    padding: var(--spacing-1) var(--spacing-2);
+    border-radius: var(--radius-interactive);
+    transition:
+      background var(--motion-duration-fast) var(--motion-ease),
+      opacity var(--motion-duration-fast) var(--motion-ease),
+      outline-color var(--motion-duration-fast) var(--motion-ease);
+  }
+
+  .main-nav a:hover {
+    opacity: 1;
+    background: color-mix(
+      in oklab,
+      var(--on-surface) calc(var(--opacity-hover) * 100%),
+      transparent
+    );
+  }
+
+  .main-nav a:focus-visible {
+    outline: var(--focus-width) solid color-mix(
+      in oklab,
+      var(--on-surface) calc(var(--opacity-focus) * 100%),
+      transparent
+    );
+    outline-offset: var(--focus-offset-2);
+  }
 
   /* Right actions */
-  .actions { display:flex; align-items:center; gap:.5rem; }
-
-  .icon-btn, .icon-link {
-    display:inline-flex; align-items:center; justify-content:center;
-    width:32px; height:32px; border-radius:.5rem;
-    color: inherit; opacity:.9; transition: background .15s ease, opacity .15s ease;
+  .actions {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-2);
   }
-  .icon-btn:hover, .icon-link:hover { opacity:1; background: color-mix(in oklab, currentColor 20%, transparent); }
 
-  /* Search box (dark-safe) */
+  .icon-btn,
+  .icon-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--size-control-md);
+    height: var(--size-control-md);
+    border-radius: var(--radius-interactive);
+
+    color: var(--on-surface);
+    opacity: 0.95;
+
+    transition:
+      background var(--motion-duration-fast) var(--motion-ease),
+      opacity var(--motion-duration-fast) var(--motion-ease),
+      outline-color var(--motion-duration-fast) var(--motion-ease);
+  }
+
+  /* Normalize button reset */
+  .icon-btn {
+    background: transparent;
+    border: 0;
+    padding: 0;
+    cursor: pointer;
+  }
+
+  .icon-btn:hover,
+  .icon-link:hover {
+    opacity: 1;
+    background: color-mix(
+      in oklab,
+      var(--on-surface) calc(var(--opacity-hover) * 100%),
+      transparent
+    );
+  }
+
+  .icon-btn:focus-visible,
+  .icon-link:focus-visible {
+    outline: var(--focus-width) solid color-mix(
+      in oklab,
+      var(--on-surface) calc(var(--opacity-focus) * 100%),
+      transparent
+    );
+    outline-offset: var(--focus-offset-2);
+  }
+
+  /* Search */
   .search {
-    display:flex; align-items:center; gap:.4rem;
-    border:1px solid var(--color-surface-300);
-    background: color-mix(in oklab, var(--color-surface-50) 88%, transparent);
-    padding:.25rem .5rem; border-radius:.5rem;
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-2);
+
+    border: var(--border-1) solid color-mix(
+      in oklab,
+      var(--on-surface) calc(var(--opacity-border) * 100%),
+      transparent
+    );
+
+    background: color-mix(
+      in oklab,
+      var(--on-surface) calc(var(--opacity-surface-overlay) * 100%),
+      transparent
+    );
+
+    padding: var(--spacing-1) var(--spacing-2);
+    border-radius: var(--radius-interactive);
   }
+
+  .search:focus-within {
+    outline: var(--focus-width) solid color-mix(
+      in oklab,
+      var(--on-surface) calc(var(--opacity-focus) * 100%),
+      transparent
+    );
+    outline-offset: var(--focus-offset-2);
+  }
+
   .search input {
-    border:0; outline:0; background:transparent;
-    color: var(--base-font-color);
-    font-size:.9rem; min-width:12ch;
+    border: 0;
+    outline: 0;
+    background: transparent;
+
+    color: var(--on-surface);
+    font-size: var(--type-scale-sm);
+    min-width: 12ch;
   }
-  .search input::placeholder { color: var(--text-muted, #667085); }
-  :global(html[data-mode="dark"]) .search {
-    border-color: var(--color-surface-700);
-    background: color-mix(in oklab, var(--color-surface-900) 90%, transparent);
+
+  .search input::placeholder {
+    color: var(--on-surface-muted);
   }
-  :global(html[data-mode="dark"]) .search input { color: var(--base-font-color-dark); }
-  :global(html[data-mode="dark"]) .search input::placeholder { color: var(--text-muted, #a1a1aa); }
 
   /* Footer nav */
-  .footer-nav { display:flex; gap:1rem; font-size:.8rem; opacity:.9; }
-  .footer-nav a { text-decoration:none; color: inherit; }
+  .footer-nav {
+    display: flex;
+    gap: var(--spacing-4);
+    font-size: var(--type-scale-xs);
+    opacity: 0.92;
+  }
+
+  .footer-nav a {
+    text-decoration: none;
+    color: var(--on-surface);
+  }
+
+  .footer-nav a:focus-visible {
+    outline: var(--focus-width) solid color-mix(
+      in oklab,
+      var(--on-surface) calc(var(--opacity-focus) * 100%),
+      transparent
+    );
+    outline-offset: var(--focus-offset-2);
+    border-radius: var(--radius-interactive);
+  }
 </style>
+
+
+
 
 
 

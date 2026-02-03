@@ -1,0 +1,125 @@
+/* packages/themes/src/css/modes.css */
+
+/* =============================================================================
+   Clothesline Modes
+   Loaded AFTER theme CSS so it can:
+   1) Set browser color-scheme + contrast pole for ramp mixing
+   2) Swap *-dark foundation variables when data-mode="dark"
+   3) Apply vision + contrast + accessibility deltas
+
+   IMPORTANT:
+   - DO NOT define semantic color aliases here (background/on-surface/borders/rings/links).
+     Those live in semantic-colors.css as the single source of truth.
+
+   Specificity strategy:
+   - Use html[data-theme][data-mode="..."] so it matches theme selector weight.
+============================================================================= */
+
+/* -----------------------------------------------------------------------------
+   0) Browser color-scheme + contrast pole for ramp mixing
+----------------------------------------------------------------------------- */
+html[data-mode='light'] { color-scheme: light; }
+html[data-mode='dark']  { color-scheme: dark;  }
+
+/* Used by theme ramp "-ct" mixing:
+   color-mix(..., var(--ct-pole) ..., var(--k-ct)) */
+html[data-theme][data-mode='light'] { --ct-pole: black; }
+html[data-theme][data-mode='dark']  { --ct-pole: white; }
+
+/* -----------------------------------------------------------------------------
+   1) Dark-mode variable swaps (Skeleton-style)
+   Only swap variables that actually have a "-dark" companion.
+   (These are foundation/typography-ish, not semantic color aliases.)
+----------------------------------------------------------------------------- */
+html[data-theme][data-mode='dark'] {
+  --base-font-color:       var(--base-font-color-dark, var(--base-font-color));
+  --heading-font-color:    var(--heading-font-color-dark, var(--heading-font-color));
+  --anchor-font-color:     var(--anchor-font-color-dark, var(--anchor-font-color));
+  --body-background-color: var(--body-background-color-dark, var(--body-background-color));
+}
+
+/* -----------------------------------------------------------------------------
+   2) Vision presets (global deltas)
+   Builder emits per-role knobs:
+   --vision-<role>-l-shift / c-scale / h-shift
+   Here we set small, predictable adjustments only.
+----------------------------------------------------------------------------- */
+html[data-theme][data-vision='protanopia'] {
+  --vision-primary-h-shift:   -12deg;
+  --vision-primary-c-scale:   0.85;
+
+  --vision-secondary-h-shift: -6deg;
+  --vision-secondary-c-scale: 0.90;
+
+  --vision-tertiary-c-scale:  0.90;
+  --vision-accent-c-scale:    0.90;
+}
+
+html[data-theme][data-vision='deuteranopia'] {
+  --vision-primary-h-shift:   -8deg;
+  --vision-primary-c-scale:   0.88;
+
+  --vision-secondary-h-shift: -4deg;
+  --vision-secondary-c-scale: 0.92;
+}
+
+html[data-theme][data-vision='tritanopia'] {
+  --vision-primary-h-shift:   10deg;
+  --vision-primary-c-scale:   0.90;
+
+  --vision-secondary-h-shift: 14deg;
+  --vision-secondary-c-scale: 0.90;
+}
+
+html[data-theme][data-vision='monochromacy'] {
+  --vision-primary-c-scale:   0.05;
+  --vision-secondary-c-scale: 0.05;
+  --vision-tertiary-c-scale:  0.05;
+  --vision-accent-c-scale:    0.05;
+  --vision-neutral-c-scale:   0.05;
+  --vision-surface-c-scale:   0.02;
+}
+
+/* -----------------------------------------------------------------------------
+   3) Contrast
+   Ramps read --k-ct derived from --contrast-factor.
+   Note: --k-ct itself is computed in semantic.css (global defaults).
+----------------------------------------------------------------------------- */
+html[data-theme][data-contrast='normal'] { --contrast-factor: 1; }
+html[data-theme][data-contrast='high']   { --contrast-factor: 1.25; }
+
+/* -----------------------------------------------------------------------------
+   4) Reading modes
+----------------------------------------------------------------------------- */
+html[data-theme][data-reading='dyslexia'] {
+  --base-letter-spacing: 0.02em;
+  --base-line-height:    1.6;
+}
+
+html[data-theme][data-reading='plain'] {
+  /* explicit no-op */
+}
+
+/* -----------------------------------------------------------------------------
+   5) Motion
+   Components should multiply durations/distances by --motion-scale.
+----------------------------------------------------------------------------- */
+html[data-theme][data-motion='reduced'] { --motion-scale: 0.5; }
+html[data-theme][data-motion='off']     { --motion-scale: 0; }
+
+/* -----------------------------------------------------------------------------
+   6) Focus helpers
+   Components may read --focus-enabled to suppress outlines if you allow that.
+----------------------------------------------------------------------------- */
+html[data-theme][data-focus='off'] { --focus-enabled: 0; }
+html[data-theme]:not([data-focus='off']) { --focus-enabled: 1; }
+
+/* -----------------------------------------------------------------------------
+   7) RTL
+   Support either dir="rtl" or a toggle attribute.
+----------------------------------------------------------------------------- */
+html[data-theme][dir='rtl'],
+html[data-theme][data-rtl='true'] {
+  direction: rtl;
+}
+

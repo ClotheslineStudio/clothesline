@@ -4,11 +4,14 @@ This file is designed to **test** all common markdown styles.
 
 ---
 
-# Heading 1
 ## Heading 2
+
 ### Heading 3
+
 #### Heading 4
+
 ##### Heading 5
+
 ###### Heading 6
 
 ---
@@ -92,17 +95,17 @@ echo "Hello, World!"
 
 ## Images
 
-![Sample Image](https://via.placeholder.com/150)
+![Placeholder profile picture](https://via.placeholder.com/150)
 
 ---
 
 ## Tables
 
-| Feature        | Support | Notes                  |
-|----------------|---------|-------------------------|
-| Bold           | Yes     | Use `**bold**`           |
-| Italic         | Yes     | Use `*italic*`           |
-| Code Blocks    | Yes     | Use triple backticks ``````` |
+| Feature     | Support | Notes                        |
+|-------------|---------|------------------------------|
+| Bold        | Yes     | Use `**bold**`               |
+| Italic      | Yes     | Use `*italic*`               |
+| Code Blocks | Yes     | Use triple backticks ``````` |
 
 ---
 
