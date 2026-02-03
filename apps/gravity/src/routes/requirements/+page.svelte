@@ -123,6 +123,8 @@
       {#if $navigating}
         <div class="subtle">Loading…</div>
       {/if}
+
+      <a class="btn primary" href={`/requirements/new?workspaceId=${data.workspaceId}`}>New</a>
     </header>
 
     <section class="card">
