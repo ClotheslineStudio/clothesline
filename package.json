@@ -3,8 +3,10 @@
   "private": true,
   "type": "module",
   "devDependencies": {
+    "@storybook/addon-vitest": "^9.1.15",
     "@sveltejs/vite-plugin-svelte": "^6.2.1",
     "@types/nodemailer": "^7.0.4",
+    "@vitest/browser-playwright": "^4.0.13",
     "vitest": "^4.0.16"
   },
   "scripts": {
