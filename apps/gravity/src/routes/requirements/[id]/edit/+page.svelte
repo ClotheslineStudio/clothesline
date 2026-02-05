@@ -47,18 +47,27 @@
   const hasErr = (name: string) => (fieldErrors[name]?.length ?? 0) > 0;
   const errId = (name: string) => (hasErr(name) ? `${name}-error` : undefined);
 
-  const submit: SubmitFunction = () => {
-    formMessage = '';
-    fieldErrors = {};
+ const submit: SubmitFunction = () => {
+  // clear previous errors on submit
+  formMessage = '';
+  fieldErrors = {};
 
-    return async ({ result }: { result: ActionResult }) => {
-      if (result.type === 'failure') {
-        const payload = result.data as ActionData | undefined;
-        formMessage = payload?.message ?? payload?.formError ?? 'Fix the errors and try again.';
-        fieldErrors = payload?.fieldErrors ?? {};
-      }
-    };
+  return async ({ result, update }) => {
+    if (result.type === 'failure') {
+      const payload = result.data as ActionData | undefined;
+      formMessage = payload?.message ?? payload?.formError ?? 'Fix the errors and try again.';
+      fieldErrors = payload?.fieldErrors ?? {};
+
+      // keep their inputs on validation errors
+      await update({ reset: false });
+      return;
+    }
+
+    // IMPORTANT: this applies success/redirect results (including 303 redirects)
+    await update();
   };
+};
+
 </script>
 
 <div class="page">

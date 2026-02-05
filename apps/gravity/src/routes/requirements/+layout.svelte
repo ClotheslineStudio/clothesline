@@ -1,11 +1,13 @@
 <script lang="ts">
   import { navigating } from '$app/stores';
+  import ToastHost from '$lib/components/ToastHost.svelte';
 </script>
 
 {#if $navigating}
   <div class="loading" role="progressbar" aria-label="Loading"></div>
 {/if}
 
+<ToastHost />
 <slot />
 
 <style>
@@ -16,11 +18,9 @@
     height: 2px;
     width: 100%;
     z-index: 9999;
-
     background: rgba(120, 180, 255, 0.25);
     overflow: hidden;
   }
-
   .loading::before {
     content: "";
     position: absolute;
@@ -29,9 +29,9 @@
     background: rgba(120, 180, 255, 0.9);
     animation: sweep 1s ease-in-out infinite;
   }
-
   @keyframes sweep {
     0% { transform: translateX(-60%); }
     100% { transform: translateX(260%); }
   }
 </style>
+

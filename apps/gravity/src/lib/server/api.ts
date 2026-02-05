@@ -16,6 +16,14 @@ export type ApiErrorBody = {
   };
 };
 
+/**
+ * Creates an API error response with the specified status code and error details.
+ * @param status - The HTTP status code for the error response.
+ * @param code - The API error code identifying the type of error.
+ * @param message - A human-readable error message.
+ * @param hint - Optional additional context or suggestion to help resolve the error.
+ * @returns A Response object with JSON-encoded error body and appropriate headers.
+ */
 export function apiError(
   status: number,
   code: ApiErrorCode,

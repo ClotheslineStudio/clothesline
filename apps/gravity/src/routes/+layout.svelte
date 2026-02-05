@@ -11,6 +11,7 @@
     { href: '/plans', label: 'Plans' },
     { href: '/docs', label: 'Docs' },
     { href: '/sources', label: 'Sources' },
+    { href: '/requirements', label: 'Requirements' },
     { href: '/settings', label: 'Settings' }
   ];
 </script>

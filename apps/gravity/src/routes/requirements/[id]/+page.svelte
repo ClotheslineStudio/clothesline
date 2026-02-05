@@ -1,11 +1,27 @@
 <script lang="ts">
   import { navigating } from '$app/stores';
   import SectionPanel from '$lib/components/detail/SectionPanel.svelte';
+   import { onMount } from 'svelte';
+  import { page } from '$app/stores';
+  import { toast } from '$lib/stores/toast';
 
   export let data: {
     workspaceId: string;
     requirement: any;
   };
+
+  onMount(() => {
+    const updated = $page.url.searchParams.get('updated') === '1';
+    if (!updated) return;
+
+    toast.success('Saved');
+
+    // remove ?updated=1 so it doesn't re-toast on refresh
+    const u = new URL(window.location.href);
+    u.searchParams.delete('updated');
+    history.replaceState({}, '', u.toString());
+    });
+
 
   const r = data.requirement;
 
