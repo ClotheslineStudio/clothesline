@@ -34,6 +34,7 @@ function sp(url: URL, key: string): string | null {
 
 export const load: PageServerLoad = async ({ fetch, url }) => {
   const workspaceId = sp(url, 'workspaceId') ?? 'ws_demo';
+  const view = sp(url, 'view') ?? 'all'; // 'all' | 'needs-planning'
 
   const status = sp(url, 'status');
   const priority = sp(url, 'priority');
@@ -47,6 +48,8 @@ export const load: PageServerLoad = async ({ fetch, url }) => {
 
   const qs = new URLSearchParams();
   qs.set('workspaceId', workspaceId);
+  if (view !== 'all') qs.set('view', view);
+
   if (status) qs.set('status', status);
   if (priority) qs.set('priority', priority);
   if (ownerId) qs.set('ownerId', ownerId);
@@ -65,6 +68,7 @@ export const load: PageServerLoad = async ({ fetch, url }) => {
     const msg = (body as ApiErr | null)?.error?.message ?? 'Failed to load requirements.';
     return {
       workspaceId,
+      view,
       items: [] as RequirementListItem[],
       error: msg,
       limit: Number(limit),
@@ -77,12 +81,13 @@ export const load: PageServerLoad = async ({ fetch, url }) => {
   const ok = body as ApiOk;
   return {
     workspaceId,
+    view,
     items: ok.items ?? [],
     error: null as string | null,
     limit: ok.limit ?? Number(limit),
     offset: ok.offset ?? Number(offset),
     nextOffset: ok.nextOffset ?? null,
     filters: { status, priority, ownerId, dueAfter, dueBefore }
-    };
+  };
 };
 

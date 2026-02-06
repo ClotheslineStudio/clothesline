@@ -1,9 +1,10 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import { navigating } from '$app/stores';
+  import { navigating, page } from '$app/stores';
   import type { PageData } from './$types';
 
-  export let data: PageData;
+  type LocalData = PageData & { view?: string };
+  export let data: LocalData;
 
   type RequirementListItem = PageData['items'][number];
 
@@ -15,6 +16,20 @@
   let ownerId = data.filters.ownerId ?? '';
   let dueAfter = data.filters.dueAfter ?? '';
   let dueBefore = data.filters.dueBefore ?? '';
+
+  $: view = data.view ?? $page.url.searchParams.get('view') ?? 'all';
+
+  const hrefForView = (nextView: 'all' | 'needs-planning') => {
+    const u = new URL($page.url);
+
+    // keep existing filters/workspaceId, but always reset pagination when switching views
+    u.searchParams.set('offset', '0');
+
+    if (nextView === 'all') u.searchParams.delete('view');
+    else u.searchParams.set('view', nextView);
+
+    return `${u.pathname}?${u.searchParams.toString()}`;
+  };
 
   // Track whether UI differs from URL-provided filter state (for disabling Apply)
   $: isDirty =
@@ -111,7 +126,7 @@
 </svelte:head>
 
 <div class="page">
-  <div class="container">
+  <div class="container" aria-busy={$navigating ? 'true' : 'false'}>
     <header class="header">
       <div>
         <h1>Requirements</h1>
@@ -126,6 +141,14 @@
 
       <a class="btn primary" href={`/requirements/new?workspaceId=${data.workspaceId}`}>New</a>
     </header>
+
+    <!-- View tabs -->
+    <nav class="viewTabs" aria-label="Requirements views">
+      <a class="tab" class:active={view === 'all'} href={hrefForView('all')}>All</a>
+      <a class="tab" class:active={view === 'needs-planning'} href={hrefForView('needs-planning')}>
+        Needs planning
+      </a>
+    </nav>
 
     <section class="card">
       <div class="filters">
@@ -173,7 +196,12 @@
         <button class="btn primary" type="button" on:click={applyFilters} disabled={!isDirty}>
           Apply
         </button>
-        <button class="btn" type="button" on:click={clearFilters} disabled={!status && !priority && !ownerId && !dueAfter && !dueBefore}>
+        <button
+          class="btn"
+          type="button"
+          on:click={clearFilters}
+          disabled={!status && !priority && !ownerId && !dueAfter && !dueBefore}
+        >
           Clear
         </button>
 
@@ -189,8 +217,13 @@
 
     {#if !data.error && data.items.length === 0}
       <section class="empty">
-        <div class="empty-title">No requirements yet</div>
-        <div class="subtle">Create your first Requirement to start planning work.</div>
+        {#if view === 'needs-planning'}
+          <div class="empty-title">All requirements have implementing tasks</div>
+          <div class="subtle">Nothing needs planning right now.</div>
+        {:else}
+          <div class="empty-title">No requirements yet</div>
+          <div class="subtle">Create your first Requirement to start planning work.</div>
+        {/if}
       </section>
     {:else if data.items.length > 0}
       <section class="tableWrap">
@@ -257,6 +290,29 @@
   code {
     font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
     font-size: 12px;
+  }
+
+  /* View tabs */
+  .viewTabs {
+    display: flex;
+    gap: 8px;
+    margin: 0 0 2px;
+    flex-wrap: wrap;
+  }
+  .tab {
+    font-size: 12px;
+    padding: 8px 10px;
+    border-radius: 999px;
+    border: 1px solid rgba(255,255,255,0.12);
+    background: rgba(255,255,255,0.04);
+    text-decoration: none;
+    color: inherit;
+    opacity: 0.85;
+  }
+  .tab.active {
+    opacity: 1;
+    background: rgba(120,180,255,0.18);
+    border-color: rgba(120,180,255,0.35);
   }
 
   .card {
@@ -394,4 +450,5 @@
     gap: 10px;
   }
 </style>
+
 
