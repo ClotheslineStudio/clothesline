@@ -71,35 +71,50 @@ export async function getRequirementDetail(
  * Requirement detail page data (core + loop sections)
  * ------------------------------------------------------------------------------------------------- */
 
+/* -------------------------------------------------------------------------------------------------
+ * Requirement detail page data (core + loop sections)
+ * ------------------------------------------------------------------------------------------------- */
+
 export type RelatedId = { id: string };
 
+export type SourceSummary = {
+  id: string;
+  title: string;
+  type: string; // SourceType enum at runtime (URL | PDF)
+  url: string | null;
+  createdAt: Date;
+};
+
 export type RequirementDetailPageData = RequirementDetail & {
-  sources: RelatedId[];
+  sources: SourceSummary[];
   tasks: RelatedId[];
   pages: RelatedId[];
   evidence: RelatedId[];
 };
 
-type EdgeRelType = 'DERIVED_FROM' | 'IMPLEMENTED_BY' | 'DOCUMENTED_BY' | 'EVIDENCE_FOR';
-type NodeType = 'REQUIREMENT' | 'SOURCE' | 'TASK' | 'PAGE' | 'EVIDENCE';
+// Match schema.prisma enums
+type EdgeRelType = 'DERIVED_FROM' | 'IMPLEMENTS' | 'DOCUMENTS' | 'PROVIDES_EVIDENCE_FOR';
+type NodeType = 'REQUIREMENT' | 'SOURCE' | 'TASK' | 'PROJECT' | 'PAGE' | 'EVIDENCE';
 
 function uniq(ids: string[]) {
   return Array.from(new Set(ids));
 }
 
-function pickIds(edges: Array<{ type: string; toType: string; toId: string }>, rel: EdgeRelType, toType: NodeType) {
+function pickIds(
+  edges: Array<{ type: string; toType: string; toId: string }>,
+  rel: EdgeRelType,
+  toType: NodeType
+) {
   return uniq(edges.filter((e) => e.type === rel && e.toType === toType).map((e) => e.toId));
 }
 
 /**
- * Page loader helper: Requirement core fields + related section IDs
+ * Page loader helper: Requirement core fields + related section data
  *
- * NOTE: This assumes your Edge model has fields:
+ * Assumes Edge model fields:
+ * - workspaceId, type
  * - fromType, fromId
  * - toType, toId
- * - type (relationship type)
- *
- * If your Edge fields differ, change ONLY the prisma.edge.findMany(...) select + where below.
  */
 export async function getRequirementDetailPageData(
   prisma: PrismaClient,
@@ -109,10 +124,9 @@ export async function getRequirementDetailPageData(
   const base = await getRequirementDetail(prisma, workspaceId, id);
   if (!base.ok) return base;
 
-  // ----- Edge query (adjust here if your Edge model differs) -----
   const edges = await prisma.edge.findMany({
     where: {
-      workspaceId,          // remove if Edge is not workspace-scoped
+      workspaceId,
       fromType: 'REQUIREMENT' as NodeType,
       fromId: id
     },
@@ -122,20 +136,29 @@ export async function getRequirementDetailPageData(
       toId: true
     }
   });
-  // -------------------------------------------------------------
 
-  const sourceIds = pickIds(edges as Array<{ type: string; toType: string; toId: string }>, 'DERIVED_FROM', 'SOURCE');
-  const taskIds = pickIds(edges as Array<{ type: string; toType: string; toId: string }>, 'IMPLEMENTED_BY', 'TASK');
-  const pageIds = pickIds(edges as Array<{ type: string; toType: string; toId: string }>, 'DOCUMENTED_BY', 'PAGE');
-  const evidenceIds = pickIds(edges as Array<{ type: string; toType: string; toId: string }>, 'EVIDENCE_FOR', 'EVIDENCE');
+  const sourceIds = pickIds(edges, 'DERIVED_FROM', 'SOURCE');
+  const taskIds = pickIds(edges, 'IMPLEMENTS', 'TASK');
+  const pageIds = pickIds(edges, 'DOCUMENTS', 'PAGE');
+  const evidenceIds = pickIds(edges, 'PROVIDES_EVIDENCE_FOR', 'EVIDENCE');
 
-  // For this Trello card we only need IDs to satisfy “read-only related queries”
-  // (keeps this compile-safe even if your models differ in fields like title/name).
   const [sources, tasks, pages, evidence] = await Promise.all([
-    sourceIds.length ? prisma.source.findMany({ where: { id: { in: sourceIds } }, select: { id: true } }) : [],
-    taskIds.length ? prisma.task.findMany({ where: { id: { in: taskIds } }, select: { id: true } }) : [],
-    pageIds.length ? prisma.page.findMany({ where: { id: { in: pageIds } }, select: { id: true } }) : [],
-    evidenceIds.length ? prisma.evidence.findMany({ where: { id: { in: evidenceIds } }, select: { id: true } }) : []
+    sourceIds.length
+      ? prisma.source.findMany({
+          where: { workspaceId, id: { in: sourceIds } },
+          select: { id: true, title: true, type: true, url: true, createdAt: true },
+          orderBy: { createdAt: 'desc' }
+        })
+      : [],
+    taskIds.length
+      ? prisma.task.findMany({ where: { workspaceId, id: { in: taskIds } }, select: { id: true } })
+      : [],
+    pageIds.length
+      ? prisma.page.findMany({ where: { workspaceId, id: { in: pageIds } }, select: { id: true } })
+      : [],
+    evidenceIds.length
+      ? prisma.evidence.findMany({ where: { workspaceId, id: { in: evidenceIds } }, select: { id: true } })
+      : []
   ]);
 
   return {
@@ -149,3 +172,4 @@ export async function getRequirementDetailPageData(
     }
   };
 }
+

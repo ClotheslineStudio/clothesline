@@ -7,14 +7,23 @@
 
 <section class="panel" aria-label={title}>
   <header class="panel__header">
-    <div class="panel__titleRow">
+  <div class="panel__titleRow">
+    <div class="panel__titleLeft">
       <h2 class="panel__title">{title}</h2>
       <span class="panel__count" aria-label={`${count} items`}>{count}</span>
     </div>
-    {#if hint}
-      <p class="panel__hint">{hint}</p>
+
+    {#if $$slots.actions}
+      <div class="panel__actions">
+        <slot name="actions" />
+      </div>
     {/if}
-  </header>
+  </div>
+
+  {#if hint}
+    <p class="panel__hint">{hint}</p>
+  {/if}
+</header>
 
   <div class="panel__body">
     {#if count === 0}
@@ -72,5 +81,18 @@
     font-size: 13px;
     opacity: 0.75;
     padding: 10px 0;
+  }
+    .panel__titleLeft {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+  }
+
+  .panel__actions {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
   }
 </style>
