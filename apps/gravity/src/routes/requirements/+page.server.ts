@@ -32,8 +32,21 @@ function sp(url: URL, key: string): string | null {
   return t.length ? t : null;
 }
 
+async function safeJson(res: Response) {
+  const text = await res.text();
+  if (!text) return null;
+  try {
+    return JSON.parse(text);
+  } catch {
+    return null;
+  }
+}
+
 export const load: PageServerLoad = async ({ fetch, url }) => {
   const workspaceId = sp(url, 'workspaceId') ?? 'ws_demo';
+
+  // view=needs-planning (optional)
+  const view = sp(url, 'view');
 
   const status = sp(url, 'status');
   const priority = sp(url, 'priority');
@@ -47,24 +60,39 @@ export const load: PageServerLoad = async ({ fetch, url }) => {
 
   const qs = new URLSearchParams();
   qs.set('workspaceId', workspaceId);
+  if (view) qs.set('view', view);
+
   if (status) qs.set('status', status);
   if (priority) qs.set('priority', priority);
   if (ownerId) qs.set('ownerId', ownerId);
   if (dueAfter) qs.set('dueAfter', dueAfter);
   if (dueBefore) qs.set('dueBefore', dueBefore);
+
   qs.set('limit', limit);
   qs.set('offset', offset);
 
   const res = await fetch(`/api/requirements?${qs.toString()}`);
+  const body = await safeJson(res);
 
-  // Don’t read headers here — SvelteKit will complain in universal loads.
-  // We expect JSON from our own API.
-  const body = await res.json().catch(() => null);
-
-  if (!res.ok) {
-    const msg = (body as ApiErr | null)?.error?.message ?? 'Failed to load requirements.';
+  // If API returned non-JSON, don’t crash the page — show an error message instead.
+  if (!body) {
     return {
       workspaceId,
+      view,
+      items: [] as RequirementListItem[],
+      error: `Requirements API did not return JSON (status ${res.status}).`,
+      limit: Number(limit),
+      offset: Number(offset),
+      nextOffset: null as number | null,
+      filters: { status, priority, ownerId, dueAfter, dueBefore }
+    };
+  }
+
+  if (!res.ok) {
+    const msg = (body as ApiErr)?.error?.message ?? 'Failed to load requirements.';
+    return {
+      workspaceId,
+      view,
       items: [] as RequirementListItem[],
       error: msg,
       limit: Number(limit),
@@ -75,14 +103,17 @@ export const load: PageServerLoad = async ({ fetch, url }) => {
   }
 
   const ok = body as ApiOk;
+
   return {
     workspaceId,
+    view,
     items: ok.items ?? [],
     error: null as string | null,
     limit: ok.limit ?? Number(limit),
     offset: ok.offset ?? Number(offset),
     nextOffset: ok.nextOffset ?? null,
     filters: { status, priority, ownerId, dueAfter, dueBefore }
-    };
+  };
 };
+
 

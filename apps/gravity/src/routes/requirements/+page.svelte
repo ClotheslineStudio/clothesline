@@ -1,11 +1,12 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import { navigating } from '$app/stores';
+  import { navigating, page } from '$app/stores';
   import type { PageData } from './$types';
 
   export let data: PageData;
 
   type RequirementListItem = PageData['items'][number];
+  type View = 'all' | 'needs-planning';
 
   const STATUS = ['DRAFT', 'ACTIVE', 'BLOCKED', 'DONE'] as const;
   const PRIORITY = ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'] as const;
@@ -15,6 +16,22 @@
   let ownerId = data.filters.ownerId ?? '';
   let dueAfter = data.filters.dueAfter ?? '';
   let dueBefore = data.filters.dueBefore ?? '';
+
+  const skeletonRows = Array.from({ length: 8 }, (_, i) => i);
+
+  // which list view are we in?
+  $: view = (($page.url.searchParams.get('view') ?? 'all') as View);
+
+  const hrefForView = (nextView: View) => {
+    const u = new URL($page.url);
+    if (nextView === 'all') u.searchParams.delete('view');
+    else u.searchParams.set('view', nextView);
+
+    // when switching views, reset pagination
+    u.searchParams.set('offset', '0');
+
+    return `${u.pathname}?${u.searchParams.toString()}`;
+  };
 
   // Track whether UI differs from URL-provided filter state (for disabling Apply)
   $: isDirty =
@@ -127,6 +144,14 @@
       <a class="btn primary" href={`/requirements/new?workspaceId=${data.workspaceId}`}>New</a>
     </header>
 
+    <!-- View toggle -->
+    <nav class="tabs" aria-label="Requirement views">
+      <a class="tab" class:active={view === 'all'} href={hrefForView('all')}>All</a>
+      <a class="tab" class:active={view === 'needs-planning'} href={hrefForView('needs-planning')}>
+        Needs planning
+      </a>
+    </nav>
+
     <section class="card">
       <div class="filters">
         <label>
@@ -173,7 +198,12 @@
         <button class="btn primary" type="button" on:click={applyFilters} disabled={!isDirty}>
           Apply
         </button>
-        <button class="btn" type="button" on:click={clearFilters} disabled={!status && !priority && !ownerId && !dueAfter && !dueBefore}>
+        <button
+          class="btn"
+          type="button"
+          on:click={clearFilters}
+          disabled={!status && !priority && !ownerId && !dueAfter && !dueBefore}
+        >
           Clear
         </button>
 
@@ -187,11 +217,47 @@
       {/if}
     </section>
 
-    {#if !data.error && data.items.length === 0}
-      <section class="empty">
-        <div class="empty-title">No requirements yet</div>
-        <div class="subtle">Create your first Requirement to start planning work.</div>
+    {#if $navigating}
+      <!-- Loading state -->
+      <section class="tableWrap" aria-label="Loading requirements">
+        <table>
+          <thead>
+            <tr>
+              <th class="colTitle">Title</th>
+              <th>Status</th>
+              <th>Priority</th>
+              <th class="colOwner">Owner</th>
+              <th class="colDue">Due</th>
+            </tr>
+          </thead>
+          <tbody>
+            {#each skeletonRows as i (i)}
+              <tr aria-hidden="true">
+                <td class="colTitle"><span class="sk sk--title"></span></td>
+                <td><span class="sk sk--pill"></span></td>
+                <td><span class="sk sk--pill"></span></td>
+                <td class="colOwner"><span class="sk sk--owner"></span></td>
+                <td class="colDue"><span class="sk sk--due"></span></td>
+              </tr>
+            {/each}
+          </tbody>
+        </table>
       </section>
+
+    {:else if !data.error && data.items.length === 0}
+      <!-- Empty state depends on view -->
+      {#if view === 'needs-planning'}
+        <section class="empty">
+          <div class="empty-title">All requirements have implementing tasks</div>
+          <div class="subtle">Nothing needs planning right now.</div>
+        </section>
+      {:else}
+        <section class="empty">
+          <div class="empty-title">No requirements yet</div>
+          <div class="subtle">Create your first Requirement to start planning work.</div>
+        </section>
+      {/if}
+
     {:else if data.items.length > 0}
       <section class="tableWrap">
         <table>
@@ -230,33 +296,32 @@
 </div>
 
 <style>
-  .page {
-    padding: 24px;
-  }
-  .container {
-    max-width: 1100px;
-    margin: 0 auto;
-    display: grid;
-    gap: 14px;
-  }
+  .page { padding: 24px; }
+  .container { max-width: 1100px; margin: 0 auto; display: grid; gap: 14px; }
 
-  .header {
+  .header { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+  h1 { margin: 0; font-size: 20px; }
+  .subtle { font-size: 12px; opacity: 0.75; }
+  code { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 12px; }
+
+  .tabs {
     display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 12px;
+    gap: 8px;
+    align-items: center;
   }
-  h1 {
-    margin: 0;
-    font-size: 20px;
-  }
-  .subtle {
+  .tab {
     font-size: 12px;
-    opacity: 0.75;
+    padding: 8px 10px;
+    border-radius: 999px;
+    border: 1px solid rgba(255,255,255,0.14);
+    background: rgba(255,255,255,0.04);
+    color: inherit;
+    text-decoration: none;
+    cursor: pointer;
   }
-  code {
-    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-    font-size: 12px;
+  .tab.active {
+    background: rgba(255,255,255,0.12);
+    border-color: rgba(255,255,255,0.22);
   }
 
   .card {
@@ -275,14 +340,8 @@
     gap: 10px;
   }
 
-  label {
-    display: grid;
-    gap: 6px;
-  }
-  label > span {
-    font-size: 12px;
-    opacity: 0.8;
-  }
+  label { display: grid; gap: 6px; }
+  label > span { font-size: 12px; opacity: 0.8; }
 
   input, select {
     padding: 8px 10px;
@@ -299,11 +358,7 @@
     border-top: 1px solid rgba(255,255,255,0.10);
     padding-top: 10px;
   }
-  .hint {
-    margin-left: auto;
-    font-size: 12px;
-    opacity: 0.7;
-  }
+  .hint { margin-left: auto; font-size: 12px; opacity: 0.7; }
   kbd {
     padding: 2px 6px;
     border-radius: 6px;
@@ -320,19 +375,10 @@
     color: inherit;
     cursor: pointer;
   }
-  .btn:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-  .btn.primary {
-    background: rgba(255,255,255,0.12);
-    border-color: rgba(255,255,255,0.22);
-  }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .btn.primary { background: rgba(255,255,255,0.12); border-color: rgba(255,255,255,0.22); }
 
-  .error {
-    color: #ffb4b4;
-    font-size: 13px;
-  }
+  .error { color: #ffb4b4; font-size: 13px; }
 
   .empty {
     border: 1px dashed rgba(255,255,255,0.14);
@@ -340,44 +386,25 @@
     padding: 18px;
     background: rgba(255,255,255,0.02);
   }
-  .empty-title {
-    font-weight: 600;
-    margin-bottom: 4px;
-  }
+  .empty-title { font-weight: 600; margin-bottom: 4px; }
 
-  .tableWrap {
-    overflow: auto;
-    border: 1px solid rgba(255,255,255,0.10);
-    border-radius: 12px;
-  }
+  .tableWrap { overflow: auto; border: 1px solid rgba(255,255,255,0.10); border-radius: 12px; }
 
-  table {
-    width: 100%;
-    border-collapse: collapse;
-  }
+  table { width: 100%; border-collapse: collapse; }
   th, td {
     padding: 8px 10px;
     border-bottom: 1px solid rgba(255,255,255,0.08);
     text-align: left;
     font-size: 13px;
   }
-  th {
-    font-size: 12px;
-    opacity: 0.85;
-    background: rgba(255,255,255,0.03);
-  }
+  th { font-size: 12px; opacity: 0.85; background: rgba(255,255,255,0.03); }
 
   .colTitle { width: 50%; }
   .colOwner { width: 220px; }
   .colDue { width: 140px; }
 
-  .rowLink {
-    color: inherit;
-    text-decoration: none;
-  }
-  .rowLink:hover {
-    text-decoration: underline;
-  }
+  .rowLink { color: inherit; text-decoration: none; }
+  .rowLink:hover { text-decoration: underline; }
 
   .pill {
     display: inline-block;
@@ -388,10 +415,22 @@
     font-size: 12px;
   }
 
-  .pager {
-    display: flex;
-    align-items: center;
-    gap: 10px;
+  .pager { display: flex; align-items: center; gap: 10px; }
+
+  /* Skeleton rows */
+  .sk {
+    display: inline-block;
+    border-radius: 10px;
+    background: rgba(255,255,255,0.08);
+    animation: pulse 1.2s ease-in-out infinite;
+    height: 12px;
+    vertical-align: middle;
   }
+  .sk--title { width: min(520px, 60vw); height: 14px; }
+  .sk--pill { width: 80px; height: 14px; border-radius: 999px; }
+  .sk--owner { width: 140px; height: 14px; }
+  .sk--due { width: 90px; height: 14px; }
+  @keyframes pulse { 0%,100%{opacity:.55} 50%{opacity:1} }
 </style>
+
 

@@ -24,6 +24,9 @@
   let r: any;
   $: r = data.requirement;
 
+  const skeletonRows = Array.from({ length: 6 }, (_, i) => i);
+  const skeletonList = Array.from({ length: 3 }, (_, i) => i);
+
   // Saved toast (edit form redirect -> detail?updated=1)
   onMount(() => {
     const updated = $page.url.searchParams.get('updated') === '1';
@@ -74,182 +77,274 @@
   };
 </script>
 
-<div class="wrap">
-  <header class="top">
-    <div class="titleRow">
-      <div>
-        <p class="kicker">Requirement</p>
-        <h1 class="title">
-          {#if $navigating}
-            <span class="skeleton skeleton--title" aria-hidden="true"></span>
-            <span class="sr-only">Loading…</span>
-          {:else}
-            {r?.title}
-          {/if}
-        </h1>
+{#if !$navigating && !r}
+  <div class="wrap">
+    <section class="card">
+      <p class="kicker">Requirement</p>
+      <h1 class="title">Not found</h1>
+      <p class="muted">This requirement doesn’t exist (or you don’t have access to it).</p>
+      <div style="margin-top: 10px;">
+        <a class="btn" href={`/requirements?workspaceId=${data.workspaceId}`}>Back to Requirements</a>
       </div>
-
-      <div class="actions">
-        <a class="btn" href={`/requirements/${r.id}/edit?workspaceId=${data.workspaceId}`}>Edit</a>
-      </div>
-    </div>
-
-    <div class="pills" aria-label="Requirement summary fields">
-      <span class="pill"><span class="pill__k">Status</span> {r?.status ?? '—'}</span>
-      <span class="pill"><span class="pill__k">Priority</span> {r?.priority ?? '—'}</span>
-    </div>
-  </header>
-
-  <div class="grid">
-    <main class="main">
-      <section class="card" aria-label="Requirement description">
-        <h2 class="h2">Description</h2>
-        <div class="desc">
-          {#if r?.description}
-            {r.description}
-          {:else}
-            <span class="muted">No description yet.</span>
-          {/if}
-        </div>
-      </section>
-    </main>
-
-    <aside class="side">
-      <section class="card" aria-label="Requirement fields">
-        <h2 class="h2">Fields</h2>
-        <dl class="dl">
-          <div class="row"><dt>Status</dt><dd>{r?.status ?? '—'}</dd></div>
-          <div class="row"><dt>Priority</dt><dd>{r?.priority ?? '—'}</dd></div>
-          <div class="row"><dt>Owner</dt><dd>{r?.ownerId ?? '—'}</dd></div>
-          <div class="row"><dt>Due date</dt><dd>{fmtDate(r?.dueDate)}</dd></div>
-        </dl>
-      </section>
-    </aside>
+    </section>
   </div>
-
-  <div class="panels">
-    <!-- Derived from Sources -->
-   <SectionPanel
-  title="Derived from Sources"
-  count={r?.sources?.length ?? 0}
-  emptyText="No sources linked yet"
-  hint=""
->
-  <svelte:fragment slot="actions">
-    <button class="btn" type="button" on:click={() => (addOpen = true)}>Add Source</button>
-  </svelte:fragment>
-
-  <ul class="list">
-    {#each r.sources as s (s.id)}
-      <li class="item">
-        <div class="item__title">{s.title ?? s.id}</div>
-        <div class="item__meta">
-          {#if s.type}<span class="mono">{s.type}</span>{/if}
-          <span class="mono">{s.id}</span>
+{:else}
+  <div class="wrap">
+    <header class="top">
+      <div class="titleRow">
+        <div>
+          <p class="kicker">Requirement</p>
+          <h1 class="title">
+            {#if $navigating}
+              <span class="skeleton skeleton--title" aria-hidden="true"></span>
+              <span class="sr-only">Loading…</span>
+            {:else}
+              {r?.title}
+            {/if}
+          </h1>
         </div>
-        {#if s.url}
-          <div class="item__url">{s.url}</div>
+
+        <div class="actions">
+          {#if $navigating || !r?.id}
+            <span class="btn btn--ghost" aria-disabled="true" style="opacity:.6; cursor:not-allowed;">Edit</span>
+          {:else}
+            <a class="btn" href={`/requirements/${r.id}/edit?workspaceId=${data.workspaceId}`}>Edit</a>
+          {/if}
+        </div>
+      </div>
+
+      <div class="pills" aria-label="Requirement summary fields">
+        {#if $navigating}
+          <span class="pill"><span class="skeleton skeleton--pill" aria-hidden="true"></span></span>
+          <span class="pill"><span class="skeleton skeleton--pill" aria-hidden="true"></span></span>
+        {:else}
+          <span class="pill"><span class="pill__k">Status</span> {r?.status ?? '—'}</span>
+          <span class="pill"><span class="pill__k">Priority</span> {r?.priority ?? '—'}</span>
         {/if}
-      </li>
-    {/each}
-  </ul>
-</SectionPanel>
-
-
-    <SectionPanel
-      title="Implementing Tasks"
-      count={r?.tasks?.length ?? 0}
-      emptyText="No tasks linked yet"
-      hint=""
-    >
-      <ul class="list">
-        {#each r.tasks as t (t.id)}
-          <li class="item">
-            <div class="item__title">{t.id}</div>
-          </li>
-        {/each}
-      </ul>
-    </SectionPanel>
-
-    <SectionPanel
-      title="Documentation Pages"
-      count={r?.pages?.length ?? 0}
-      emptyText="No pages linked yet"
-      hint=""
-    >
-      <ul class="list">
-        {#each r.pages as p (p.id)}
-          <li class="item">
-            <div class="item__title">{p.id}</div>
-          </li>
-        {/each}
-      </ul>
-    </SectionPanel>
-
-    <SectionPanel
-      title="Evidence"
-      count={r?.evidence?.length ?? 0}
-      emptyText="No evidence linked yet"
-      hint=""
-    >
-      <ul class="list">
-        {#each r.evidence as e (e.id)}
-          <li class="item">
-            <div class="item__title">{e.id}</div>
-          </li>
-        {/each}
-      </ul>
-    </SectionPanel>
-  </div>
-</div>
-
-<!-- Add Sources Modal -->
-{#if addOpen}
-  <div class="backdrop" role="presentation" on:click={() => (addOpen = false)}></div>
-
-  <div class="modal" role="dialog" aria-modal="true" aria-label="Add Sources">
-    <div class="modal__head">
-      <div>
-        <div class="kicker">Provenance</div>
-        <h2 class="h2" style="margin: 0;">Link Sources</h2>
       </div>
-      <button class="iconBtn" type="button" aria-label="Close" on:click={() => (addOpen = false)}>×</button>
+    </header>
+
+    <div class="grid">
+      <main class="main">
+        <section class="card" aria-label="Requirement description">
+          <h2 class="h2">Description</h2>
+          <div class="desc">
+            {#if $navigating}
+              <div class="sk sk--line"></div>
+              <div class="sk sk--line"></div>
+              <div class="sk sk--line sk--lineShort"></div>
+            {:else if r?.description}
+              {r.description}
+            {:else}
+              <span class="muted">No description yet.</span>
+            {/if}
+          </div>
+        </section>
+      </main>
+
+      <aside class="side">
+        <section class="card" aria-label="Requirement fields">
+          <h2 class="h2">Fields</h2>
+
+          {#if $navigating}
+            <div class="dl">
+              {#each skeletonRows as i (i)}
+                <div class="row" aria-hidden="true">
+                  <div class="sk sk--label"></div>
+                  <div class="sk sk--value"></div>
+                </div>
+              {/each}
+            </div>
+          {:else}
+            <dl class="dl">
+              <div class="row"><dt>Status</dt><dd>{r?.status ?? '—'}</dd></div>
+              <div class="row"><dt>Priority</dt><dd>{r?.priority ?? '—'}</dd></div>
+              <div class="row"><dt>Owner</dt><dd>{r?.ownerId ?? '—'}</dd></div>
+              <div class="row"><dt>Due date</dt><dd>{fmtDate(r?.dueDate)}</dd></div>
+            </dl>
+          {/if}
+        </section>
+      </aside>
     </div>
 
-    <div class="modal__body">
-      <input class="input" placeholder="Search sources…" bind:value={q} />
+    <div class="panels">
+      <!-- Derived from Sources -->
+      <SectionPanel
+        title="Derived from Sources"
+        count={r?.sources?.length ?? 0}
+        emptyText="No sources linked yet"
+        hint=""
+      >
+        <svelte:fragment slot="actions">
+          <button class="btn" type="button" on:click={() => (addOpen = true)}>Add Source</button>
+        </svelte:fragment>
 
-      {#if modalMessage}
-        <div class="banner">{modalMessage}</div>
-      {/if}
-
-      <form method="POST" action="?/linkSources" use:enhance={linkSubmit}>
-        <div class="picker">
-          {#if filteredSources.length === 0}
-            <div class="muted">No available sources (already linked or none in workspace).</div>
-          {:else}
-            {#each filteredSources as s (s.id)}
-              <label class="pickRow">
-                <input type="checkbox" name="sourceIds" value={s.id} />
-                <div class="pickText">
-                  <div class="pickTitle">{s.title}</div>
-                  <div class="pickMeta">
-                    <span class="mono">{s.type}</span>
-                    {#if s.url}<span class="mono">{s.url}</span>{/if}
-                  </div>
-                </div>
-              </label>
+        {#if $navigating}
+          <ul class="list" aria-hidden="true">
+            {#each skeletonList as i (i)}
+              <li class="item">
+                <div class="sk sk--itemTitle"></div>
+                <div class="sk sk--itemMeta"></div>
+              </li>
             {/each}
-          {/if}
-        </div>
+          </ul>
+        {:else}
+          <ul class="list">
+            {#each (r?.sources ?? []) as s (s.id)}
+              <li class="item">
+                <div class="item__title">{s.title ?? s.id}</div>
+                <div class="item__meta">
+                  {#if s.type}<span class="mono">{s.type}</span>{/if}
+                  <span class="mono">{s.id}</span>
+                </div>
+                {#if s.url}
+                  <div class="item__url">{s.url}</div>
+                {/if}
+              </li>
+            {/each}
+          </ul>
+        {/if}
+      </SectionPanel>
 
-        <div class="modal__foot">
-          <button class="btn btn--ghost" type="button" on:click={() => (addOpen = false)}>Cancel</button>
-          <button class="btn btn--primary" type="submit">Link selected</button>
-        </div>
-      </form>
+      <SectionPanel
+        title="Implementing Tasks"
+        count={r?.tasks?.length ?? 0}
+        emptyText="No implementing tasks"
+        hint=""
+      >
+        {#if $navigating}
+          <ul class="list" aria-hidden="true">
+            {#each skeletonList as i (i)}
+              <li class="item">
+                <div class="sk sk--itemTitle"></div>
+                <div class="sk sk--itemMeta"></div>
+              </li>
+            {/each}
+          </ul>
+        {:else}
+          <ul class="list">
+            {#each (r?.tasks ?? []) as t (t.id)}
+              <li class="item">
+                <div class="item__title">{t.title ?? t.id}</div>
+                <div class="item__meta">
+                  {#if t.status}<span class="mono">{t.status}</span>{/if}
+                  <span class="mono">{t.id}</span>
+                </div>
+              </li>
+            {/each}
+          </ul>
+        {/if}
+      </SectionPanel>
+
+      <SectionPanel
+        title="Documentation Pages"
+        count={r?.pages?.length ?? 0}
+        emptyText="No documentation pages"
+        hint=""
+      >
+        {#if $navigating}
+          <ul class="list" aria-hidden="true">
+            {#each skeletonList as i (i)}
+              <li class="item">
+                <div class="sk sk--itemTitle"></div>
+                <div class="sk sk--itemMeta"></div>
+              </li>
+            {/each}
+          </ul>
+        {:else}
+          <ul class="list">
+            {#each (r?.pages ?? []) as p (p.id)}
+              <li class="item">
+                <div class="item__title">{p.title ?? p.id}</div>
+                <div class="item__meta">
+                  <span class="mono">{p.id}</span>
+                </div>
+              </li>
+            {/each}
+          </ul>
+        {/if}
+      </SectionPanel>
+
+      <SectionPanel
+        title="Evidence"
+        count={r?.evidence?.length ?? 0}
+        emptyText="No evidence yet"
+        hint=""
+      >
+        {#if $navigating}
+          <ul class="list" aria-hidden="true">
+            {#each skeletonList as i (i)}
+              <li class="item">
+                <div class="sk sk--itemTitle"></div>
+                <div class="sk sk--itemMeta"></div>
+              </li>
+            {/each}
+          </ul>
+        {:else}
+          <ul class="list">
+            {#each (r?.evidence ?? []) as e (e.id)}
+              <li class="item">
+                <div class="item__title">{e.title ?? e.id}</div>
+                <div class="item__meta">
+                  {#if e.type}<span class="mono">{e.type}</span>{/if}
+                  <span class="mono">{e.id}</span>
+                </div>
+              </li>
+            {/each}
+          </ul>
+        {/if}
+      </SectionPanel>
     </div>
   </div>
+
+  <!-- Add Sources Modal -->
+  {#if addOpen}
+    <div class="backdrop" role="presentation" on:click={() => (addOpen = false)}></div>
+
+    <div class="modal" role="dialog" aria-modal="true" aria-label="Add Sources">
+      <div class="modal__head">
+        <div>
+          <div class="kicker">Provenance</div>
+          <h2 class="h2" style="margin: 0;">Link Sources</h2>
+        </div>
+        <button class="iconBtn" type="button" aria-label="Close" on:click={() => (addOpen = false)}>×</button>
+      </div>
+
+      <div class="modal__body">
+        <input class="input" placeholder="Search sources…" bind:value={q} />
+
+        {#if modalMessage}
+          <div class="banner">{modalMessage}</div>
+        {/if}
+
+        <form method="POST" action="?/linkSources" use:enhance={linkSubmit}>
+          <div class="picker">
+            {#if filteredSources.length === 0}
+              <div class="muted">No available sources (already linked or none in workspace).</div>
+            {:else}
+              {#each filteredSources as s (s.id)}
+                <label class="pickRow">
+                  <input type="checkbox" name="sourceIds" value={s.id} />
+                  <div class="pickText">
+                    <div class="pickTitle">{s.title}</div>
+                    <div class="pickMeta">
+                      <span class="mono">{s.type}</span>
+                      {#if s.url}<span class="mono">{s.url}</span>{/if}
+                    </div>
+                  </div>
+                </label>
+              {/each}
+            {/if}
+          </div>
+
+          <div class="modal__foot">
+            <button class="btn btn--ghost" type="button" on:click={() => (addOpen = false)}>Cancel</button>
+            <button class="btn btn--primary" type="submit">Link selected</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  {/if}
 {/if}
 
 <style>
@@ -311,7 +406,21 @@
 
   .skeleton { display: inline-block; border-radius: 10px; background: rgba(255,255,255,0.08); animation: pulse 1.2s ease-in-out infinite; }
   .skeleton--title { width: 420px; max-width: 72vw; height: 24px; vertical-align: middle; }
+  .skeleton--pill { width: 120px; height: 14px; border-radius: 999px; display:inline-block; }
   @keyframes pulse { 0%,100%{opacity:.6} 50%{opacity:1} }
+
+  /* Inline skeleton blocks */
+  .sk {
+    border-radius: 10px;
+    background: rgba(255,255,255,0.08);
+    animation: pulse 1.2s ease-in-out infinite;
+  }
+  .sk--line { height: 12px; margin: 8px 0; }
+  .sk--lineShort { width: 65%; }
+  .sk--label { height: 12px; width: 110px; }
+  .sk--value { height: 12px; width: 180px; }
+  .sk--itemTitle { height: 12px; width: 60%; }
+  .sk--itemMeta { height: 10px; width: 40%; margin-top: 8px; opacity: .9; }
 
   /* Modal */
   .backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 9998; }
@@ -379,4 +488,5 @@
     font-size: 13px;
   }
 </style>
+
 
