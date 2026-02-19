@@ -6,27 +6,29 @@ import { listRequirements } from '$lib/server/requirements/requirement.list';
 const ws = (url: URL) => url.searchParams.get('workspaceId') ?? 'ws_demo';
 
 export async function GET({ url }: { url: URL }) {
-  const workspaceId = ws(url);
+	const workspaceId = ws(url);
 
-  // Convert URLSearchParams -> object, ignoring workspaceId
-  const raw = Object.fromEntries(
-    Array.from(url.searchParams.entries()).filter(([k]) => k !== 'workspaceId')
-  ) as Record<string, string>;
+	// Convert URLSearchParams -> object, ignoring workspaceId
+	const raw = Object.fromEntries(
+		Array.from(url.searchParams.entries()).filter(([k]) => k !== 'workspaceId')
+	) as Record<string, string>;
 
-  const res = await listRequirements(prisma, workspaceId, raw);
-  if (!res.ok) return badRequest(res.error);
+	const res = await listRequirements(prisma, workspaceId, raw);
+	if (!res.ok) return badRequest(res.error);
 
-  return ok(res.data, 200);
+	return ok(res.data, 200);
 }
 
 export async function POST({ request, url }: { request: Request; url: URL }) {
-  const input = await request.json().catch(() => ({}));
-  const res = await createRequirement(prisma, ws(url), input);
+	try {
+		const input = await request.json().catch(() => ({}));
+		const res = await createRequirement(prisma, ws(url), input);
 
-  if (!res.ok) return badRequest(res.error);
+		if (!res.ok) return badRequest(res.error);
 
-  return ok({ id: res.data.id }, 200);
+		return ok({ id: res.data.id }, 200);
+	} catch (error) {
+		console.error('[POST /api/requirements] unexpected error', error);
+		return badRequest({ message: 'Unable to create requirement. Please try again.' }, 500);
+	}
 }
-
-
-
