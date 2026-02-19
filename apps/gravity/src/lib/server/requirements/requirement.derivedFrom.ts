@@ -11,144 +11,188 @@ type Err = { ok: false; error: AppError };
 type Result<T> = Ok<T> | Err;
 
 function toFieldErrors(zodError: ZodError): Record<string, string> {
-  const out: Record<string, string> = {};
-  const issues = zodError.issues ?? [];
-  for (const i of issues) {
-    const key = Array.isArray(i.path) && i.path.length ? String(i.path[0]) : 'form';
-    if (!out[key]) out[key] = i.message;
-  }
-  return out;
+	const out: Record<string, string> = {};
+	const issues = zodError.issues ?? [];
+	for (const i of issues) {
+		const key = Array.isArray(i.path) && i.path.length ? String(i.path[0]) : 'form';
+		if (!out[key]) out[key] = i.message;
+	}
+	return out;
+}
+
+function readSourceId(
+	input: unknown
+): { ok: true; sourceId: string } | { ok: false; error: AppError } {
+	const sourceIds =
+		input &&
+		typeof input === 'object' &&
+		Array.isArray((input as { sourceIds?: unknown[] }).sourceIds)
+			? (input as { sourceIds: unknown[] }).sourceIds
+			: undefined;
+
+	if (sourceIds) {
+		if (sourceIds.length === 0) {
+			return {
+				ok: false,
+				error: validationError('Please select at least one source.', {
+					sourceIds: 'Please select a source to link.'
+				})
+			};
+		}
+
+		const first = sourceIds.find((value) => typeof value === 'string' && value.trim().length > 0);
+		if (!first || typeof first !== 'string') {
+			return {
+				ok: false,
+				error: validationError('Please select at least one source.', {
+					sourceIds: 'Please select a source to link.'
+				})
+			};
+		}
+
+		return { ok: true, sourceId: first.trim() };
+	}
+
+	const parsed = LinkDerivedFromSchema.safeParse(input);
+	if (!parsed.success) {
+		return {
+			ok: false,
+			error: validationError('Please fix the highlighted fields.', toFieldErrors(parsed.error))
+		};
+	}
+
+	return { ok: true, sourceId: parsed.data.sourceId };
 }
 
 export async function linkRequirementToSourceDerivedFrom(
-  prisma: PrismaClient,
-  workspaceId: string,
-  requirementId: string,
-  input: unknown
+	prisma: PrismaClient,
+	workspaceId: string,
+	requirementId: string,
+	input: unknown
 ): Promise<
-  Result<{
-    created: boolean;
-    edge: { id: string };
-    derivedSources: Array<{
-      id: string;
-      title: string;
-      type: string;
-      url: string | null;
-      createdAt: Date;
-      updatedAt: Date;
-    }>;
-  }>
+	Result<{
+		created: boolean;
+		edge: { id: string };
+		derivedSources: Array<{
+			id: string;
+			title: string;
+			type: string;
+			url: string | null;
+			createdAt: Date;
+			updatedAt: Date;
+		}>;
+	}>
 > {
-  if (!requirementId) {
-    return { ok: false, error: validationError('Validation failed.', { id: 'Missing requirement id' }) };
-  }
+	if (!requirementId) {
+		return {
+			ok: false,
+			error: validationError('Please fix the highlighted fields.', { id: 'Missing requirement id' })
+		};
+	}
 
-  const parsed = LinkDerivedFromSchema.safeParse(input);
-  if (!parsed.success) {
-    return { ok: false, error: validationError('Validation failed.', toFieldErrors(parsed.error)) };
-  }
+	const parsedInput = readSourceId(input);
+	if (!parsedInput.ok) {
+		return { ok: false, error: parsedInput.error };
+	}
 
-  const { sourceId } = parsed.data;
+	const { sourceId } = parsedInput;
 
-  // 1) Workspace consistency check (mismatch treated as not-found)
-  const [req, src] = await Promise.all([
-    prisma.requirement.findFirst({
-      where: { id: requirementId, workspaceId },
-      select: { id: true }
-    }),
-    prisma.source.findFirst({
-      where: { id: sourceId, workspaceId },
-      select: { id: true }
-    })
-  ]);
+	const [reqAnyWorkspace, srcAnyWorkspace] = await Promise.all([
+		prisma.requirement.findUnique({
+			where: { id: requirementId },
+			select: { id: true, workspaceId: true }
+		}),
+		prisma.source.findUnique({ where: { id: sourceId }, select: { id: true, workspaceId: true } })
+	]);
 
-  if (!req) return { ok: false, error: notFoundError('Requirement not found.') };
-  if (!src) return { ok: false, error: notFoundError('Source not found.') };
+	if (!reqAnyWorkspace) return { ok: false, error: notFoundError('Requirement not found.') };
+	if (reqAnyWorkspace.workspaceId !== workspaceId) {
+		return {
+			ok: false,
+			error: validationError('Requirement is in a different workspace.', {
+				sourceIds: 'Different workspace.'
+			})
+		};
+	}
 
-  // 2) Idempotent dedupe: return existing edge if present
-  const existing = await prisma.edge.findFirst({
-    where: {
-      workspaceId,
-      type: 'DERIVED_FROM',
-      fromType: 'REQUIREMENT',
-      fromId: requirementId,
-      toType: 'SOURCE',
-      toId: sourceId
-    },
-    select: { id: true }
-  });
+	if (!srcAnyWorkspace) return { ok: false, error: notFoundError('Source not found.') };
+	if (srcAnyWorkspace.workspaceId !== workspaceId) {
+		return {
+			ok: false,
+			error: validationError('Source is in a different workspace.', {
+				sourceIds: 'Different workspace.'
+			})
+		};
+	}
 
-  let created = false;
-  let edgeId: string;
+	const existing = await prisma.edge.findFirst({
+		where: {
+			workspaceId,
+			type: 'DERIVED_FROM',
+			fromType: 'REQUIREMENT',
+			fromId: requirementId,
+			toType: 'SOURCE',
+			toId: sourceId
+		},
+		select: { id: true }
+	});
 
-  if (existing) {
-    edgeId = existing.id;
-  } else {
-    try {
-      const createdEdge = await prisma.edge.create({
-        data: {
-          workspaceId,
-          type: 'DERIVED_FROM',
-          fromType: 'REQUIREMENT',
-          fromId: requirementId,
-          toType: 'SOURCE',
-          toId: sourceId
-        },
-        select: { id: true }
-      });
-      created = true;
-      edgeId = createdEdge.id;
-    } catch (e) {
-      // Defensive: if two requests race, unique constraint may trigger.
-      // Treat as idempotent success: load the edge and continue.
-      if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === 'P2002') {
-        const again = await prisma.edge.findFirst({
-          where: {
-            workspaceId,
-            type: 'DERIVED_FROM',
-            fromType: 'REQUIREMENT',
-            fromId: requirementId,
-            toType: 'SOURCE',
-            toId: sourceId
-          },
-          select: { id: true }
-        });
+	if (existing) {
+		return {
+			ok: false,
+			error: validationError('Already linked.', { sourceIds: 'This source is already linked.' })
+		};
+	}
 
-        if (!again) {
-          return { ok: false, error: validationError('Failed to create edge.', { form: 'Duplicate edge conflict.' }) };
-        }
+	let edgeId: string;
 
-        edgeId = again.id;
-      } else {
-        throw e;
-      }
-    }
-  }
+	try {
+		const createdEdge = await prisma.edge.create({
+			data: {
+				workspaceId,
+				type: 'DERIVED_FROM',
+				fromType: 'REQUIREMENT',
+				fromId: requirementId,
+				toType: 'SOURCE',
+				toId: sourceId
+			},
+			select: { id: true }
+		});
+		edgeId = createdEdge.id;
+	} catch (e) {
+		if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === 'P2002') {
+			return {
+				ok: false,
+				error: validationError('Already linked.', { sourceIds: 'This source is already linked.' })
+			};
+		}
 
-  // 3) Return updated list of derived sources (Sources linked via DERIVED_FROM)
-  const edges = await prisma.edge.findMany({
-    where: {
-      workspaceId,
-      type: 'DERIVED_FROM',
-      fromType: 'REQUIREMENT',
-      fromId: requirementId,
-      toType: 'SOURCE'
-    },
-    orderBy: { createdAt: 'desc' },
-    select: { toId: true }
-  });
+		console.error('[linkRequirementToSourceDerivedFrom] failed to create edge', e);
+		return { ok: false, error: validationError('Unable to link source. Please try again.') };
+	}
 
-  const sourceIds = edges.map((x) => x.toId);
-  const sources = sourceIds.length
-    ? await prisma.source.findMany({
-        where: { workspaceId, id: { in: sourceIds } },
-        select: { id: true, title: true, type: true, url: true, createdAt: true, updatedAt: true }
-      })
-    : [];
+	const edges = await prisma.edge.findMany({
+		where: {
+			workspaceId,
+			type: 'DERIVED_FROM',
+			fromType: 'REQUIREMENT',
+			fromId: requirementId,
+			toType: 'SOURCE'
+		},
+		orderBy: { createdAt: 'desc' },
+		select: { toId: true }
+	});
 
-  // Preserve edge order
-  const byId = new Map(sources.map((s) => [s.id, s]));
-  const derivedSources = sourceIds.map((id) => byId.get(id)).filter(Boolean) as typeof sources;
+	const sourceIds = edges.map((x) => x.toId);
+	const sources = sourceIds.length
+		? await prisma.source.findMany({
+				where: { workspaceId, id: { in: sourceIds } },
+				select: { id: true, title: true, type: true, url: true, createdAt: true, updatedAt: true }
+			})
+		: [];
 
-  return { ok: true, data: { created, edge: { id: edgeId }, derivedSources } };
+	const byId = new Map(sources.map((s) => [s.id, s]));
+	const derivedSources = sourceIds.map((id) => byId.get(id)).filter(Boolean) as typeof sources;
+
+	return { ok: true, data: { created: true, edge: { id: edgeId }, derivedSources } };
 }
