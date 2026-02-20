@@ -7,7 +7,7 @@
     requirement: {
       id: string;
       title: string;
-      description: string | null; // mapped from DB body
+      description: string | null;
       status: string;
       priority: string;
       ownerId: string | null;
@@ -15,24 +15,13 @@
     };
   };
 
-  // Helpers
-  function toDateInputValue(value: Date | string | null): string {
-    if (!value) return '';
-    const d = value instanceof Date ? value : new Date(value);
-    if (Number.isNaN(d.getTime())) return '';
-    return d.toISOString().slice(0, 10);
-  }
-
   // Form fields (schema expects `body`, not `description`)
   let title = data.requirement.title ?? '';
   let body = data.requirement.description ?? '';
-
-  // Align with your zod enums
   let status = (data.requirement.status ?? 'DRAFT') as 'DRAFT' | 'ACTIVE' | 'BLOCKED' | 'DONE';
   let priority = (data.requirement.priority ?? 'MEDIUM') as 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
-
   let ownerId = data.requirement.ownerId ?? '';
-  let dueDate = toDateInputValue(data.requirement.dueDate);
+  let dueDate = data.requirement.dueDate ? String(data.requirement.dueDate).slice(0, 10) : '';
 
   type ActionData = {
     message?: string;
@@ -47,27 +36,26 @@
   const hasErr = (name: string) => (fieldErrors[name]?.length ?? 0) > 0;
   const errId = (name: string) => (hasErr(name) ? `${name}-error` : undefined);
 
- const submit: SubmitFunction = () => {
-  // clear previous errors on submit
-  formMessage = '';
-  fieldErrors = {};
+  const submit: SubmitFunction = () => {
+    // clear previous errors on submit
+    formMessage = '';
+    fieldErrors = {};
 
-  return async ({ result, update }) => {
-    if (result.type === 'failure') {
-      const payload = result.data as ActionData | undefined;
-      formMessage = payload?.message ?? payload?.formError ?? 'Fix the errors and try again.';
-      fieldErrors = payload?.fieldErrors ?? {};
+    return async ({ result, update }) => {
+      if (result.type === 'failure') {
+        const payload = result.data as ActionData | undefined;
+        formMessage = payload?.message ?? payload?.formError ?? 'Fix the errors and try again.';
+        fieldErrors = payload?.fieldErrors ?? {};
 
-      // keep their inputs on validation errors
-      await update({ reset: false });
-      return;
-    }
+        // keep their inputs on validation errors
+        await update({ reset: false });
+        return;
+      }
 
-    // IMPORTANT: this applies success/redirect results (including 303 redirects)
-    await update();
+      // IMPORTANT: this applies success/redirect results (including 303 redirects)
+      await update();
+    };
   };
-};
-
 </script>
 
 <div class="page">
@@ -387,7 +375,3 @@
     border-color: rgba(120, 180, 255, 0.35);
   }
 </style>
-
-
-
-
