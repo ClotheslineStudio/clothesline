@@ -9,7 +9,7 @@ export async function projectsByWorkspace(prisma: PrismaClient, workspaceId: str
 
 export async function tasksByWorkspace(prisma: PrismaClient, workspaceId: string) {
   return prisma.task.findMany({
-    where: { workspaceId },
+    where: { workspaceId, archivedAt: null },
     orderBy: { createdAt: 'desc' }
   });
 }

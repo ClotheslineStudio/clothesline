@@ -32,3 +32,7 @@ export function validationError(
 export function notFoundError(message = 'Not found.'): AppError {
   return { message, code: 'NOT_FOUND' };
 }
+
+export function conflictError(message = 'Conflict.'): AppError {
+  return { message, code: 'CONFLICT' };
+}
