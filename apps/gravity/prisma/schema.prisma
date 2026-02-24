@@ -163,6 +163,8 @@ model Project {
   title       String
   description String?
   status      ProjectStatus @default(DRAFT)
+  startDate   DateTime?
+  dueDate     DateTime?
   archivedAt  DateTime?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
