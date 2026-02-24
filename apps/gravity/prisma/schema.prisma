@@ -51,6 +51,7 @@ model User {
 
   // v1 nouns
   ownedRequirements Requirement[] @relation("RequirementOwner")
+  ownedProjects     Project[]     @relation("ProjectOwner")
   assignedTasks     Task[]        @relation("TaskAssignee")
 
   @@index([createdAt])
@@ -163,6 +164,7 @@ model Project {
   title       String
   description String?
   status      ProjectStatus @default(DRAFT)
+  ownerId     String?
   startDate   DateTime?
   dueDate     DateTime?
   archivedAt  DateTime?
@@ -170,11 +172,14 @@ model Project {
   updatedAt   DateTime @updatedAt
 
   workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  owner     User?     @relation("ProjectOwner", fields: [ownerId], references: [id], onDelete: SetNull)
   tasks     Task[]
 
   @@index([workspaceId])
   @@index([workspaceId, createdAt])
   @@index([workspaceId, status])
+  @@index([workspaceId, ownerId])
+  @@index([workspaceId, dueDate])
   @@index([workspaceId, archivedAt])
 }
 

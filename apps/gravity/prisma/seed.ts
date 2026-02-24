@@ -157,6 +157,50 @@ async function main() {
 		});
 	}
 
+	const projectsData = [
+  {
+    id: 'prj_demo_1',
+    title: 'QA Project A',
+    status: 'ACTIVE' as const,
+    dueDate: new Date('2026-02-10T12:00:00.000Z'),
+    ownerId: user.id,
+    archivedAt: null
+  },
+  {
+    id: 'prj_demo_2',
+    title: 'QA Project B',
+    status: 'DRAFT' as const,
+    dueDate: new Date('2026-02-20T12:00:00.000Z'),
+    ownerId: null,
+    archivedAt: null
+  },
+  {
+    id: 'prj_demo_3',
+    title: 'QA Project C (Out of range)',
+    status: 'ACTIVE' as const,
+    dueDate: new Date('2026-03-05T12:00:00.000Z'),
+    ownerId: user.id,
+    archivedAt: null
+  },
+  {
+    id: 'prj_demo_4',
+    title: 'QA Project D (Archived)',
+    status: 'DONE' as const,
+    dueDate: new Date('2026-02-15T12:00:00.000Z'),
+    ownerId: user.id,
+    archivedAt: new Date()
+  }
+];
+
+for (const project of projectsData) {
+  await prisma.project.create({
+    data: {
+      ...project,
+      workspaceId: workspace.id
+    }
+  });
+}
+
 	await createEdge(prisma, {
 		workspaceId: workspace.id,
 		type: 'DERIVED_FROM',
