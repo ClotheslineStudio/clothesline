@@ -10,7 +10,6 @@
     "declaration": true,
     "emitDeclarationOnly": false,
     "allowJs": false,
-    "rootDir": "src",
     "outDir": "dist"
   },
   "include": ["src"]

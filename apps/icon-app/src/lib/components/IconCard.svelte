@@ -11,8 +11,8 @@
   export let style: IconStyle = 'stroke';
 
   // Colors: let the theme handle defaults; customizer overrides by passing hex strings
-  export let color: string | undefined;          // primary override from Customizer
-  export let secondaryColor: string | undefined; // optional duotone secondary
+  export let color: string | undefined = undefined;          // primary override from Customizer
+  export let secondaryColor: string | undefined = undefined; // optional duotone secondary
 
   export let strokeWidth: number = 2;
   export let absoluteStroke: boolean = false;
