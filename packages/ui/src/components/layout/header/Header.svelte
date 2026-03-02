@@ -102,7 +102,7 @@
     align-items: center;
 
     gap: var(--spacing-3, 0.75rem);
-    padding-inline: var(--spacing-7, 1.5rem);
+    padding-inline: var(--header-gutter-x, var(--page-gutter-x, var(--spacing-6, 1.5rem)));
     padding-block: var(--spacing-3, 0.75rem);
 
     margin-inline: auto;
@@ -115,7 +115,7 @@
    * - prose uses md
    */
   .cl-header--page .cl-header__inner {
-    max-width: var(--layout-container-max, var(--layout-container-xl, 72rem));
+    max-width: var(--layout-page-width, var(--layout-container-max, var(--layout-container-xl, 72rem)));
   }
 
   .cl-header--prose .cl-header__inner {

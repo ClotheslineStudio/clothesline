@@ -3,56 +3,99 @@
   import { browser } from '$app/environment';
   import { setTheme } from '@clothesline/themes';
 
-  // Themes to show (must be built & loaded in CSS)
   const THEMES = [
     'clothesline',
-    'timberline',
+    'bigsky',
+    'copper-sun',
+    'milkyway',
     'night-market',
     'retrograde',
     'tidal-glass',
-    'copper-sun',
-    'milkyway',
-    'bigsky'
+    'timberline'
   ] as const;
   type ThemeName = (typeof THEMES)[number];
 
-  // Small “role” chips (full circles)
-  const CHIP_VARS = [
+  const SWATCH_VARS = [
     '--color-primary-500',
     '--color-secondary-500',
-    '--color-accent-500',
-    '--color-success-500',
-    '--color-warning-500',
-    '--color-error-500'
-  ] as const;
-
-  // Big chips (show more nuance than just white/black)
-  // Light + mid + dark samples across surface & neutral
-  const BIG_VARS = [
-    '--color-surface-100',
-    '--color-neutral-200',
     '--color-neutral-700',
-    '--color-surface-900'
+    '--color-warning-500',
+    '--color-success-500',
+    '--color-accent-500',
+    '--color-error-500',
+    '--color-info-500'
   ] as const;
 
-  // Extra vars to drive per-card hover/focus (decoupled from global theme)
-  const AUX_VARS = [
-    '--color-secondary-500', // card hover border/tint
-    '--color-info-500',      // focus ring
-    '--color-surface-50'     // hover blend base
-  ] as const;
-
-  const VARS = Array.from(new Set([...CHIP_VARS, ...BIG_VARS, ...AUX_VARS])) as (typeof CHIP_VARS[number])[];
+  const THEME_META: Record<
+    ThemeName,
+    { title: string; subtitle: string; contrast: string; cardBg: string; mark: 'heart' | 'tree' }
+  > = {
+    clothesline: {
+      title: 'Clothesline',
+      subtitle: 'Accessible · Neutral',
+      contrast: '1.2x',
+      cardBg: '#ECEDEF',
+      mark: 'heart'
+    },
+    bigsky: {
+      title: 'Big Sky',
+      subtitle: 'Bright · Airy',
+      contrast: '1.1x',
+      cardBg: '#CFEDEE',
+      mark: 'heart'
+    },
+    'copper-sun': {
+      title: 'Copper Sun',
+      subtitle: 'Warm · Energetic',
+      contrast: '1.0x',
+      cardBg: '#F0E0D6',
+      mark: 'heart'
+    },
+    milkyway: {
+      title: 'Milky Way',
+      subtitle: 'Cosmic · Cinematic',
+      contrast: '1.3x',
+      cardBg: '#D9E4EE',
+      mark: 'heart'
+    },
+    'night-market': {
+      title: 'Night Market',
+      subtitle: 'Vibrant · Urban',
+      contrast: '1.3x',
+      cardBg: '#CEDAE6',
+      mark: 'heart'
+    },
+    retrograde: {
+      title: 'Retrograde',
+      subtitle: 'Luminous · Neon',
+      contrast: '1.1x',
+      cardBg: '#E4E3F0',
+      mark: 'heart'
+    },
+    'tidal-glass': {
+      title: 'Tidal Glass',
+      subtitle: 'Calm · Reflective',
+      contrast: '1.2x',
+      cardBg: '#CFEFEE',
+      mark: 'heart'
+    },
+    timberline: {
+      title: 'Timberline',
+      subtitle: 'Natural · Grounded',
+      contrast: '1.1x',
+      cardBg: '#D0DFDF',
+      mark: 'tree'
+    }
+  };
 
   type ThemePreview = {
     name: ThemeName;
-    vars: Record<string, string>; // varName -> computed value
+    vars: Record<string, string>;
   };
 
   let open = false;
   let anchor: HTMLButtonElement | null = null;
   let panel: HTMLDivElement | null = null;
-
   let currentTheme: ThemeName = 'clothesline';
   let previews: ThemePreview[] = [];
 
@@ -61,41 +104,33 @@
     return v || 'transparent';
   }
 
-  // Collect color values per theme by temporarily applying it to <html>
   async function collectPreviews() {
     if (!browser) return;
     const html = document.documentElement;
     const prevTheme = html.getAttribute('data-theme');
     const prevMode = html.getAttribute('data-mode') || 'light';
     const prevVision = html.getAttribute('data-vision');
-
     const out: ThemePreview[] = [];
 
-    // Prevent flicker while sampling
     const prevVis = html.style.visibility;
     html.style.visibility = 'hidden';
 
     for (const name of THEMES) {
       html.setAttribute('data-theme', name);
-      html.setAttribute('data-mode', 'light'); // preview swatches in light
+      html.setAttribute('data-mode', 'light');
       if (prevVision) html.removeAttribute('data-vision');
-
-      // Force style calc
-      // eslint-disable-next-line @typescript-eslint/no-unused-expressions
       getComputedStyle(html).width;
 
       const map: Record<string, string> = {};
-      for (const v of VARS) map[v] = readVar(html, v);
+      for (const v of SWATCH_VARS) map[v] = readVar(html, v);
       out.push({ name, vars: map });
     }
 
-    // restore previous
     if (prevTheme) html.setAttribute('data-theme', prevTheme);
     else html.removeAttribute('data-theme');
     html.setAttribute('data-mode', prevMode);
     if (prevVision) html.setAttribute('data-vision', prevVision);
     html.style.visibility = prevVis;
-
     previews = out;
   }
 
@@ -135,7 +170,6 @@
   });
 </script>
 
-<!-- Anchor button -->
 <button
   class="tp-btn"
   bind:this={anchor}
@@ -145,7 +179,7 @@
   title="Change theme"
 >
   <span class="tp-dot"></span>
-  <span class="tp-label">{currentTheme}</span>
+  <span class="tp-label">{THEME_META[currentTheme].title}</span>
   <svg class="tp-caret" width="12" height="12" viewBox="0 0 12 12" aria-hidden="true">
     <path d="M3 4l3 4 3-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
   </svg>
@@ -154,47 +188,41 @@
 {#if open}
   <div class="tp-backdrop"></div>
   <div class="tp-panel" bind:this={panel} role="dialog" aria-label="Choose a theme">
-    <div class="tp-header">
-      <div class="tp-title">Themes</div>
-      <div class="tp-sub">Hover a card to see its own theme highlight.</div>
-    </div>
+    <header class="tp-head">
+      <h3>Themes</h3>
+      <span aria-hidden="true">♡</span>
+    </header>
 
-    <div class="tp-grid">
+    <section class="tp-grid">
       {#each previews as p}
-        <!-- Per-card CSS vars so hover uses the card's theme, not the global theme -->
         <button
           class="tp-card"
-          style={`
-            --card-hover-border: ${p.vars['--color-secondary-500']};
-            --card-focus: ${p.vars['--color-info-500']};
-            --card-surf-50: ${p.vars['--color-surface-50']};
-          `}
+          style={`--card-bg:${THEME_META[p.name].cardBg};`}
           on:click={() => chooseTheme(p.name)}
-          aria-label={`Switch to ${p.name}`}
+          aria-label={`Switch to ${THEME_META[p.name].title}`}
         >
-          <div class="tp-name">{p.name}</div>
-
-          <!-- Small role chips (full circles) -->
-          <div class="tp-chips">
-            {#each CHIP_VARS as v}
-              <span class="tp-chip" style={`--chip:${p.vars[v]}`} title={`${v}: ${p.vars[v]}`}></span>
-            {/each}
+          <div class="tp-mark" aria-hidden="true">{THEME_META[p.name].mark === 'tree' ? '♟' : '♡'}</div>
+          <div class="tp-copy">
+            <div class="tp-name">{THEME_META[p.name].title}</div>
+            <div class="tp-subtitle">{THEME_META[p.name].subtitle}</div>
+            <div class="tp-contrast">Contrast: {THEME_META[p.name].contrast}</div>
           </div>
-
-          <!-- Big chips (full circles) show surface + neutral variety -->
-          <div class="tp-bigs">
-            {#each BIG_VARS as v}
-              <span class="tp-big" style={`--chip:${p.vars[v]}`} title={`${v}: ${p.vars[v]}`}></span>
+          <div class="tp-swatches">
+            {#each SWATCH_VARS as v}
+              <span class="tp-swatch" style={`background:${p.vars[v]};`} title={`${v}: ${p.vars[v]}`}></span>
             {/each}
           </div>
         </button>
       {/each}
-    </div>
+    </section>
+
+    <footer class="tp-foot">
+      Clothesline Studio 2025
+    </footer>
   </div>
 {/if}
 
 <style>
-  /* Anchor button */
   .tp-btn {
     display: inline-flex;
     align-items: center;
@@ -202,216 +230,174 @@
     height: var(--size-control-sm, 32px);
     padding: 0 var(--spacing-3, 0.75rem) 0 var(--spacing-2, 0.5rem);
     border-radius: var(--radius-interactive, 0.6rem);
-    border: var(--border-interactive, 1px)
-      solid var(--border-default-color, var(--color-surface-300));
-    background: color-mix(
-      in oklab,
-      var(--background-panel, var(--color-surface-100)) 90%,
-      transparent
-    );
+    border: 1px solid var(--border-color-default, var(--color-surface-300));
+    background: color-mix(in oklab, var(--background-panel, var(--color-surface-100)) 92%, transparent);
     color: var(--on-surface);
     font-size: var(--type-scale-sm, 0.875rem);
-    line-height: 1;
-  }
-
-  .tp-btn:hover {
-    background: color-mix(
-      in oklab,
-      var(--background-panel, var(--color-surface-100)) 100%,
-      transparent
-    );
-  }
-
-  .tp-btn:focus-visible {
-    outline: var(--button-focus-ring-width, 2px)
-      solid var(--button-focus-ring-color, var(--ring-color, var(--color-info-500)));
-    outline-offset: var(--button-focus-ring-offset, 2px);
   }
 
   .tp-dot {
-    width: var(--size-4, 0.8rem);
-    height: var(--size-4, 0.8rem);
-    border-radius: var(--radius-full, 999px);
-    background:
-      conic-gradient(
-        from 0deg,
-        var(--color-secondary-500),
-        var(--color-accent-500),
-        var(--color-success-500),
-        var(--color-warning-500),
-        var(--color-error-500),
-        var(--color-secondary-500)
-      );
-    box-shadow: 0 0 0 var(--border-2, 2px)
-      var(--background-panel, var(--color-surface-50)) inset;
+    width: 0.8rem;
+    height: 0.8rem;
+    border-radius: 999px;
+    background: conic-gradient(
+      from 0deg,
+      var(--color-secondary-500),
+      var(--color-accent-500),
+      var(--color-success-500),
+      var(--color-warning-500),
+      var(--color-error-500),
+      var(--color-secondary-500)
+    );
+    box-shadow: 0 0 0 2px var(--background-panel, var(--color-surface-50)) inset;
   }
 
   .tp-label {
-    text-transform: capitalize;
+    max-width: 8.5rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   .tp-caret {
-    opacity: var(--opacity-60, 0.6);
+    opacity: 0.7;
   }
 
-  /* Backdrop to catch outside clicks */
   .tp-backdrop {
     position: fixed;
     inset: 0;
     background: transparent;
-    /* no z-index here so the panel (z=1000) stays on top */
+    z-index: var(--z-dropdown, 1000);
   }
 
-  /* Panel */
   .tp-panel {
     position: absolute;
-    right: var(--spacing-4, 16px);
-    top: calc(56px + var(--spacing-2, 8px));
-    z-index: var(--z-dropdown, 1000);
-    width: min(900px, 95vw);
-    border-radius: var(--radius-container, 14px);
-    border: var(--border-card, 1px)
-      solid var(--border-default-color, var(--color-surface-300));
+    right: var(--spacing-5, 20px);
+    top: calc(var(--app-header-height, 88px) + var(--spacing-2, 8px));
+    z-index: calc(var(--z-dropdown, 1000) + 1);
+    width: min(980px, 96vw);
+    border-radius: var(--radius-container, 16px);
+    border: 1px solid var(--border-color-default, var(--color-surface-300));
     background: var(--background-panel, var(--color-surface-50));
-    box-shadow: var(--elevation-menu, 0 20px 60px rgba(0, 0, 0, 0.14));
-    padding: var(--spacing-3, 14px);
+    box-shadow: var(--elevation-menu, 0 20px 52px rgba(0, 0, 0, 0.18));
+    padding: 1rem;
   }
 
-  .tp-header {
-    padding: var(--spacing-2, 6px) var(--spacing-2, 8px)
-      var(--spacing-3, 12px);
+  .tp-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.25rem 0.25rem 0.85rem;
   }
 
-  .tp-title {
-    font-weight: var(--type-weight-bold, 700);
+  .tp-head h3 {
+    margin: 0;
+    font-size: 2rem;
+    line-height: 1;
+    font-weight: 700;
+    color: var(--on-surface-strong, var(--color-surface-950));
   }
 
-  .tp-sub {
-    font-size: var(--type-scale-xs, 0.825rem);
-    opacity: var(--opacity-75, 0.75);
+  .tp-head span {
+    font-size: 1.6rem;
+    line-height: 1;
+    color: var(--on-surface, var(--color-surface-900));
   }
 
-  /* Grid of cards */
   .tp-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
-    gap: var(--spacing-3, 12px);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem 1.1rem;
   }
 
   .tp-card {
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-3, 10px);
-    padding: var(--spacing-4, 12px);
-    border-radius: var(--radius-card, 12px);
-    border: var(--border-card, 1px)
-      solid var(--border-default-color, var(--color-surface-300));
-    background: var(
-      --card-bg,
-      color-mix(
-        in oklab,
-        var(--background-panel, var(--color-surface-100)) 92%,
-        transparent
-      )
-    );
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 0.95rem;
+    min-height: 104px;
+    padding: 0.9rem 1rem;
+    border-radius: 0.8rem;
+    border: 1px solid color-mix(in oklab, var(--on-surface) 16%, transparent);
+    background: var(--card-bg);
     text-align: left;
-    transition:
-      transform var(--motion-duration-fast, 0.12s)
-        var(--motion-ease, ease),
-      background-color var(--motion-duration-fast, 0.12s)
-        var(--motion-ease, ease),
-      border-color var(--motion-duration-fast, 0.12s)
-        var(--motion-ease, ease),
-      box-shadow var(--motion-duration-fast, 0.12s)
-        var(--motion-ease, ease);
+    transition: transform 120ms ease, box-shadow 120ms ease, border-color 120ms ease;
   }
 
-  /* 🔥 Hover highlight uses the card's own theme (via inline CSS vars) */
   .tp-card:hover {
     transform: translateY(-1px);
-    border-color: var(--card-hover-border);
-    background: color-mix(
-      in oklab,
-      var(--card-hover-border) 16%,
-      var(--card-surf-50)
-    );
-    box-shadow: 0 6px 22px
-      color-mix(in oklab, var(--card-hover-border) 18%, transparent);
+    border-color: color-mix(in oklab, var(--on-surface) 26%, transparent);
+    box-shadow: 0 6px 20px color-mix(in oklab, var(--on-surface) 14%, transparent);
   }
 
   .tp-card:focus-visible {
-    outline: var(--button-focus-ring-width, 2px)
-      solid var(--card-focus);
-    outline-offset: var(--button-focus-ring-offset, 2px);
+    outline: 2px solid var(--focus-ring-color, var(--color-primary-500));
+    outline-offset: 2px;
+  }
+
+  .tp-mark {
+    font-size: 1.8rem;
+    line-height: 1;
+    color: var(--on-surface-strong, var(--color-surface-900));
+    opacity: 0.92;
+  }
+
+  .tp-copy {
+    min-width: 0;
+    display: grid;
+    gap: 0.2rem;
   }
 
   .tp-name {
-    font-weight: var(--type-weight-semibold, 700);
-    text-transform: capitalize;
+    font-size: 2rem;
+    line-height: 1.05;
+    font-weight: 700;
+    color: var(--on-surface-strong, var(--color-surface-950));
   }
 
-  /* Small chips – full circles */
-  .tp-chips {
-    display: grid;
-    grid-template-columns: repeat(6, 1fr);
-    gap: var(--spacing-2, 8px);
+  .tp-subtitle {
+    font-size: 1.65rem;
+    line-height: 1.12;
+    color: var(--on-surface, var(--color-surface-900));
+    opacity: 0.78;
   }
 
-  .tp-chip {
-    width: var(--size-5, 20px);
-    height: var(--size-5, 20px);
-    border-radius: var(--radius-full, 999px);
-    background: var(--chip);
-    border: var(--border-2, 2px)
-      solid
-      color-mix(
-        in oklab,
-        var(--chip) 35%,
-        var(--color-surface-950, black)
-      );
-    box-shadow: 0 0 0 var(--border-2, 2px)
-      color-mix(
-        in oklab,
-        var(--chip) 10%,
-        var(--color-surface-0, white)
-      ) inset;
+  .tp-contrast {
+    margin-top: 0.15rem;
+    font-family: var(--type-code-family);
+    font-size: 1.25rem;
+    color: var(--on-surface-muted, var(--color-surface-700));
+    letter-spacing: 0.01em;
   }
 
-  /* Big chips – full circles, show surface+neutral variety (not just white/black) */
-  .tp-bigs {
+  .tp-swatches {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: var(--spacing-3, 10px);
-    margin-top: var(--spacing-1, 2px);
+    gap: 0.5rem;
   }
 
-  .tp-big {
-    width: var(--size-6, 28px);
-    height: var(--size-6, 28px);
-    border-radius: var(--radius-full, 999px);
-    background: var(--chip);
-    border: var(--border-2, 2px)
-      solid
-      color-mix(
-        in oklab,
-        var(--chip) 35%,
-        var(--color-surface-950, black)
-      );
-    box-shadow:
-      0 0 0 var(--border-3, 3px)
-        color-mix(
-          in oklab,
-          var(--chip) 10%,
-          var(--color-surface-0, white)
-        ) inset,
-      0 1px 8px
-        color-mix(in oklab, var(--chip) 20%, transparent);
+  .tp-swatch {
+    width: 20px;
+    height: 20px;
+    border-radius: 999px;
   }
 
-  @media (prefers-reduced-motion: reduce) {
-    .tp-card {
-      transition: none;
+  .tp-foot {
+    margin-top: 1rem;
+    border-top: 1px solid color-mix(in oklab, var(--on-surface) 12%, transparent);
+    padding: 1rem 0.2rem 0.2rem;
+    font-size: 1.5rem;
+    color: var(--on-surface-muted, var(--color-surface-700));
+  }
+
+  @media (max-width: 980px) {
+    .tp-panel {
+      right: var(--spacing-3, 12px);
+      width: min(760px, 96vw);
+    }
+
+    .tp-grid {
+      grid-template-columns: 1fr;
     }
   }
 </style>
-

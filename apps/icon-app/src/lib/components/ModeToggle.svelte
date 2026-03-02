@@ -84,13 +84,10 @@
       solid var(--border-default-color, var(--color-surface-300));
     background: var(
       --icon-button-bg,
-      color-mix(
-        in oklab,
-        var(--background-panel, var(--color-surface-100)) 90%,
-        transparent
-      )
+      color-mix(in oklab, var(--background-elevation-1, var(--background-panel, var(--color-surface-100))) 92%, transparent)
     );
     color: var(--icon, var(--on-surface));
+    box-shadow: 0 1px 2px color-mix(in oklab, var(--on-surface) 10%, transparent);
     transition:
       background var(--motion-duration-fast, 0.15s)
         var(--motion-ease, ease),
@@ -102,11 +99,7 @@
   .mode-btn:hover {
     background: var(
       --icon-button-bg-hover,
-      color-mix(
-        in oklab,
-        var(--background-panel, var(--color-surface-100)) 100%,
-        transparent
-      )
+      color-mix(in oklab, var(--background-elevation-2, var(--background-panel, var(--color-surface-100))) 100%, transparent)
     );
     border-color: var(
       --button-border-hover,
@@ -129,6 +122,18 @@
 
   .icon {
     opacity: var(--opacity-95, 0.95);
+  }
+
+  :global(html[data-mode='dark']) .mode-btn {
+    background: var(--background-elevation-2, var(--color-surface-800-vis, #1f2937));
+    border-color: var(--border-color-default, var(--color-surface-600-vis, #475569));
+    color: var(--on-surface-strong, var(--color-surface-50-vis, #f8fafc));
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+  }
+
+  :global(html[data-mode='dark']) .mode-btn:hover {
+    background: var(--background-elevation-3, var(--color-surface-700-vis, #334155));
+    border-color: var(--border-hover, var(--color-surface-500-vis, #64748b));
   }
 
   .sun {

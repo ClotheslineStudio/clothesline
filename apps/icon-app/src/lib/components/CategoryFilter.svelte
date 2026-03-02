@@ -70,10 +70,10 @@
     padding-block: var(--spacing-2, 0.5rem);
 
     border-radius: var(--radius-md, 0.5rem);
-    border: none;
+    border: 1px solid var(--border-color-default, var(--color-surface-300-vis, #cbd5e1));
 
-    background: var(--color-surface-100-vis, var(--color-surface-100, #f3f4f6));
-    color: var(--sidebar-link-color, var(--text-muted, #475569));
+    background: var(--background-panel, var(--color-surface-100-vis, #f3f4f6));
+    color: var(--on-surface, var(--color-surface-900-vis, #111827));
 
     font-family: var(--type-body-family, system-ui, sans-serif);
     font-size: var(--type-label-size, 0.875rem);
@@ -87,17 +87,19 @@
   }
 
   .category-btn:hover {
-    background: var(--color-surface-200-vis, var(--color-surface-200, #e5e7eb));
+    background: color-mix(in oklab, var(--background-panel, #f3f4f6) 86%, var(--on-surface, #111827) 6%);
   }
 
   .category-btn.active {
-    background: var(--color-primary-50-vis, var(--color-primary-50, #e0f2fe));
-    color: var(--color-primary-700-vis, var(--color-primary-700, #1d4ed8));
+    background: var(--primary-subtle, var(--color-primary-100-vis, #dbeafe));
+    color: var(--on-surface-strong, var(--color-surface-950-vis, #0f172a));
+    border-color: var(--primary, var(--color-primary-500-vis, #3b82f6));
   }
 
   .category-btn span {
-    opacity: 0.7;
+    opacity: 0.85;
     font-size: var(--type-caption-size, 0.75rem);
+    color: var(--on-surface-muted, var(--color-surface-700-vis, #475569));
   }
 </style>
 
