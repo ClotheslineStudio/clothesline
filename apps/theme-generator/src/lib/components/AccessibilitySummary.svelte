@@ -34,7 +34,7 @@
   <div class="surface-card overflow-auto p-3">
     <table class="w-full min-w-[620px] text-sm">
       <thead>
-        <tr class="text-left text-xs uppercase tracking-wide text-[var(--color-surface-700)]">
+        <tr class="text-left text-xs uppercase tracking-wide text-(--color-surface-700)">
           <th class="py-2">Pair</th>
           <th class="py-2">Contrast Ratio</th>
           <th class="py-2">WCAG Status</th>
@@ -42,7 +42,7 @@
       </thead>
       <tbody>
         {#each metrics.pairResults as pair}
-          <tr class="border-t border-[color:color-mix(in_oklab,var(--color-surface-700)_12%,transparent)]">
+          <tr class="border-t border-[color-mix(in_oklab,var(--color-surface-700)_12%,transparent)]">
             <td class="py-2">{pair.name}</td>
             <td class="py-2">{pair.ratio.toFixed(2)}:1</td>
             <td class="py-2">{pair.ratio >= 7 ? 'AAA body' : pair.ratio >= 4.5 ? 'AA body / AAA large' : pair.ratio >= 3 ? 'AA large' : 'Fail'}</td>
