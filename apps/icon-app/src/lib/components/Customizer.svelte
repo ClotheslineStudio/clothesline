@@ -1,8 +1,7 @@
 <script lang="ts">
   import type { IconStyle } from '$lib/types/icon';
-  import OklchColorPicker from '$lib/components/OklchColorPicker.svelte';
 
-  import { Switch, Button } from '@clothesline/ui';
+  import { Switch, Button, ColorPicker } from '@clothesline/ui';
 
   export let style: IconStyle = 'stroke';
   export let color = '#6381F8';
@@ -53,7 +52,7 @@
           disabled={isStyleDisabled(opt as IconStyle)}
           ariaLabel={`Use ${opt} icon style`}
           aria-pressed={style === opt}
-          class="w-full justify-center text-[16px] rounded-[12px]"
+          class="w-full justify-center text-[16px] rounded-xl"
           style={style === opt
             ? '--button-radius: 12px; background: var(--primary, var(--color-primary-600-vis)); border-color: var(--primary, var(--color-primary-600-vis)); color: var(--on-primary, var(--color-surface-0)); box-shadow: 0 2px 8px color-mix(in oklab, var(--primary, #6381f8) 35%, transparent);'
             : '--button-radius: 12px; background: var(--background-panel, var(--color-surface-50)); border-color: var(--color-primary-400-vis, var(--primary, #6381f8)); color: var(--on-surface, var(--color-surface-900));'}
@@ -72,13 +71,13 @@
     </h3>
 
     <div class="space-y-2">
-      <OklchColorPicker
+      <ColorPicker
         label="Primary Color"
         bind:value={color}
       />
 
       {#if style === 'duotone'}
-        <OklchColorPicker
+        <ColorPicker
           label="Secondary Color"
           bind:value={secondaryColor}
         />

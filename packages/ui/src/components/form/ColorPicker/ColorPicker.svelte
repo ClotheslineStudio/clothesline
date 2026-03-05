@@ -1,6 +1,4 @@
 <script lang="ts">
-  import { browser } from '$app/environment';
-  import { onMount } from 'svelte';
   import { Close } from '@clothesline/icons';
   import {
     colorStringToOklch,
@@ -14,48 +12,30 @@
     type HslColor,
     type OklchColor,
     type RgbColor
-  } from '$lib/utils/oklchColor';
+  } from './color';
 
   export let label = 'Color';
   export let value = '#6381F8';
+  export let embedded = false;
 
-  type Tab = 'OKLCH' | 'HSL' | 'RGB' | 'HEX' | 'TOKENS';
-  const tabs: Tab[] = ['OKLCH', 'HSL', 'RGB', 'HEX', 'TOKENS'];
+  type Tab = 'OKLCH' | 'HSL' | 'RGB' | 'HEX';
+  const tabs: Tab[] = ['OKLCH', 'HSL', 'RGB', 'HEX'];
   const MAX_CHROMA = 0.37;
-  const baseSwatches = ['#1298C4', '#0FA58C', '#2FA841', '#C78300', '#E15656', '#22252B', '#F1F3F7'];
-  let themePrimarySwatch = '#6381F8';
-  $: swatches = [themePrimarySwatch, ...baseSwatches];
+  const isBrowser = typeof window !== 'undefined';
 
-  let open = false;
+  let open = embedded;
   let activeTab: Tab = 'OKLCH';
   let state: OklchColor = colorStringToOklch(value);
   let isSyncingFromValue = false;
   let planeEl: HTMLDivElement | null = null;
   let manualHex = '';
+  const swatches = ['var(--color-primary-500-vis)', '#1298C4', '#0FA58C', '#2FA841', '#C78300', '#E15656', '#22252B', '#F1F3F7'];
 
-  function resolveCssColor(variableName: string): string {
-    if (!browser) return '';
-    const probe = document.createElement('span');
-    probe.style.position = 'absolute';
-    probe.style.opacity = '0';
-    probe.style.pointerEvents = 'none';
-    probe.style.color = `var(${variableName})`;
-    document.body.appendChild(probe);
-    const resolved = getComputedStyle(probe).color.trim();
-    document.body.removeChild(probe);
-    return resolved;
-  }
-
-  function readThemePrimarySwatch() {
-    themePrimarySwatch =
-      resolveCssColor('--color-primary-500-vis') ||
-      resolveCssColor('--color-primary-500') ||
-      '#6381F8';
-  }
-
-  $: if (!isSyncingFromValue) {
+  $: if (!embedded && !isSyncingFromValue) {
     state = colorStringToOklch(value);
   }
+  $: if (embedded) open = true;
+  $: if (embedded) state = colorStringToOklch(value);
 
   $: displayOklch = oklchToCss(state);
   $: rgb = oklchToRgb255(state);
@@ -122,18 +102,16 @@
   }
 
   async function copyColor() {
-    const raw = activeTab === 'RGB'
-      ? `rgb(${rgb.r} ${rgb.g} ${rgb.b} / ${Math.round(state.a * 100)}%)`
-      : activeTab === 'HSL'
-        ? `hsl(${hsl.h.toFixed(2)} ${Math.round(hsl.s * 100)}% ${Math.round(hsl.l * 100)}% / ${Math.round(hsl.a * 100)}%)`
-        : activeTab === 'HEX'
-          ? hex
-          : displayOklch;
-    try {
-      await navigator.clipboard.writeText(raw);
-    } catch {
-      // clipboard permission can fail in some browsers
-    }
+    if (!isBrowser || !navigator.clipboard) return;
+    const raw =
+      activeTab === 'RGB'
+        ? `rgb(${rgb.r} ${rgb.g} ${rgb.b} / ${Math.round(state.a * 100)}%)`
+        : activeTab === 'HSL'
+          ? `hsl(${hsl.h.toFixed(2)} ${Math.round(hsl.s * 100)}% ${Math.round(hsl.l * 100)}% / ${Math.round(hsl.a * 100)}%)`
+          : activeTab === 'HEX'
+            ? hex
+            : displayOklch;
+    await navigator.clipboard.writeText(raw);
   }
 
   function selectSwatch(hexColor: string) {
@@ -141,21 +119,25 @@
   }
 
   function updateHsl(partial: Partial<HslColor>) {
-    updateValue(hslToOklch({
-      h: partial.h ?? hsl.h,
-      s: partial.s ?? hsl.s,
-      l: partial.l ?? hsl.l,
-      a: partial.a ?? hsl.a
-    }));
+    updateValue(
+      hslToOklch({
+        h: partial.h ?? hsl.h,
+        s: partial.s ?? hsl.s,
+        l: partial.l ?? hsl.l,
+        a: partial.a ?? hsl.a
+      })
+    );
   }
 
   function updateRgb(partial: Partial<RgbColor>) {
-    updateValue(rgb255ToOklch({
-      r: partial.r ?? rgb.r,
-      g: partial.g ?? rgb.g,
-      b: partial.b ?? rgb.b,
-      a: partial.a ?? rgb.a
-    }));
+    updateValue(
+      rgb255ToOklch({
+        r: partial.r ?? rgb.r,
+        g: partial.g ?? rgb.g,
+        b: partial.b ?? rgb.b,
+        a: partial.a ?? rgb.a
+      })
+    );
   }
 
   function applyHexInput() {
@@ -165,38 +147,20 @@
   }
 
   function closePicker() {
-    open = false;
+    if (!embedded) open = false;
   }
-
-  onMount(() => {
-    readThemePrimarySwatch();
-
-    const observer = new MutationObserver(() => {
-      requestAnimationFrame(() => readThemePrimarySwatch());
-    });
-    observer.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ['data-theme', 'data-mode', 'data-vision', 'data-contrast']
-    });
-
-    return () => observer.disconnect();
-  });
 </script>
 
 <div class="oklch-picker">
-  <div class="row">
-    <span class="picker-label">{label}</span>
-    <button
-      type="button"
-      class="trigger"
-      aria-label={`Open ${label} picker`}
-      aria-expanded={open}
-      on:click={() => (open = !open)}
-    >
-      <span class="swatch" style={`background:${displayOklch};`}></span>
-      <span class="trigger-text">{triggerValue}</span>
-    </button>
-  </div>
+  {#if !embedded}
+    <div class="row">
+      <span class="picker-label">{label}</span>
+      <button type="button" class="trigger" aria-label={`Open ${label} picker`} aria-expanded={open} on:click={() => (open = !open)}>
+        <span class="swatch" style={`background:${displayOklch};`}></span>
+        <span class="trigger-text">{triggerValue}</span>
+      </button>
+    </div>
+  {/if}
 
   {#if open}
     <div
@@ -213,22 +177,17 @@
       `}
     >
       <header class="panel-head">
-        <h4>Colors</h4>
-        <button type="button" class="icon-close" aria-label="Close color picker" on:click={closePicker}>
-          <Close size={14} />
-        </button>
+        <h4>{label}</h4>
+        {#if !embedded}
+          <button type="button" class="icon-close" aria-label="Close color picker" on:click={closePicker}>
+            <Close size={14} />
+          </button>
+        {/if}
       </header>
 
       <div class="tabs">
         {#each tabs as tab}
-          <button
-            type="button"
-            class:active={activeTab === tab}
-            disabled={tab === 'TOKENS'}
-            on:click={() => (activeTab = tab)}
-          >
-            {tab}
-          </button>
+          <button type="button" class:active={activeTab === tab} on:click={() => (activeTab = tab)}>{tab}</button>
         {/each}
       </div>
 
@@ -244,13 +203,7 @@
 
       <div class="value-row">
         {#if activeTab === 'HEX'}
-          <input
-            aria-label={`${label} HEX value`}
-            type="text"
-            bind:value={manualHex}
-            on:change={applyHexInput}
-            on:blur={applyHexInput}
-          />
+          <input aria-label={`${label} HEX value`} type="text" bind:value={manualHex} on:change={applyHexInput} on:blur={applyHexInput} />
         {:else if activeTab === 'RGB'}
           <input aria-label={`${label} RGB value`} type="text" value={`rgb(${rgb.r} ${rgb.g} ${rgb.b} / ${Math.round(state.a * 100)}%)`} readonly />
         {:else if activeTab === 'HSL'}
@@ -258,24 +211,14 @@
         {:else}
           <input aria-label={`${label} OKLCH value`} type="text" value={displayOklch} readonly />
         {/if}
-        <button type="button" class="copy-button" aria-label={`Copy ${label} color value`} on:click={copyColor}>
-          Copy
-        </button>
+        <button type="button" class="copy-button" aria-label={`Copy ${label} color value`} on:click={copyColor}>Copy</button>
       </div>
 
       {#if activeTab === 'OKLCH'}
         <div class="slider-row">
           <label>
             <span>Lightness</span>
-            <input
-              class="slider slider-lightness"
-              type="range"
-              min="0"
-              max="1"
-              step="0.0001"
-              value={state.l}
-              on:input={(e) => updateValue({ ...state, l: Number((e.currentTarget as HTMLInputElement).value) })}
-            />
+            <input class="slider slider-lightness" type="range" min="0" max="1" step="0.0001" value={state.l} on:input={(e) => updateValue({ ...state, l: Number((e.currentTarget as HTMLInputElement).value) })} />
           </label>
           <input type="number" min="0" max="1" step="0.0001" value={state.l.toFixed(4)} on:input={(e) => updateValue({ ...state, l: Number((e.currentTarget as HTMLInputElement).value) })} />
         </div>
@@ -283,15 +226,7 @@
         <div class="slider-row">
           <label>
             <span>Chroma</span>
-            <input
-              class="slider slider-chroma"
-              type="range"
-              min="0"
-              max={MAX_CHROMA}
-              step="0.0001"
-              value={state.c}
-              on:input={(e) => updateValue({ ...state, c: Number((e.currentTarget as HTMLInputElement).value) })}
-            />
+            <input class="slider slider-chroma" type="range" min="0" max={MAX_CHROMA} step="0.0001" value={state.c} on:input={(e) => updateValue({ ...state, c: Number((e.currentTarget as HTMLInputElement).value) })} />
           </label>
           <input type="number" min="0" max={MAX_CHROMA} step="0.0001" value={state.c.toFixed(4)} on:input={(e) => updateValue({ ...state, c: Number((e.currentTarget as HTMLInputElement).value) })} />
         </div>
@@ -353,15 +288,13 @@
         </div>
       {/if}
 
-      {#if activeTab !== 'TOKENS'}
-        <div class="slider-row">
-          <label>
-            <span>Alpha</span>
-            <input class="slider slider-alpha" type="range" min="0" max="100" step="1" value={Math.round(state.a * 100)} style={`--alpha-color:${alphaMixColor};`} on:input={(e) => updateValue({ ...state, a: Number((e.currentTarget as HTMLInputElement).value) / 100 })} />
-          </label>
-          <input type="number" min="0" max="100" step="1" value={Math.round(state.a * 100)} on:input={(e) => updateValue({ ...state, a: Number((e.currentTarget as HTMLInputElement).value) / 100 })} />
-        </div>
-      {/if}
+      <div class="slider-row">
+        <label>
+          <span>Alpha</span>
+          <input class="slider slider-alpha" type="range" min="0" max="100" step="1" value={Math.round(state.a * 100)} style={`--alpha-color:${alphaMixColor};`} on:input={(e) => updateValue({ ...state, a: Number((e.currentTarget as HTMLInputElement).value) / 100 })} />
+        </label>
+        <input type="number" min="0" max="100" step="1" value={Math.round(state.a * 100)} on:input={(e) => updateValue({ ...state, a: Number((e.currentTarget as HTMLInputElement).value) / 100 })} />
+      </div>
 
       <div class="swatches">
         {#each swatches as swatch}
@@ -378,6 +311,7 @@
     gap: var(--spacing-2);
     position: relative;
   }
+
   .row {
     display: grid;
     grid-template-columns: 1fr;
@@ -422,7 +356,6 @@
   }
 
   .panel {
-    margin-top: 0.3rem;
     border: 1px solid color-mix(in oklab, var(--on-surface) 14%, transparent);
     border-radius: var(--radius-card, 1rem);
     background: var(--background-panel, var(--color-surface-100-vis));
@@ -431,12 +364,9 @@
     display: grid;
     gap: 0.65rem;
     width: 100%;
-    max-width: 100%;
     overflow: visible;
     box-shadow: var(--elevation-popover, 0 10px 24px rgba(0, 0, 0, 0.18));
     z-index: var(--z-popover, 200);
-    max-height: none;
-    overflow-y: visible;
   }
 
   .panel-head {
@@ -446,6 +376,7 @@
   }
 
   .panel-head h4 {
+    margin: 0;
     font-size: 1rem;
     font-weight: var(--type-weight-semibold);
   }
@@ -461,17 +392,11 @@
     border: 1px solid color-mix(in oklab, var(--on-surface) 12%, transparent);
     background: var(--fill-surface, var(--color-surface-100-vis));
     color: var(--on-surface, var(--color-surface-900-vis));
-    font-size: 0.95rem;
-    line-height: 1;
-  }
-
-  .icon-close :global(svg) {
-    display: block;
   }
 
   .tabs {
     display: grid;
-    grid-template-columns: repeat(5, minmax(0, 1fr));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 0.35rem;
     background: color-mix(in oklab, var(--on-surface) 6%, transparent);
     padding: 0.35rem;
@@ -494,19 +419,12 @@
     background: var(--background-panel, var(--color-surface-50-vis));
   }
 
-  .tabs button:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-
   .plane {
     position: relative;
-    height: clamp(150px, 22vw, 220px);
-    min-height: 150px;
+    height: clamp(140px, 22vw, 180px);
     border-radius: 0.8rem;
     border: 1px solid color-mix(in oklab, var(--on-surface) 14%, transparent);
     overflow: hidden;
-    background: color-mix(in oklab, var(--on-surface) 6%, transparent);
     cursor: crosshair;
   }
 
@@ -527,7 +445,6 @@
     height: 0.95rem;
     border-radius: 999px;
     border: 2px solid white;
-    background: transparent;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25);
     left: var(--cursor-x);
     top: var(--cursor-y);
@@ -577,7 +494,7 @@
   }
 
   .slider-row label span {
-    font-size: 0.88rem;
+    font-size: 0.78rem;
     color: var(--on-surface-strong, var(--color-surface-900-vis));
     font-weight: 650;
   }
@@ -585,7 +502,7 @@
   .slider {
     appearance: none;
     width: 100%;
-    height: 1.45rem;
+    height: 1.1rem;
     border-radius: 999px;
     border: 0;
     background: var(--slider-track, linear-gradient(90deg, #233068, #9dacff));
@@ -595,69 +512,42 @@
 
   .slider::-webkit-slider-thumb {
     appearance: none;
-    width: 1.55rem;
-    height: 1.55rem;
+    width: 1.1rem;
+    height: 1.1rem;
     border-radius: 999px;
-    border: 3px solid #f5f6fb;
+    border: 2px solid #f5f6fb;
     background: var(--picker-active-color, var(--color-primary-500-vis, #6381f8));
-    box-shadow: 0 5px 14px rgba(0, 0, 0, 0.25);
-    cursor: pointer;
   }
 
   .slider::-moz-range-thumb {
-    width: 1.55rem;
-    height: 1.55rem;
+    width: 1.1rem;
+    height: 1.1rem;
     border-radius: 999px;
-    border: 3px solid #f5f6fb;
+    border: 2px solid #f5f6fb;
     background: var(--picker-active-color, var(--color-primary-500-vis, #6381f8));
-    box-shadow: 0 5px 14px rgba(0, 0, 0, 0.25);
-    cursor: pointer;
   }
 
   .slider::-moz-range-track {
-    height: 1.45rem;
+    height: 1.1rem;
     border-radius: 999px;
     background: var(--slider-track, linear-gradient(90deg, #233068, #9dacff));
     border: 0;
   }
 
   .slider-lightness {
-    --slider-track: linear-gradient(
-      90deg,
-      var(--lightness-low, #000),
-      var(--lightness-mid, var(--hue-color, #6381f8)),
-      var(--lightness-high, #fff)
-    );
+    --slider-track: linear-gradient(90deg, var(--lightness-low, #000), var(--lightness-mid, var(--hue-color, #6381f8)), var(--lightness-high, #fff));
   }
 
   .slider-chroma {
-    --slider-track: linear-gradient(
-      90deg,
-      var(--chroma-low, #9ca3af),
-      var(--chroma-high, var(--hue-color, #6381f8))
-    );
+    --slider-track: linear-gradient(90deg, var(--chroma-low, #9ca3af), var(--chroma-high, var(--hue-color, #6381f8)));
   }
 
   .slider-hue {
-    --slider-track: linear-gradient(
-      90deg,
-      #ff0000 0%,
-      #ffff00 16%,
-      #00ff00 33%,
-      #00ffff 50%,
-      #0000ff 66%,
-      #ff00ff 83%,
-      #ff0000 100%
-    );
+    --slider-track: linear-gradient(90deg, #ff0000 0%, #ffff00 16%, #00ff00 33%, #00ffff 50%, #0000ff 66%, #ff00ff 83%, #ff0000 100%);
   }
 
   .slider-alpha {
-    --slider-track:
-      linear-gradient(45deg, #d6d8e1 25%, transparent 25%, transparent 75%, #d6d8e1 75%, #d6d8e1),
-      linear-gradient(45deg, #d6d8e1 25%, transparent 25%, transparent 75%, #d6d8e1 75%, #d6d8e1),
-      linear-gradient(to right, transparent, var(--alpha-color, #6381f8));
-    background-size: 12px 12px, 12px 12px, 100% 100%;
-    background-position: 0 0, 6px 6px, 0 0;
+    --slider-track: linear-gradient(to right, transparent, var(--alpha-color, #6381f8));
   }
 
   .slider-red { --slider-track: linear-gradient(90deg, #111, #ff4b4b); }
@@ -666,7 +556,6 @@
 
   .swatches {
     border-top: 1px solid color-mix(in oklab, var(--on-surface) 14%, transparent);
-    margin-top: 0.25rem;
     padding-top: 0.65rem;
     display: flex;
     flex-wrap: wrap;
@@ -674,44 +563,9 @@
   }
 
   .swatches button {
-    width: 1.8rem;
-    height: 1.8rem;
-    border-radius: 0.6rem;
+    width: 1.5rem;
+    height: 1.5rem;
+    border-radius: 0.45rem;
     border: 1px solid color-mix(in oklab, var(--on-surface) 15%, transparent);
-  }
-
-  @media (max-width: 560px) {
-    .panel {
-      max-height: min(70vh, 520px);
-      overflow-y: auto;
-      overflow-x: hidden;
-    }
-
-    .tabs button {
-      font-size: 0.72rem;
-      padding: 0.28rem 0.15rem;
-    }
-
-    .plane {
-      height: 150px;
-      min-height: 150px;
-    }
-
-    .value-row {
-      grid-template-columns: 1fr;
-    }
-
-    .copy-button {
-      width: 100%;
-    }
-
-    .slider-row {
-      grid-template-columns: 1fr;
-      gap: 0.35rem;
-    }
-
-    .slider-row input[type='number'] {
-      width: 100%;
-    }
   }
 </style>

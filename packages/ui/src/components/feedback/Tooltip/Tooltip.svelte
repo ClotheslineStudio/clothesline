@@ -8,6 +8,7 @@
   let open = false;
   let anchorEl: HTMLElement | null = null;
   let tipEl: HTMLElement | null = null;
+  const isBrowser = typeof window !== 'undefined';
 
   const gap = 8; // px
   let coords = { top: 0, left: 0 };
@@ -16,7 +17,7 @@
   function hide() { open = false; }
 
   function updatePosition() {
-    if (!anchorEl || !tipEl) return;
+    if (!isBrowser || !anchorEl || !tipEl) return;
     const a = anchorEl.getBoundingClientRect();
     const t = tipEl.getBoundingClientRect();
 
@@ -52,9 +53,11 @@
   ];
 
   onMount(() => {
+    if (!isBrowser) return;
     for (const [evt, fn, cap] of listeners) window.addEventListener(evt, fn as any, cap);
   });
   onDestroy(() => {
+    if (!isBrowser) return;
     for (const [evt, fn, cap] of listeners) window.removeEventListener(evt, fn as any, cap);
   });
 

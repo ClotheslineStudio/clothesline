@@ -1,0 +1,84 @@
+/* === Theme System Imports === */
+@import '@clothesline/themes/css/modes.css';
+@import '@clothesline/themes/css/foundations.css';
+@import '@clothesline/themes/css/components.css';
+@import '@clothesline/themes/css/semantic.css';
+@import '@clothesline/themes/css/semantic-colors.css';
+
+@import 'tailwindcss';
+@plugin '@tailwindcss/forms';
+@plugin '@tailwindcss/typography';
+
+@source './**/*.{svelte,ts,js}';
+@source '../../packages/ui/src/**/*.{svelte,ts}';
+@source '../../packages/icons/src/**/*.{svelte,ts}';
+@source '../../packages/themes/src/**/*.{ts}';
+
+:root {
+  --studio-sidebar-width: 28rem;
+  --scrollbar-size: 11px;
+  --scrollbar-track: color-mix(in oklab, var(--background-app, var(--color-surface-100-vis)) 90%, transparent);
+  --scrollbar-thumb: color-mix(in oklab, var(--primary, var(--color-primary-600-vis)) 38%, var(--color-surface-500-vis, #94a3b8));
+  --scrollbar-thumb-hover: color-mix(in oklab, var(--primary, var(--color-primary-600-vis)) 62%, var(--color-surface-600-vis, #64748b));
+  --tg-ease-standard: cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+  background:
+    radial-gradient(120% 120% at 0% 0%, color-mix(in oklab, var(--primary, var(--color-primary-500-vis)) 8%, transparent), transparent 46%),
+    var(--body-background-color, var(--color-surface-50-vis));
+  color: var(--on-surface, var(--color-surface-900-vis));
+}
+
+* {
+  box-sizing: border-box;
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+}
+
+*::-webkit-scrollbar {
+  width: var(--scrollbar-size);
+  height: var(--scrollbar-size);
+}
+
+*::-webkit-scrollbar-track {
+  background: var(--scrollbar-track);
+  border-radius: 999px;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: linear-gradient(
+    180deg,
+    color-mix(in oklab, var(--scrollbar-thumb) 90%, white),
+    var(--scrollbar-thumb)
+  );
+  border-radius: 999px;
+  border: 2px solid var(--scrollbar-track);
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover);
+}
+
+html[data-mode='dark'] {
+  --scrollbar-track: color-mix(in oklab, var(--background-app-dark, var(--color-surface-950-vis)) 88%, transparent);
+  --scrollbar-thumb: color-mix(in oklab, var(--primary, var(--color-primary-500-vis)) 48%, var(--color-surface-700-vis, #475569));
+}
+
+.surface-card {
+  border: 1px solid var(--border-color-default, var(--color-surface-300-vis));
+  border-radius: var(--radius-container, 0.875rem);
+  background: var(--background-panel, var(--color-surface-50-vis));
+  transition: border-color 160ms var(--tg-ease-standard), box-shadow 160ms var(--tg-ease-standard);
+}
+
+.badge-pill {
+  border: 1px solid var(--border-color-default, var(--color-surface-300-vis));
+  border-radius: 999px;
+  padding: 0.25rem 0.65rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
