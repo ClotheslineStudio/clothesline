@@ -1,0 +1,49 @@
+@import '@clothesline/themes/css/themes/clothesline.css';
+@import '@clothesline/themes/css/themes/timberline.css';
+@import '@clothesline/themes/css/themes/retrograde.css';
+@import '@clothesline/themes/css/themes/milkyway.css';
+@import '@clothesline/themes/css/themes/copper-sun.css';
+@import '@clothesline/themes/css/themes/tidal-glass.css';
+@import '@clothesline/themes/css/themes/night-market.css';
+@import '@clothesline/themes/css/themes/bigsky.css';
+@import '@clothesline/themes/css/modes.css';
+@import '@clothesline/themes/css/foundations.css';
+@import '@clothesline/themes/css/components.css';
+@import '@clothesline/themes/css/semantic.css';
+@import '@clothesline/themes/css/semantic-colors.css';
+
+@import 'tailwindcss';
+@plugin '@tailwindcss/forms';
+@plugin '@tailwindcss/typography';
+
+@source './**/*.{svelte,ts,js}';
+@source '../../packages/ui/src/**/*.{svelte,ts}';
+@source '../../packages/icons/src/**/*.{svelte,ts}';
+@source '../../packages/themes/src/**/*.{ts}';
+
+:root {
+  --docs-header-height: 76px;
+  --docs-sidebar-width: 236px;
+  --docs-toc-width: 220px;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+  background:
+    radial-gradient(100% 100% at 0 0, color-mix(in oklab, var(--primary, var(--color-primary-500-vis)) 8%, transparent), transparent 45%),
+    var(--background-app, var(--color-surface-50-vis));
+  color: var(--on-surface, var(--color-surface-900-vis));
+}
+
+* {
+  box-sizing: border-box;
+}
+
+.docs-surface {
+  border: 1px solid var(--border-color-default, var(--color-surface-300-vis));
+  border-radius: var(--radius-container, 0.875rem);
+  background: var(--background-panel, var(--color-surface-50-vis));
+  box-shadow: 0 1px 2px color-mix(in oklab, var(--on-surface) 10%, transparent);
+}

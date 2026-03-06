@@ -43,6 +43,7 @@
   tabindex={href && isDisabled ? -1 : undefined}
   class={`${baseClass} ${colorClass} ${variantClass} ${sizeClass}`}
   disabled={href ? undefined : isDisabled}
+  on:click
 >
   <slot name="icon-left" />
   <slot />
